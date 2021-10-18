@@ -1,0 +1,23 @@
+{
+  "name": "system_defense",
+  "version": "1.0.0",
+  "description": "have fun learning system design",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonrahoi/system_defense.git"
+  },
+  "author": "CS490",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jonrahoi/system_defense/issues"
+  },
+  "homepage": "https://github.com/jonrahoi/system_defense#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "prompt": "^1.2.0"
+  }
+}
