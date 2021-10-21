@@ -12,9 +12,11 @@ This is a prototype for the system defense game. It includes a `Node.js` & `Fast
 
 *Prerequisite is having Node.js >=12.0.0 installed in the environment. For more information please see the [Node.js download page](https://nodejs.org/en/download/)*
 
-1. `git clone https://github.com/jonrahoi/system_defense.git`
-2. `git checkout peterg/interface_dev`
-3. `npm install`
-4. `npm start`
-5. Visit the address provided in the output of the above command (will most likely be **127.0.0.1:3000**)
+1. `cd <whatever directory to store the code>`
+2. `git clone https://github.com/jonrahoi/system_defense.git`
+3. `cd system_defense`
+4. `git checkout peterg/interface_dev`
+5. `npm install`
+6. `npm start`
+7. Visit the address provided in the output of the above command (will most likely be **127.0.0.1:3000**)
 
