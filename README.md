@@ -4,8 +4,17 @@
 
 ## Overview
 
-This game is made with the backdrop of existing tower defense games such as Plants vs. Zombies and Balloons Tower Defense. The most closely related game in existence is [MiniMetro](https://store.steampowered.com/app/287980/Mini_Metro/). The similarities arise from the structure of the games where the objective is not to destroy enemies but instead to strategically place objects in a way that will create and optimize a path/network for automated components to travel. In the case of MiniMetro, this manifests as connecting subway stations and if the system isn't optimized well enough, the passengers will get angry and the game is over. For this game, *System Defense*, the objects being placed are network system components and the paths are data transfer lines. The simulation consists of internet request objects sourcing from client objects that travel through the network of data processors that the user laid out and depending on the optimization of the system, a variable number of requests will be completed in the given time frame. If not enough requests are processed, then game over!
+This is a prototype for the system defense game. It includes a `Node.js` & `Fastify.js` app that utilizes[`Kaboom.js`](https://kaboomjs.com/)to provide a user interface. The current status is a homescreen with a "play" button that takes the user to a new screen with a templated "level". There is also a test panel that can be overlayed on the screen that provides simple buttons corresponding to more complex actions to be used during development. There is also an operational timer that is controlled by buttons in the status bar. For proof of concept, the timer decrements the displayed clock as well as increments the user score and money with every interval. The speedup button is cyclical with the initial speed being 1x then the interval will be cut in half and the speed becomes 2x with another click and finally the initial interval length is cut into a third and the speed becomes 3x. After the speedup is at 3x, if clicked again, the speedup button will return the game speed to 1x.
 
-## Simple Implementation
+**NOTE**: there are many features that are either missing entirely or only print out console information. It is helpful to have the browser's *JavaScript Console* open when playing around with the app to see what information is being exchanged under the hood.
 
-This repo is meant to provide a simplified implementation of the game logic for use integrating with the game interface and combining modules within game logic
+## Quick Start
+
+*Prerequisite is having Node.js >=12.0.0 installed in the environment. For more information please see the [Node.js download page](https://nodejs.org/en/download/)*
+
+1. `git clone https://github.com/jonrahoi/system_defense.git`
+2. `git checkout peterg/interface_dev`
+3. `npm install`
+4. `npm start`
+5. Visit the address provided in the output of the above command (will most likely be **127.0.0.1:3000**)
+
