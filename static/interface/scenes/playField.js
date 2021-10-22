@@ -96,6 +96,34 @@ PlayField.prototype.update = function(timestamp, speedup) {
 
 /**  Overall: not sure how x, y will work...**/
 
+let dragging = null;
+
+function drag() {
+	let offset = k.vec2(0);
+
+	return {
+		id: "drag",
+		require: [ "pos", "area"],
+		add() {
+			this.clicks(() => {
+				if (dragging) {
+					return;
+				}
+        
+			    dragging = this;
+				offset = k.mousePos().sub(this.pos);
+				k.readd(this);
+			});
+		},
+        update() {
+			if (dragging === this) {
+				k.cursor("move");
+				this.pos = k.mousePos().sub(offset);
+			}
+		},
+	};
+}
+
 // Take in simple string name for a component 
 PlayField.prototype.placeComponent = function(x, y, componentName) { 
     console.log('ADDING COMPONENT');
@@ -106,11 +134,16 @@ PlayField.prototype.placeComponent = function(x, y, componentName) {
         k.sprite(componentName, { width: size.width, height: size.height}),
         k.pos(x, y),
         k.area(),
+        drag(),
         clientTag,
         componentName, // use id as tag also?
         ViewComponent(componentName, specs.isClient),
+        k.mouseRelease(() => {
+            dragging = null;
+        })
     ]);
 };
+
 
 // Takes in two sprite/Kaboom objects. (unsure about this. at least one 
 //      alternative is to use ids)
