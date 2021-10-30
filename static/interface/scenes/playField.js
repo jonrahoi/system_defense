@@ -18,9 +18,19 @@ import TestPanel from '../components/testPanel.js';
 import State from '../../shared/state.js';
 import ViewComponent from '../components/viewComponent.js';
 
+// k.loadSprite("gateway", "https://raw.githubusercontent.com/jonrahoi/system_defense/main/assets/gateway.png?token=ALRAJWEOGIVVVFYUAPK4QLDBPMGMU")
+// k.loadSprite("server", "https://raw.githubusercontent.com/jonrahoi/system_defense/main/assets/server.png?token=ALRAJWCSY6RQPP4F6AXEGE3BPMGX6")
+// k.loadSprite("router", "https://raw.githubusercontent.com/jonrahoi/system_defense/main/assets/router.png?token=ALRAJWAUZFDQR547SVAEOLLBPMGNC")
+// k.loadSprite("cache", "https://raw.githubusercontent.com/jonrahoi/system_defense/main/assets/cache.png?token=ALRAJWGIMJCRWGJLRKEES4LBPMGL6")
+// k.loadSprite("database", "https://raw.githubusercontent.com/jonrahoi/system_defense/main/assets/database.png?token=ALRAJWGEWJWAUWHU2OAEKVTBPMGMG")
+// k.loadSprite("desktop", "https://raw.githubusercontent.com/jonrahoi/system_defense/main/assets/desktop.png?token=ALRAJWA2F4W7S53SZLSWUNTBPMGMO")
+// k.loadSprite("hub", "https://raw.githubusercontent.com/jonrahoi/system_defense/main/assets/hub.png?token=ALRAJWDBJ5GQEPCA5XSS2VLBPMGM2")
+
 // Do we want this constant?
 const ComponentImgWidth = 75;
 const ComponentImgHeight = 75;
+const width = window.innerWidth; // or k.width()?
+const height = window.innerHeight; // k.height()?
 
 export function PlayField(bannerActions) {
     this.init(bannerActions);
@@ -35,6 +45,12 @@ export function PlayField(bannerActions) {
     
     this.scene = () => { this.buildScene(userControls); };
     this.test = () => { this.testLevel(userControls); };
+
+    // const test1 = k.add([
+    //     k.text("TEST")
+    // ]);
+
+    // this.scene = () => { this.buildScene(test1); };
 
     // More to update/add to scene...
 };
@@ -61,7 +77,37 @@ PlayField.prototype.init = function(bannerActions) {
         bannerDimensions.width,
         k.height()
     );
+
+    let statusDimension = this.statusBar.dimensions;
+    this.buildParameters(this.currentLvlLogic,
+            statusDimension.x,
+            statusDimension.y + statusDimension.height,
+            k.width(),
+            k.height() - (statusDimension.y + statusDimension.height));
 };
+
+PlayField.prototype.buildParameters = function(level, screenX, screenY, screenWidth, screenHeight) {
+
+    this.screenParams = {
+        screenX: screenX,
+        screenY: screenY,
+        screenWidth: screenWidth,
+        screenHeight: screenHeight,
+    }
+
+    this.containerParams = {
+        backgroundColor: k.color(100, 160, 200),
+        backgroundOpacity: k.opacity(0.5),
+        backgroundOutline: k.outline(2, k.color(0, 0, 0)),
+    };
+
+    // this.containerParams['width'] 
+    this.containerParams['width'] = screenWidth;
+
+
+
+};
+
 
 
 PlayField.prototype.buildScene = function(controls) {
@@ -125,14 +171,14 @@ function drag() {
 }
 
 // Take in simple string name for a component 
-PlayField.prototype.placeComponent = function(x, y, componentName) { 
+PlayField.prototype.placeComponent = function(pos, componentName) { 
     console.log('ADDING COMPONENT');
     let specs = this.currentLvlLogic.componentSpecs(componentName);
     let size = this.scaleComponentImage(ComponentImgWidth, ComponentImgHeight);
     let clientTag = specs.isClient ? "client" : "processor";
     let t = k.add([
         k.sprite(componentName, { width: size.width, height: size.height}),
-        k.pos(x, y),
+        k.pos(pos),
         k.area(),
         drag(),
         clientTag,
@@ -140,6 +186,17 @@ PlayField.prototype.placeComponent = function(x, y, componentName) {
         ViewComponent(componentName, specs.isClient),
         k.mouseRelease(() => {
             dragging = null;
+
+            // this.controls.placeComponent(k.mousePos(), name);
+
+
+            // if (desTaken == 1) {
+            //     srcPos = desPos;
+            //     desPos = k.mousePos();
+            // } else if (srcTaken == 1) {
+            //     desPos = k.mousePos();
+            //     desTaken = 1;
+            // }
         })
     ]);
 };
