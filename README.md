@@ -15,7 +15,6 @@ This is a prototype for the system defense game. It includes a `Node.js` & `Fast
 1. `cd <whatever directory to store the code>`
 2. `git clone https://github.com/jonrahoi/system_defense.git`
 3. `cd system_defense`
-4. `git checkout peterg/interface_dev`
-5. `npm install`
-6. `npm start`
-7. Visit the address provided in the output of the above command (will most likely be **127.0.0.1:3000**)
+4. `npm install`
+5. `npm start`
+6. Visit the address provided in the output of the above command (will most likely be **127.0.0.1:3000**)
