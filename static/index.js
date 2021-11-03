@@ -22,7 +22,7 @@ import TimerControls from './interface/utilities/timer.js';
 import { LoadHomeScene, LoadGameOver, LoadLeaderboardScene, 
             LoadLevelScene, LoadSettingsScene } from './interface/scenes/index.js';
 
-const TESTING = true;
+const TESTING = false;
 const REL_PATH_TO_ROOT = '../';
 
 
