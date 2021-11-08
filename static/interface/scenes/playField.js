@@ -31,6 +31,10 @@ const ComponentImgWidth = 75;
 const ComponentImgHeight = 75;
 const width = window.innerWidth; // or k.width()?
 const height = window.innerHeight; // k.height()?
+let componentArr = new Array();
+let connectionArr = new Array();
+let tempArr = new Array();
+let temp = 0;
 
 export function PlayField(bannerActions) {
     this.init(bannerActions);
@@ -45,7 +49,7 @@ export function PlayField(bannerActions) {
 
     this.scene = () => { this.buildScene(userControls); };
     this.test = () => { this.testLevel(userControls); };
-    this.buildObject();
+    // this.buildObject();
     
     // this.build1 = () => { this.buildObject(); };
 
@@ -124,6 +128,8 @@ PlayField.prototype.buildScene = function(controls) {
 
     this.bannerBar.build();
     this.statusBar.build();
+    this.buildObject();
+
 };
 
 
@@ -167,7 +173,7 @@ PlayField.prototype.addStaticIcon = function(sprite, pos) {
     ]);
 }
 
-let curDraggin = null;
+let dragging = null;
 
 function drag() {
     let offset = k.vec2(0);
@@ -177,17 +183,17 @@ function drag() {
         require: [ "pos", "area", ],
         add() {
             this.clicks(() => {
-                if (curDraggin) {
+                if (dragging) {
                     return;
                 }
-        
-                curDraggin = this;
+
+                dragging = this;
                 offset = k.mousePos().sub(this.pos);
                 k.readd(this);
             });
         },
     update() {
-            if (curDraggin === this) {
+            if (dragging === this) {
                 k.cursor("move");
                 this.pos = k.mousePos().sub(offset);
             }
@@ -205,7 +211,7 @@ PlayField.prototype.addDragableIcon = function(sprite, pos) {
         drag(),
         k.color(255, 255, 255),
         k.mouseRelease(() => {
-            curDraggin = null;
+            dragging = null;
             const mouseX = k.mousePos().x
             const mouseY = k.mousePos().y
             const leftBorder = this.containerParams.x
@@ -213,6 +219,10 @@ PlayField.prototype.addDragableIcon = function(sprite, pos) {
             const upBorder = this.containerParams.y
             const bottomBorder = this.containerParams.y + this.containerParams.height
             if (mouseX >= leftBorder && mouseX <= rightBorder && mouseY >= upBorder && mouseY <= bottomBorder) {
+                // if ()
+
+
+
                 // TODO: add component with id and position
                 // Maybe do this: create a list of added components and assign id to them
                 // const id = generateID()
@@ -306,11 +316,31 @@ PlayField.prototype.buildObject = function() {
     this.desktopBtn = this.addStaticIcon("desktop", k.vec2(width * 0.75, h2));
     this.hubBtn = this.addStaticIcon("hub", k.vec2(width * 0.87, h2));
 
+    const testTemp = k.add([
+                        k.text("testTemp"),
+                    ]);
+
+    let i = 0;
+    k.onUpdate(() => {
+        k.add([
+                k.text("abcdefg"),
+                pos(0, i),
+            ]);
+        // if (temp == 1) {
+        //     k.add([
+        //         k.text(tempArr[5]),
+        //     ]);
+        // }
+    })
+
 
     const dragablePos = k.vec2(width * 0.15, height * 0.89);
     this.serverBtn.clicks(() => {
         // this.addDragableIcon("server", dragablePos);
-        this.placeComponent("WEB_SERVER", dragablePos);
+        let comp = this.placeComponent("WEB_SERVER", dragablePos);
+
+        
+
     });
 
     this.routerBtn.clicks(() => {
@@ -340,41 +370,9 @@ PlayField.prototype.buildObject = function() {
 
 }
 
-
-
-
-/**  Overall: not sure how x, y will work...**/
-
-// let dragging = null;
-
-// function drag() {
-// 	let offset = k.vec2(0);
-
-// 	return {
-// 		id: "drag",
-// 		require: [ "pos", "area"],
-// 		add() {
-// 			this.clicks(() => {
-// 				if (dragging) {
-// 					return;
-// 				}
-        
-// 			    dragging = this;
-// 				offset = k.mousePos().sub(this.pos);
-// 				k.readd(this);
-// 			});
-// 		},
-//         update() {
-// 			if (dragging === this) {
-// 				k.cursor("move");
-// 				this.pos = k.mousePos().sub(offset);
-// 			}
-// 		},
-// 	};
-// }
-
 // Take in simple string name for a component 
-PlayField.prototype.placeComponent = function(componentName, pos) { 
+PlayField.prototype.placeComponent = function(componentName, pos) {
+    // let valid = -1;
     console.log('ADDING COMPONENT');
     let specs = this.currentLvlLogic.componentSpecs(componentName);
     let size = this.scaleComponentImage(ComponentImgWidth, ComponentImgHeight);
@@ -390,6 +388,32 @@ PlayField.prototype.placeComponent = function(componentName, pos) {
         k.mouseRelease(() => {
             dragging = null;
 
+            const mouseX = k.mousePos().x
+            const mouseY = k.mousePos().y
+            const leftBorder = this.containerParams.x
+            const rightBorder = this.containerParams.x + this.containerParams.width
+            const upBorder = this.containerParams.y
+            const bottomBorder = this.containerParams.y + this.containerParams.height
+            if (mouseX >= leftBorder && mouseX <= rightBorder && mouseY >= upBorder && mouseY <= bottomBorder) {
+                const test = true;
+                if (/* verification function for components */test) {
+                    // valid = 1;
+                    // k.add([
+                    //     k.text("valid component"),
+                    // ]);
+                    // componentArr.push(t);
+                    // for (let i = 0; i < componentArr.length; i++) {
+                    //     k.add([
+                    //         k.text(componentArr[i]),
+                    //         k.pos(vec2(0, i * 50)),
+                    //     ]);
+                    // }
+                    temp = 1;
+                    tempArr =  ["a","b","c","d","e","f"];
+                    
+                }
+            }
+
             // this.controls.placeComponent(k.mousePos(), name);
 
 
@@ -402,7 +426,7 @@ PlayField.prototype.placeComponent = function(componentName, pos) {
             // }
         })
     ]);
-
+    // return ["a","b","c","d","e","f"];
 };
 
 
