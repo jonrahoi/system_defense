@@ -31,10 +31,13 @@ const ComponentImgWidth = 75;
 const ComponentImgHeight = 75;
 const width = window.innerWidth; // or k.width()?
 const height = window.innerHeight; // k.height()?
+let componentArr = new Array();
+let connectionArr = new Array();
+let tempArr = new Array();
+let temp = 0;
 
 export function PlayField(bannerActions) {
     this.init(bannerActions);
-    // necessary to preserve `this` reference (check out arrow functions if unfamiliar)
     
     const userControls = {
         placeComponent: this.placeComponent.bind(this),
@@ -43,8 +46,12 @@ export function PlayField(bannerActions) {
         disconnect: this.disconnect.bind(this)
     };
     
+
     this.scene = () => { this.buildScene(userControls); };
     this.test = () => { this.testLevel(userControls); };
+    // this.buildObject();
+    
+    // this.build1 = () => { this.buildObject(); };
 
     // const test1 = k.add([
     //     k.text("TEST")
@@ -101,9 +108,11 @@ PlayField.prototype.buildParameters = function(level, screenX, screenY, screenWi
         backgroundOutline: k.outline(2, k.color(0, 0, 0)),
     };
 
-    // this.containerParams['width'] 
-    this.containerParams['width'] = screenWidth;
+    this.containerParams['width'] = screenWidth - screenWidth * 0.1;
+    this.containerParams['height'] = screenHeight * 0.8;
 
+    this.containerParams['x'] = screenX + screenWidth * 0.1;
+    this.containerParams['y'] = screenY;
 
 
 };
@@ -119,13 +128,15 @@ PlayField.prototype.buildScene = function(controls) {
 
     this.bannerBar.build();
     this.statusBar.build();
+    this.buildObject();
+
 };
 
 
 /** Depending on if each level will have a new scene, wrap this function into `init()` 
  * Otherwise want to have seperate load level function to not constantly create
  * statusbar and other objects **/
- PlayField.prototype.load = function(levelLogic) {
+PlayField.prototype.load = function(levelLogic) {
     this.currentLvlLogic = levelLogic;
     // will need to load initial components that are to be placed on the screen
 };
@@ -140,38 +151,228 @@ PlayField.prototype.update = function(timestamp, speedup) {
     // SyncComponets();
 };
 
-/**  Overall: not sure how x, y will work...**/
+PlayField.prototype.addIconText = function(text, pos) {
+    k.add([
+        k.text(text, {
+          size: width * height * 0.000025,
+        }),
+        k.pos(pos),
+        origin("center"),
+    ]);
+}
+
+PlayField.prototype.addStaticIcon = function(sprite, pos) {
+    return k.add([
+        k.sprite(sprite),
+        k.pos(pos),
+        k.area(),
+        k.scale(width * height * 0.0000001),
+        origin("center"),
+        // drag(),
+        k.color(255, 255, 255)
+    ]);
+}
 
 let dragging = null;
 
 function drag() {
-	let offset = k.vec2(0);
+    let offset = k.vec2(0);
 
-	return {
-		id: "drag",
-		require: [ "pos", "area"],
-		add() {
-			this.clicks(() => {
-				if (dragging) {
-					return;
-				}
+    return {
+        id: "drag",
+        require: [ "pos", "area", ],
+        add() {
+            this.clicks(() => {
+                if (dragging) {
+                    return;
+                }
+
+                dragging = this;
+                offset = k.mousePos().sub(this.pos);
+                k.readd(this);
+            });
+        },
+    update() {
+            if (dragging === this) {
+                k.cursor("move");
+                this.pos = k.mousePos().sub(offset);
+            }
+        },
+    };
+}
+
+PlayField.prototype.addDragableIcon = function(sprite, pos) {
+    return k.add([
+        k.sprite(sprite),
+        k.pos(pos),
+        k.area(),
+        k.scale(width * height * 0.00000014),
+        origin("center"),
+        drag(),
+        k.color(255, 255, 255),
+        k.mouseRelease(() => {
+            dragging = null;
+            const mouseX = k.mousePos().x
+            const mouseY = k.mousePos().y
+            const leftBorder = this.containerParams.x
+            const rightBorder = this.containerParams.x + this.containerParams.width
+            const upBorder = this.containerParams.y
+            const bottomBorder = this.containerParams.y + this.containerParams.height
+            if (mouseX >= leftBorder && mouseX <= rightBorder && mouseY >= upBorder && mouseY <= bottomBorder) {
+                // if ()
+
+
+
+                // TODO: add component with id and position
+                // Maybe do this: create a list of added components and assign id to them
+                // const id = generateID()
+                // this.controls.placeComponent(k.mousePos(), name);
+                // The following code is for testing purpose
+                console.log("TEST: icon \"" + sprite + "\" is in valid position")
+
+                if (desTaken == 1) {
+                    srcPos = desPos;
+                    desPos = k.mousePos();
+                } else if (srcTaken == 1) {
+                    desPos = k.mousePos();
+                    desTaken = 1;
+                } else { // no src and no des
+                    srcPos = k.mousePos();
+                    srcTaken = 1;
+                }
+
+                if (srcTaken == 1 && desTaken == 1) { // we should have a connect, but, verify the connection first
+                    // TODO: generate ids for src and des in some place
+                    // TODO: verify the connection
+                    // this.controls.connect(srcID, desID);
+                    // TODO: drawLine() is not working somehow
+                    // k.drawLine([
+                    //     p1: srcPos,
+                    //     p2: desPos
+                    // ]);
+                    console.log("Connection created");
+                    console.log("srcpos: " +srcPos.x + " & " + srcPos.y);
+                    console.log("despos: " + desPos.x+ " & " + desPos.y);
+                }
+            }
+           
+        })
+    ]);
+}
+
+/* ********************************************************************** *
+*                  Add containers & objects to view                      *
+* ********************************************************************** */
+PlayField.prototype.buildObject = function() {
+
+    // k.add([
+    //     k.text("TEST - screenX & Y"),
+    //     k.pos(vec2(this.screenParams.screenX, this.screenParams.screenY))
+    // ])
+
+    // k.add([
+    //     k.text("TEST - screenWidth & Height"),
+    //     k.pos(vec2(this.screenParams.screenWidth - 100, this.screenParams.screenHeight))
+    // ])
+
+
+    // var self = this;
+
+    // Control panel container
+    k.add([
+        k.rect(this.containerParams.width, this.containerParams.height),
+        k.pos(this.containerParams.x, this.containerParams.y),
+        this.containerParams.backgroundColor,
+        this.containerParams.backgroundOpacity,
+        this.containerParams.backgroundOutline,
+        origin("topleft")
+    ]);
+
+    // Add gateway
+    k.add([
+        k.sprite("gateway"),
+        k.pos(width * 0.05, height * 0.5),
+        k.area(),
+        k.scale(width * height * 0.0000002),
+        origin("center"),
+        k.color(255, 255, 255)
+    ]);
+
+    // Add icon text
+    const h1 = height * 0.96;
+    this.addIconText("Server", k.vec2(width * 0.27, h1));
+    this.addIconText("Router", k.vec2(width * 0.39, h1));
+    this.addIconText("Cache", k.vec2(width * 0.51, h1));
+    this.addIconText("Database", k.vec2(width * 0.63, h1));
+    this.addIconText("Desktop", k.vec2(width * 0.75, h1));
+    this.addIconText("Hub", k.vec2(width * 0.87, h1));
+
+    // Add static icons
+    const h2 = height * 0.89;
+    this.serverBtn = this.addStaticIcon("server", k.vec2(width * 0.27, h2));
+    this.routerBtn = this.addStaticIcon("router", k.vec2(width * 0.39, h2));
+    this.cacheBtn = this.addStaticIcon("cache", k.vec2(width * 0.51, h2));
+    this.databaseBtn = this.addStaticIcon("database", k.vec2(width * 0.63, h2));
+    this.desktopBtn = this.addStaticIcon("desktop", k.vec2(width * 0.75, h2));
+    this.hubBtn = this.addStaticIcon("hub", k.vec2(width * 0.87, h2));
+
+    const testTemp = k.add([
+                        k.text("testTemp"),
+                    ]);
+
+    let i = 0;
+    k.onUpdate(() => {
+        k.add([
+                k.text("abcdefg"),
+                pos(0, i),
+            ]);
+        // if (temp == 1) {
+        //     k.add([
+        //         k.text(tempArr[5]),
+        //     ]);
+        // }
+    })
+
+
+    const dragablePos = k.vec2(width * 0.15, height * 0.89);
+    this.serverBtn.clicks(() => {
+        // this.addDragableIcon("server", dragablePos);
+        let comp = this.placeComponent("WEB_SERVER", dragablePos);
+
         
-			    dragging = this;
-				offset = k.mousePos().sub(this.pos);
-				k.readd(this);
-			});
-		},
-        update() {
-			if (dragging === this) {
-				k.cursor("move");
-				this.pos = k.mousePos().sub(offset);
-			}
-		},
-	};
+
+    });
+
+    this.routerBtn.clicks(() => {
+        // this.addDragableIcon("router", dragablePos);
+        this.placeComponent("ROUTER", dragablePos);
+    });
+
+    this.cacheBtn.clicks(() => {
+        // this.addDragableIcon("cache", dragablePos);
+        this.placeComponent("CACHE", dragablePos);
+    });
+
+    this.databaseBtn.clicks(() => {
+        // this.addDragableIcon("database", dragablePos);
+        this.placeComponent("DATABASE", dragablePos);
+    });
+
+    this.desktopBtn.clicks(() => {
+        // this.addDragableIcon("desktop", dragablePos);
+        this.placeComponent("DESKTOP", dragablePos);
+    });
+
+    this.hubBtn.clicks(() => {
+        // this.addDragableIcon("hub", dragablePos);
+        this.placeComponent("HUB", dragablePos);
+    });
+
 }
 
 // Take in simple string name for a component 
-PlayField.prototype.placeComponent = function(pos, componentName) { 
+PlayField.prototype.placeComponent = function(componentName, pos) {
+    // let valid = -1;
     console.log('ADDING COMPONENT');
     let specs = this.currentLvlLogic.componentSpecs(componentName);
     let size = this.scaleComponentImage(ComponentImgWidth, ComponentImgHeight);
@@ -187,6 +388,32 @@ PlayField.prototype.placeComponent = function(pos, componentName) {
         k.mouseRelease(() => {
             dragging = null;
 
+            const mouseX = k.mousePos().x
+            const mouseY = k.mousePos().y
+            const leftBorder = this.containerParams.x
+            const rightBorder = this.containerParams.x + this.containerParams.width
+            const upBorder = this.containerParams.y
+            const bottomBorder = this.containerParams.y + this.containerParams.height
+            if (mouseX >= leftBorder && mouseX <= rightBorder && mouseY >= upBorder && mouseY <= bottomBorder) {
+                const test = true;
+                if (/* verification function for components */test) {
+                    // valid = 1;
+                    // k.add([
+                    //     k.text("valid component"),
+                    // ]);
+                    // componentArr.push(t);
+                    // for (let i = 0; i < componentArr.length; i++) {
+                    //     k.add([
+                    //         k.text(componentArr[i]),
+                    //         k.pos(vec2(0, i * 50)),
+                    //     ]);
+                    // }
+                    temp = 1;
+                    tempArr =  ["a","b","c","d","e","f"];
+                    
+                }
+            }
+
             // this.controls.placeComponent(k.mousePos(), name);
 
 
@@ -199,6 +426,7 @@ PlayField.prototype.placeComponent = function(pos, componentName) {
             // }
         })
     ]);
+    // return ["a","b","c","d","e","f"];
 };
 
 
@@ -245,6 +473,8 @@ const SyncComponets = function() {
 **********/
 
 PlayField.prototype.testLevel = function(controls) {
+    // this.build1();
+    // this.buildObject();
 
     let statusDimension = this.statusBar.dimensions;
     this.testPanel = new TestPanel(this.currentLvlLogic,
