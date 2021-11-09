@@ -24,7 +24,7 @@ export default function ViewComponent(name, client) {
             return id;
         },
         client() {
-            return client;
+            return client; // TODO: why do we even need to return this? it's the same as clientTag in PlayField placeComponent()
         },
         print() {
             console.log(`Component - Name: ${name}, ID: ${id}`);
