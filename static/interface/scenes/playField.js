@@ -334,34 +334,26 @@ PlayField.prototype.buildObject = function() {
     const dragablePos = k.vec2(width * 0.15, height * 0.89);
     this.serverBtn.clicks(() => {
         // this.addDragableIcon("server", dragablePos);
-        let comp = this.placeComponent("WEB_SERVER", dragablePos);
-
-        
-
+        this.placeComponent("WEB_SERVER", dragablePos);
     });
 
     this.routerBtn.clicks(() => {
-        // this.addDragableIcon("router", dragablePos);
         this.placeComponent("ROUTER", dragablePos);
     });
 
     this.cacheBtn.clicks(() => {
-        // this.addDragableIcon("cache", dragablePos);
         this.placeComponent("CACHE", dragablePos);
     });
 
     this.databaseBtn.clicks(() => {
-        // this.addDragableIcon("database", dragablePos);
         this.placeComponent("DATABASE", dragablePos);
     });
 
     this.desktopBtn.clicks(() => {
-        // this.addDragableIcon("desktop", dragablePos);
         this.placeComponent("DESKTOP", dragablePos);
     });
 
     this.hubBtn.clicks(() => {
-        // this.addDragableIcon("hub", dragablePos);
         this.placeComponent("HUB", dragablePos);
     });
 
@@ -369,7 +361,6 @@ PlayField.prototype.buildObject = function() {
 
 // Take in simple string name for a component 
 PlayField.prototype.placeComponent = function(componentName, pos) {
-    // let valid = -1;
     console.log('ADDING COMPONENT');
     let specs = this.currentLvlLogic.componentSpecs(componentName);
     let size = this.scaleComponentImage(ComponentImgWidth, ComponentImgHeight);
@@ -395,31 +386,11 @@ PlayField.prototype.placeComponent = function(componentName, pos) {
             if (mouseX >= leftBorder && mouseX <= rightBorder && mouseY >= upBorder && mouseY <= bottomBorder) {
                 const test = true;
                 if (/* verification function for components */test) {
-                    // valid = 1;
-                    // k.add([
-                    //     k.text("valid component"),
-                    // ]);
-                    // componentArr.push(t);
-                    // for (let i = 0; i < componentArr.length; i++) {
-                    //     k.add([
-                    //         k.text(componentArr[i]),
-                    //         k.pos(vec2(0, i * 50)),
-                    //     ]);
-                    // }
                     temp = 1;
-                    // tempArr =  ["a","b","c","d","e","f"];
-                    // k.add([
-                    //     k.text("current id: " + ViewComponent(componentName, specs.isClient).id(), {
-                    //         size: width * height * 0.000025,
-                    //     }),
-                    //     k.pos(600, 0)
-                    // ]);
                     componentArr.push([pos, clientTag, componentName, id]);
                     
                 }
             }
-
-            // this.controls.placeComponent(k.mousePos(), name);
 
 
             // if (desTaken == 1) {
