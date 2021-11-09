@@ -1,4 +1,4 @@
-export const levelDefs = {
+var levelDefs = {
     "1": {
         "timeLimit": 100,
         "goal": 50,
@@ -15,8 +15,6 @@ export const levelDefs = {
                 "quantity": 1
             }
         ],
-        // "availableClients": [
-        // ],
         "availableProcessors": [
             {
                 "name": "SERVER", 
@@ -34,7 +32,7 @@ export const levelDefs = {
         "coinReward": 150,
         "initClients": [
             {
-                "name": "IPHONE",
+                "name": "LAPTOP",
                 "quantity": 1
             }
         ],
@@ -48,8 +46,6 @@ export const levelDefs = {
                 "quantity": 1
             }
         ],
-        // "availableClients": [
-        // ],
         "availableProcessors": [
             {
                 "name": "SERVER", 
@@ -71,7 +67,11 @@ export const levelDefs = {
         "coinReward": 200,
         "initClients": [
             {
-                "name": "DESKTOP",
+                "name": "IPHONE",
+                "quantity": 1
+            },
+            {
+                "name": "LAPTOP",
                 "quantity": 1
             }
         ],
@@ -85,8 +85,6 @@ export const levelDefs = {
                 "quantity": 1
             }
         ],
-        // "availableClients": [
-        // ],
         "availableProcessors": [
             {
                 "name": "LOAD_BALANCER", 
@@ -107,6 +105,100 @@ export const levelDefs = {
             {
                 "name": "CACHE", 
                 "quantity": 1
+            }
+        ]
+    },
+    "4": {
+        "timeLimit": 120,
+        "goal": 110,
+        "coinReward": 250,
+        "initClients": [
+            {
+                "name": "DESKTOP",
+                "quantity": 1
+            },
+            {
+                "name": "LAPTOP",
+                "quantity": 1
+            }
+        ],
+        "initProcessors": [
+            { 
+                "name": "LOAD_BALANCER",
+                "quantity": 2
+            },
+            { 
+                "name": "ROUTER",
+                "quantity": 1
+            }
+        ],
+        "availableProcessors": [
+            {
+                "name": "LOAD_BALANCER", 
+                "quantity": 1
+            },
+            {
+                "name": "GATEWAY", 
+                "quantity": 1
+            },
+            {
+                "name": "SERVER", 
+                "quantity": 2
+            },
+            {
+                "name": "DATABASE", 
+                "quantity": 2
+            },
+            {
+                "name": "MODEM", 
+                "quantity": 1
+            }
+        ]
+    },
+    "5": {
+        "timeLimit": 120,
+        "goal": 120,
+        "coinReward": 350,
+        "initClients": [
+            {
+                "name": "CLOUD_COMPUTE",
+                "quantity": 1
+            }
+        ],
+        "initProcessors": [
+            { 
+                "name": "SERVER",
+                "quantity": 3
+            },
+            { 
+                "name": "DATABASE",
+                "quantity": 1
+            }
+        ],
+        "availableProcessors": [
+            {
+                "name": "LOAD_BALANCER", 
+                "quantity": 1
+            },
+            {
+                "name": "GATEWAY", 
+                "quantity": 1
+            },
+            {
+                "name": "MODEM", 
+                "quantity": 1
+            },
+            {
+                "name": "ROUTER", 
+                "quantity": 1
+            },
+            {
+                "name": "DATABASE", 
+                "quantity": 2
+            },
+            {
+                "name": "CACHE", 
+                "quantity": 2
             }
         ]
     }

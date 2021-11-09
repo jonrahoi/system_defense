@@ -13,7 +13,7 @@ import Network from "./modules/network.js";
 import LogicComponent from './modules/logicComponent.js';
 
 // Controller for the global `State` object
-import { StateMachine } from "../shared/state.js";
+import { StateMachine, State } from "../shared/state.js";
 
 // for interface <--> game communication
 import Level from "../shared/level.js";
@@ -23,6 +23,8 @@ import { findComponent, componentEntries, findLevel } from "../shared/lookup.js"
 
 
 const REL_PATH_TO_ROOT = '../';
+
+const REFUND_RATE = 0.75; // when deleted a component, only get 75% money back
 
 export function GameLogic() {
     StateMachine.reset(); // reset the game state if previously in progress
@@ -61,34 +63,55 @@ GameLogic.prototype.componentSpecs = (componentName) => {
     return specs;
 };
 
-GameLogic.prototype.addComponent = function(componentName, componentID) {
+GameLogic.prototype.addComponent = function(componentName, componentID, initial=false) {
 
-    // verify component at the game level ex: component is available
     let specs = this.componentSpecs(componentName);
-    var newComponent = new LogicComponent(componentName, componentID, specs);
+    
+    // Unnecessary when initial but OK
+    if (State.coins < specs.cost) {
+        return {
+            valid: false,
+            info: 'Insufficient funds'
+        };
+    }
+    
+    var newComponent = new LogicComponent(componentID, componentName, specs);
     StateMachine.placedComponent(newComponent);
+    if (!initial) {
+        StateMachine.incrementCoins(-specs.cost);
+    }
 
-    return this.network.addComponent(newComponent);
+    return this.network.networkAddComponent(newComponent);
 };
 
 GameLogic.prototype.removeComponent = function(componentID) {
-    return this.network.removeComponent(componentID);
+
+    let component = this.network.getComponent(componentID);
+
+    StateMachine.removedComponent(component);
+    
+    let refund = Math.ceil(component.cost * REFUND_RATE);
+    StateMachine.incrementCoins(refund);
+
+    return this.network.networkRemovedComponent(componentID);
 };
 
 GameLogic.prototype.addConnection = function(src_id, dest_id) {
     // verify connection at the game level
-    return this.network.addConnection(src_id, dest_id);
+    let srcComponent = this.network.getComponent(src_id);
+    let destComponent = this.network.getComponent(dest_id);
+
+    return this.network.networkAddConnection(src_id, dest_id);
 };
 
 GameLogic.prototype.removeConnection = function(src_id, dest_id) {
-    return this.network.removeConnection(src_id, dest_id);
+    return this.network.disconnect(src_id, dest_id);
 };
 
 GameLogic.prototype.processInterval = function(timestamp, speedup) {
     console.log('Game Logic timestep ', timestamp);
 
     // Testing communication from Timer --> Logic --> Interface
-    StateMachine.incrementCoins();
     StateMachine.incrementScore();
 
     // This will be the "brain" for determing game development

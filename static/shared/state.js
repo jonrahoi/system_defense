@@ -7,7 +7,13 @@
  * for controlling the state and is the only way to adjust its values.
  */
 
+import Broadcast from '../utilities/broadcast.js';
+
 export var State = {
+    // _listeners: new Broadcast(),
+    register: (func, context) => { State._listeners.register(func, context); },
+    stateChange: () => { State._listeners.dispatch(); }
+
     // THESE VALUES ACTUALLY EXIST but they aren't defined on initiliazation
     // coins: 0, // coins in “wallet”
     // score: 0, // current accumulated score
@@ -26,16 +32,17 @@ export var State = {
 /** RESERVED FOR GAME LOGIC **/
 export const StateMachine = {
     getState: () => { return State; },
-    incrementCoins: (amount) => { State.coins += (amount || 1); },
-    incrementScore: (amount) => { State.score += (amount || 1); },
-    incrementCompleted: (amount) => { State.numCompletedReqs += (amount || 1); },
-    setRequestStates: (newStates) => { State.requestStates = newStates; },
-    addConnection: (sourceID, targetID) => { State.connections.push([sourceID, targetID]); },
+    incrementCoins: (amount) => { State.coins += (amount || 1); State.stateChange(); },
+    incrementScore: (amount) => { State.score += (amount || 1); State.stateChange(); },
+    incrementCompleted: (amount) => { State.numCompletedReqs += (amount || 1); State.stateChange(); },
+    setRequestStates: (newStates) => { State.requestStates = newStates; State.stateChange(); },
+    addConnection: (sourceID, targetID) => { State.connections.push([sourceID, targetID]); State.stateChange(); },
 
     levelChange: function(levelNumber, newSpecs) {
         State.coins += newSpecs.coinReward; // want to add on to existing?
         State.goal = newSpecs.goal;
         State.level = levelNumber;
+        State.stateChange();
     },
     // functions to modify state from within `GameLogic`
     placedComponent: function(component) {
@@ -44,6 +51,22 @@ export const StateMachine = {
         } else {
             State.placedProcessorIDs.push(component.id);
         }
+        State.stateChange();
+    },
+
+    removedComponent: function(component) {
+        let index, arr;
+        if (component.isClient) {
+            index = State.placedClientIDs.indexOf(component.id);
+            arr = State.placedClientIDs;
+        } else {
+            index = State.placedProcessorIDs.indexOf(component.id);
+            arr = State.placedProcessorIDs;
+        }
+        if (index > -1) {
+            arr.splice(index, 1);
+        }
+        State.stateChange();
     },
 
     reset: function() {
@@ -83,6 +106,10 @@ export const StateMachine = {
             connections: {
                 value: [],
                 writable: true
+            },
+            _listeners: {
+                value: new Broadcast(),
+                writable: false
             }
         });
     }

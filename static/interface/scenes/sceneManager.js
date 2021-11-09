@@ -9,7 +9,7 @@
  */
 
 
-import TimerControls from '../utilities/timer.js';
+import TimerControls from '../../utilities/timer.js';
 import LevelView from './levelView.js';
 import GameOver from './gameOver.js';
 import Home from './home.js';

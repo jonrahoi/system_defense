@@ -263,6 +263,11 @@ SelectionBar.prototype.update = function(componentName, amount = -1) {
             }
         } else {
             // Have at least 1 remaining of this component
+            if (amount < 0) {
+                if (!FieldController.placeComponent(componentName.toLowerCase(), k.vec2(...COMPONENT_SPAWN_POS), false)) {
+                    return false;
+                }
+            }
             if (newQuantity <= 0) { 
                 // Trying to decrease to an invalid state (<= 0)
                 console.debug(`No more ${componentName}s available`);
@@ -285,9 +290,6 @@ SelectionBar.prototype.update = function(componentName, amount = -1) {
 
             } else {
                 target.textGraphic.text = formatLabel(componentName, newQuantity);
-            }
-            if (amount < 0) {
-                FieldController.placeComponent(componentName.toLowerCase(), k.vec2(...COMPONENT_SPAWN_POS), false);
             }
         }
         target.quantity = newQuantity;

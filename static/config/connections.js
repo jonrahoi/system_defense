@@ -1,6 +1,8 @@
 /*
  * Define different types of connections
  */
-export const connectionTypes = {
-
+var connectionTypes = {
+    
 };
+
+export default connectionTypes;

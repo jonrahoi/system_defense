@@ -10,7 +10,7 @@
 
 import k from "../kaboom/index.js";
 
-import TimerControls from '../utilities/timer.js';
+import TimerControls from '../../utilities/timer.js';
 import State from '../../shared/state.js';
 
 /*
@@ -28,8 +28,11 @@ const SCROLLBAR_WIDTH = 15; // TODO: this should be accessible through the brows
 
 export function StatusBar(screenX, screenY, screenWidth, screenHeight) {
 
-    // Register function to update status bar with timer increments
-    TimerControls.register(this.updateState, this, TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
+    // Register function to update status bar time
+    TimerControls.register(this.updateTime, this, TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
+
+    // Register function update status bar state values
+    State.register(this.updateState, this);
 
     this.init(screenX, screenY, screenWidth, screenHeight);
 
@@ -361,14 +364,16 @@ StatusBar.prototype.buildObject = function() {
 };
 
 
-StatusBar.prototype.updateState = function(timestamp, speedup) {
+StatusBar.prototype.updateState = function() {
     // Update everything? otherwise have to store values which could cause issues
     // Should this be combined with `handleClock()`. i.e. do we want to update
     // every status at EVERY time interval
     this.coinsText.text = State.coins;
     this.scoreText.text = State.score;
     this.requestsText.text = State.numCompletedReqs + '/' + State.goal;
+};
 
+StatusBar.prototype.updateTime = function(timestamp, speedup) {
     console.log(`STATUS BAR timestep: ${timestamp} @ ${speedup}x`);
     this.timeText.text = prettifyTime(timestamp);
 };

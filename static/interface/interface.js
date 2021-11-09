@@ -12,9 +12,9 @@
 import k from './kaboom/index.js';
 import GameLogic from '../core/core.js';
 
-import { assetEntries, componentEntries } from '../shared/lookup.js';
+import { assetEntries } from '../shared/lookup.js';
 
-import TimerControls from './utilities/timer.js';
+import TimerControls from '../utilities/timer.js';
 
 import { LoadHomeScene, LoadGameOver, LoadLeaderboardScene, 
             LoadLevelScene, LoadSettingsScene } from './scenes/sceneManager.js';
@@ -66,13 +66,6 @@ Interface.prototype.loadAllSprites = function() {
     for (const [name, loc] of Object.entries(assetEntries(2, REL_PATH_TO_ROOT))) {
         k.loadSprite(name, loc);
     }
-    
-    // Load all client images
-    for (const [name, info] of Object.entries(componentEntries(1, REL_PATH_TO_ROOT))) {
-        
-        let loc = info.image;
-        k.loadSprite(name, loc);
-    }
 };
 
 Interface.prototype.loadHomeScreen = function() {
@@ -106,7 +99,7 @@ Interface.prototype.levelChange = function(levelNum) {
     const currentLvlScene = LoadLevelScene(this.currentLvlLogic, this.sceneControls);
     
     if (TESTING) {
-        let totalLevels = 3; // HARD CODED (just for testing)
+        let totalLevels = 5; // HARD CODED (just for testing)
         const lvlUp = () => { if (this.currentLvlLogic.number < totalLevels) { this.levelChange(this.currentLvlLogic.number+1); } };
         const lvlDown = () => { if (this.currentLvlLogic.number > 1) { this.levelChange(this.currentLvlLogic.number-1); } };
         currentLvlScene.test(lvlUp, lvlDown);

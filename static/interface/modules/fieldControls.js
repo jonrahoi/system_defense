@@ -45,7 +45,7 @@ const FieldController = {
         let clientTag = isClient ? "client" : "processor";
         let newID = generateID();
 
-        let logicResponse = FieldController.logicControls.addComponent(componentName, newID);
+        let logicResponse = FieldController.logicControls.addComponent(componentName, newID, initial);
 
         // Don't really need this check if it's an initial value. Should always be valid
         if (!logicResponse.valid) {
@@ -66,7 +66,7 @@ const FieldController = {
         }
         
         let size = scaleComponentImage();
-        addSprite(componentName.toLowerCase(), { 
+        return addSprite(componentName.toLowerCase(), { 
             pos: pos,
             width: size.width, height: size.height,
             area: true,
@@ -103,7 +103,7 @@ const FieldController = {
         let height = srcComponent.pos.dist(destComponent.pos);
 
         // FIXME: area() & rotate() don't work together, so can't click a connection 
-        addRect({
+        let r = addRect({
             width: ConnectionDisplayParams.width, height: height,
             pos: srcComponent.pos,
             color: ConnectionDisplayParams.backgroundColor,
@@ -116,6 +116,7 @@ const FieldController = {
         });
         k.readd(srcComponent);
         k.readd(destComponent);
+        return r;
     },
 
     removeComponent: function(component) {
