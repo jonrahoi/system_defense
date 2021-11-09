@@ -28,11 +28,20 @@ const generateID = () => {
 };
 
 const FieldController = {
+    // This stores the current level logic object (found in `shared/level.js`)
+    // It's the key communication object between Interface --> Game Logic
     logicControls: null,
 
     loadLogic: (levelLogic) => FieldController.logicControls = levelLogic,
 
     placeComponent: function(componentName, pos, isClient=false, initial=false) { 
+
+        // Safety check. Need logicControls to communicate with Game Logic
+        if (FieldController.logicControls === null) {
+            console.debug('Attempted to add component but no game logic controller present.');
+            return;
+        }
+
         let clientTag = isClient ? "client" : "processor";
         let newID = generateID();
 
@@ -68,6 +77,19 @@ const FieldController = {
     },
 
     connect: function(srcComponent, destComponent) {
+
+        // Safety check. Need logicControls to communicate with Game Logic
+        if (FieldController.logicControls === null) {
+            console.debug('Attempted to connect components but no game logic controller present.');
+            return;
+        }
+
+        if (!srcComponent || !destComponent) {
+            console.debug('Attempted to connect components but either src or dest was missing');
+            return;
+        }
+
+
         let srcID = srcComponent.uuid();
         let destID = destComponent.uuid();
         let logicResponse = FieldController.logicControls.addConnection(srcID, destID);
@@ -97,6 +119,18 @@ const FieldController = {
     },
 
     removeComponent: function(component) {
+
+        // Safety check. Need logicControls to communicate with Game Logic
+        if (FieldController.logicControls === null) {
+            console.debug('Attempted to remove component but no game logic controller present.');
+            return;
+        }
+
+        if (!component) {
+            console.debug('Attempted to remove component but it was missing');
+            return;
+        }
+
         let componentName = component.name();
         let componentID = component.uuid();
         let logicResponse = FieldController.logicControls.removeComponent(componentID);
@@ -115,6 +149,18 @@ const FieldController = {
     },
 
     disconnect: function(srcComponent, destComponent) {
+
+        // Safety check. Need logicControls to communicate with Game Logic
+        if (FieldController.logicControls === null) {
+            console.debug('Attempted to disconnect components but no game logic controller present.');
+            return;
+        }
+
+        if (!srcComponent || !destComponent) {
+            console.debug('Attempted to disconnect components but either src or dest was missing');
+            return;
+        }
+
         let srcID = srcComponent.uuid();
         let destID = destComponent.uuid();
         let logicResponse = FieldController.logicControls.removeConnection(srcID, destID);
