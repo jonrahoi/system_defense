@@ -323,7 +323,7 @@ PlayField.prototype.buildObject = function() {
     let i = 0;
     k.onUpdate(() => {
         k.add([
-                k.text("abcdefg"),
+                k.text("testing purpose"),
                 pos(0, i),
             ]);
         // if (temp == 1) {
