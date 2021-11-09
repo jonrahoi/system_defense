@@ -33,7 +33,7 @@ const width = window.innerWidth; // or k.width()?
 const height = window.innerHeight; // k.height()?
 let componentArr = new Array();
 let connectionArr = new Array();
-let tempArr = new Array();
+// let tempArr = new Array();
 let temp = 0;
 
 export function PlayField(bannerActions) {
@@ -264,18 +264,6 @@ PlayField.prototype.addDragableIcon = function(sprite, pos) {
 *                  Add containers & objects to view                      *
 * ********************************************************************** */
 PlayField.prototype.buildObject = function() {
-
-    // k.add([
-    //     k.text("TEST - screenX & Y"),
-    //     k.pos(vec2(this.screenParams.screenX, this.screenParams.screenY))
-    // ])
-
-    // k.add([
-    //     k.text("TEST - screenWidth & Height"),
-    //     k.pos(vec2(this.screenParams.screenWidth - 100, this.screenParams.screenHeight))
-    // ])
-
-
     // var self = this;
 
     // Control panel container
@@ -316,67 +304,83 @@ PlayField.prototype.buildObject = function() {
     this.desktopBtn = this.addStaticIcon("desktop", k.vec2(width * 0.75, h2));
     this.hubBtn = this.addStaticIcon("hub", k.vec2(width * 0.87, h2));
 
-    const testTemp = k.add([
-                        k.text("testTemp"),
-                    ]);
-
-    let i = 0;
     k.onUpdate(() => {
-        k.add([
-                k.text("abcdefg"),
-                pos(0, i),
-            ]);
-        // if (temp == 1) {
-        //     k.add([
-        //         k.text(tempArr[5]),
-        //     ]);
-        // }
+        if (temp == 1) {
+            for (let i = 0; i < componentArr.length; i++) {
+                k.add([
+                    k.text(componentArr[i][0].x, {
+                        size: width * height * 0.000025,
+                    }),
+                    k.pos(200, i*50)
+                ]);
+                // k.add([
+                //     k.text("HERE"),
+                //     k.pos(componentArr[i][0])
+                // ]);
+            }
+        }
+        temp == 0;
     })
 
 
     const dragablePos = k.vec2(width * 0.15, height * 0.89);
     this.serverBtn.clicks(() => {
         // this.addDragableIcon("server", dragablePos);
-        let comp = this.placeComponent("WEB_SERVER", dragablePos);
-
-        
-
+        this.placeComponent("WEB_SERVER", dragablePos);
     });
 
     this.routerBtn.clicks(() => {
-        // this.addDragableIcon("router", dragablePos);
         this.placeComponent("ROUTER", dragablePos);
     });
 
     this.cacheBtn.clicks(() => {
-        // this.addDragableIcon("cache", dragablePos);
         this.placeComponent("CACHE", dragablePos);
     });
 
     this.databaseBtn.clicks(() => {
-        // this.addDragableIcon("database", dragablePos);
         this.placeComponent("DATABASE", dragablePos);
     });
 
     this.desktopBtn.clicks(() => {
-        // this.addDragableIcon("desktop", dragablePos);
         this.placeComponent("DESKTOP", dragablePos);
     });
 
     this.hubBtn.clicks(() => {
-        // this.addDragableIcon("hub", dragablePos);
         this.placeComponent("HUB", dragablePos);
     });
+
+    k.clicks(() => {
+        const mouseX = k.mousePos().x
+        const mouseY = k.mousePos().y
+    })
+
+
+
+    /*
+     k.clicks(() => {
+        const mouseX = k.mousePos().x
+        const mouseY = k.mousePos().y
+        const leftBorder = 300
+        const rightBorder = 300 + 100
+        const upBorder = 300
+        const bottomBorder = 300 + 100
+        if (mouseX >= leftBorder && mouseX <= rightBorder && mouseY >= upBorder && mouseY <= bottomBorder) {
+            add([
+                k.text("clicked"),
+            ]);
+        }
+    })
+    */
 
 }
 
 // Take in simple string name for a component 
 PlayField.prototype.placeComponent = function(componentName, pos) {
-    // let valid = -1;
     console.log('ADDING COMPONENT');
     let specs = this.currentLvlLogic.componentSpecs(componentName);
     let size = this.scaleComponentImage(ComponentImgWidth, ComponentImgHeight);
     let clientTag = specs.isClient ? "client" : "processor";
+    let id = ViewComponent(componentName, specs.isClient).id()
     let t = k.add([
         k.sprite(componentName, { width: size.width, height: size.height}),
         k.pos(pos),
@@ -384,7 +388,7 @@ PlayField.prototype.placeComponent = function(componentName, pos) {
         drag(),
         clientTag,
         componentName, // use id as tag also?
-        ViewComponent(componentName, specs.isClient),
+        id,
         k.mouseRelease(() => {
             dragging = null;
 
@@ -397,24 +401,15 @@ PlayField.prototype.placeComponent = function(componentName, pos) {
             if (mouseX >= leftBorder && mouseX <= rightBorder && mouseY >= upBorder && mouseY <= bottomBorder) {
                 const test = true;
                 if (/* verification function for components */test) {
-                    // valid = 1;
-                    // k.add([
-                    //     k.text("valid component"),
-                    // ]);
-                    // componentArr.push(t);
-                    // for (let i = 0; i < componentArr.length; i++) {
-                    //     k.add([
-                    //         k.text(componentArr[i]),
-                    //         k.pos(vec2(0, i * 50)),
-                    //     ]);
-                    // }
                     temp = 1;
-                    tempArr =  ["a","b","c","d","e","f"];
+                    componentArr.push([vec2(mouseX, mouseY), clientTag, componentName, id]);
+                    k.add([
+                        k.text("HERE"),
+                        k.pos(pos)
+                    ]);
                     
                 }
             }
-
-            // this.controls.placeComponent(k.mousePos(), name);
 
 
             // if (desTaken == 1) {
@@ -426,7 +421,6 @@ PlayField.prototype.placeComponent = function(componentName, pos) {
             // }
         })
     ]);
-    // return ["a","b","c","d","e","f"];
 };
 
 
