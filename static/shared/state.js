@@ -8,6 +8,7 @@
  */
 
 export var State = {
+    // THESE VALUES ACTUALLY EXIST but they aren't defined on initiliazation
     // coins: 0, // coins in “wallet”
     // score: 0, // current accumulated score
     // level: 1, // current level
@@ -38,10 +39,10 @@ export const StateMachine = {
     },
     // functions to modify state from within `GameLogic`
     placedComponent: function(component) {
-        if (component.isClient()) {
-            State.visibleClientIDs.push(component.id);
+        if (component.isClient) {
+            State.placedClientIDs.push(component.id);
         } else {
-            State.visibleProcessorIDs.push(component.id);
+            State.placedProcessorIDs.push(component.id);
         }
     },
 

@@ -9,8 +9,8 @@
  * object to the interface
  */
 
-import Network from "./components/network.js";
-import LogicComponent from './components/logicComponent.js';
+import Network from "./modules/network.js";
+import LogicComponent from './modules/logicComponent.js';
 
 // Controller for the global `State` object
 import { StateMachine } from "../shared/state.js";
@@ -49,11 +49,15 @@ GameLogic.prototype.getLevel = function(levelNumber) {
     return Level(levelNumber, levelSpecs, funcs);
 };
 
-GameLogic.prototype.componentSpecs = (componentName) => {
-    let specs = findComponent(componentName);
+const isClient = (componentName) => {
     let allComponents = componentEntries();
-    specs['isClient'] = allComponents['clients'].hasOwnProperty(componentName);
+    return allComponents['clients'].hasOwnProperty(componentName);
+}
 
+GameLogic.prototype.componentSpecs = (componentName) => {
+    componentName = componentName.toUpperCase();
+    let specs = findComponent(componentName, REL_PATH_TO_ROOT);
+    specs['isClient'] = isClient(componentName);
     return specs;
 };
 
@@ -63,7 +67,8 @@ GameLogic.prototype.addComponent = function(componentName, componentID) {
     let specs = this.componentSpecs(componentName);
     var newComponent = new LogicComponent(componentName, componentID, specs);
     StateMachine.placedComponent(newComponent);
-    return this.network.addComponent(newComponent)
+
+    return this.network.addComponent(newComponent);
 };
 
 GameLogic.prototype.removeComponent = function(componentID) {

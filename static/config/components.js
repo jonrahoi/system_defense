@@ -110,7 +110,7 @@ export const componentDefs = {
     //   "image": "<some/path/to/image>",
     //   "description": "I'm a bus"
     // },
-    "WEB_SERVER": {
+    "SERVER": {
       "type": "SERVICE",
       "cost": 100,
       "maxInputs": 3,

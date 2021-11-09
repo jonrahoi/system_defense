@@ -301,7 +301,6 @@ function TimerTester () {
             
             var input = result.action;
             if (inputOptions.includes(input)) {
-                // controls.input();
                 TimerControls[input]();
             }
         });

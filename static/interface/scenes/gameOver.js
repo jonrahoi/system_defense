@@ -3,7 +3,7 @@
  */
 
 
-import k from '../kaboom.js';
+import k from '../kaboom/index.js';
 
 export function GameOver(win=false) {
     this.buildParameters(win);
@@ -81,6 +81,9 @@ GameOver.prototype.buildObject = function() {
         k.pos(title.x, title.y),
         this.params.textColor,
     ]);
+
+    // Shake the screen (for fun :) )
+    k.shake(10);
 };
 
 export default GameOver;

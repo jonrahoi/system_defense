@@ -10,10 +10,9 @@
 
 
 import TimerControls from '../utilities/timer.js';
-import PlayField from './playField.js';
+import LevelView from './levelView.js';
 import GameOver from './gameOver.js';
 import Home from './home.js';
-
 
 export const LoadHomeScene = (actions) => {
     var home = new Home(actions);
@@ -23,22 +22,22 @@ export const LoadHomeScene = (actions) => {
 
 export const LoadLevelScene = (levelObj, bannerActions) => {
     // currently only 1 level scene but can be selected by levelObj.level (the level number)
-    var field = new PlayField(bannerActions);
-    field.load(levelObj);
+    var levelView = new LevelView(bannerActions);
+    levelView.load(levelObj);
 
     // setup timer for this level
     let timeLimit = levelObj.specs.timeLimit;
     TimerControls.init(timeLimit);
 
     // Connect this level scene (field) to the timer
-    TimerControls.register(field.update, field); // default interval type
+    TimerControls.register(levelView.update, levelView); // default interval type
 
     // Connect this level's callback function to the timer (Game Logic's callback)
     // Want it to be registered with SPEEDUP intervals
     TimerControls.register(levelObj.processInterval, levelObj, 
         TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
 
-    return field;
+    return levelView;
 };
 
 // TODO: make scene object and load with this function
@@ -53,9 +52,8 @@ export const LoadSettingsScene = (args) => {
     console.log("-- in construction --");
 };
 
-// Might want to break up into win/lose. Unsure
-// Or not even have it here at all?
-export const LoadGameOver = (win) => {
-    var gameover = new GameOver(win);
+// TODO: want to improve this scene
+export const LoadGameOver = () => {
+    var gameover = new GameOver(TimerControls.remaining() != 0);
     return gameover;
 };

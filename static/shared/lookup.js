@@ -12,7 +12,7 @@ import componentDefs from "../config/components.js";
 import levelDefs from "../config/levels.js";
 import assetDirectory from "../assets/assetDirectory.js";
 
-
+// Finding Assets
 export const findAsset = (name, rootPath) => {
     rootPath = rootPath || '';
     let res = lookup(assetDirectory, name);
@@ -30,6 +30,7 @@ export const assetEntries = (depth, rootPath) => {
     return values;
 };
 
+// Finding Components
 export const findComponent = (name, rootPath) => {
     let res = lookup(componentDefs, name);
     if (!res) { return undefined; }
@@ -65,12 +66,15 @@ export const componentEntries = (depth, rootPath) => {
     return copy;
 };
 
+// Finding Levels
 export const findLevel = (number) => lookup(levelDefs, number);
 export const levelEntries = (depth) => {
     var values = {};
     entries(levelDefs, (depth || 0), values);
     return values;
 }
+
+// Base algorithms
 
 // Recursive so easiest to have wrappers
 const lookup = (object, target) => {

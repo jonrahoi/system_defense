@@ -7,27 +7,23 @@
 * scene construction to `/scenes/index.js`
 * The intent is for this to be a "governor"/"driver" of sorts that is responsible
 * for directing information at the top-most level
-* 
-* Don't like having TimerControls live here...
 */
 
-import k from './interface/kaboom.js';
-import GameLogic from './core/index.js';
+import k from './kaboom/index.js';
+import GameLogic from '../core/core.js';
 
-import { assetEntries, componentEntries } from './shared/lookup.js';
+import { assetEntries, componentEntries } from '../shared/lookup.js';
 
-// Ideally don't want this here. Only reason right now is for registering `GameOver()`
-import TimerControls from './interface/utilities/timer.js';
+import TimerControls from './utilities/timer.js';
 
 import { LoadHomeScene, LoadGameOver, LoadLeaderboardScene, 
-            LoadLevelScene, LoadSettingsScene } from './interface/scenes/index.js';
+            LoadLevelScene, LoadSettingsScene } from './scenes/sceneManager.js';
 
 const TESTING = true;
 const REL_PATH_TO_ROOT = '../';
 
 
-export default function Interface() { // might need some parameters for display
-    // whatever Interface needs...
+export default function Interface() { 
     this.sceneControls = {
         goHome: () => { TimerControls.reset(); this.loadHomeScreen() },
         play: this.startGame.bind(this),
@@ -36,20 +32,35 @@ export default function Interface() { // might need some parameters for display
     }
 };
 
-
-// Could combine into constructor
+// Load all necessary Kaboom components and other setup
 Interface.prototype.init = function() {
-    this.loadAllSprites();
-    
-    // DON"T LIKE HAVING THIS HERE
-    TimerControls.register(this.gameOver, this, TimerControls.RegistrationTypes.TIMEOUT)
+    k.load(new Promise((resolve, reject) => {
+        this.loadAllSprites();
+
+        // Load custom shaders
+        k.loadShader("green_tint",
+            `vec4 vert(vec3 pos, vec2 uv, vec4 color) {
+                return def_vert();
+            }`,
+            `vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
+                return def_frag() * vec4(0, 1, 0, 1);
+            }`, false);
+        
+        k.loadShader("red_tint",
+            `vec4 vert(vec3 pos, vec2 uv, vec4 color) {
+                return def_vert();
+            }`,
+            `vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
+                return def_frag() * vec4(0.75, 0, 0.4, 0.9);
+            }`, false);
+
+        resolve('ok');
+    }));
     
     this.loadHomeScreen();
 };
 
-// Seems inefficient to load all sprites at once...
-// Although this is clean. Makes it so `AssetLookup` is the only location to 
-// keep track of paths
+// Load all sprites that will be used throughout the game
 Interface.prototype.loadAllSprites = function() {
     // Load all ui icons, background images, etc.
     for (const [name, loc] of Object.entries(assetEntries(2, REL_PATH_TO_ROOT))) {
@@ -74,6 +85,7 @@ Interface.prototype.loadHomeScreen = function() {
 Interface.prototype.startGame = function() {
     console.log('LOADING GAME...');
     
+    TimerControls.register(this.gameOver, this, TimerControls.RegistrationTypes.TIMEOUT);
     // Build game logic object and get first level (object)
     this.gameLogic = new GameLogic();
     this.levelChange(1);
@@ -94,7 +106,10 @@ Interface.prototype.levelChange = function(levelNum) {
     const currentLvlScene = LoadLevelScene(this.currentLvlLogic, this.sceneControls);
     
     if (TESTING) {
-        currentLvlScene.test();
+        let totalLevels = 3; // HARD CODED (just for testing)
+        const lvlUp = () => { if (this.currentLvlLogic.number < totalLevels) { this.levelChange(this.currentLvlLogic.number+1); } };
+        const lvlDown = () => { if (this.currentLvlLogic.number > 1) { this.levelChange(this.currentLvlLogic.number-1); } };
+        currentLvlScene.test(lvlUp, lvlDown);
         console.log('Initiated level testing...');
     }
     
@@ -107,13 +122,7 @@ Interface.prototype.levelChange = function(levelNum) {
 
 
 Interface.prototype.gameOver = function() {
-    let alert = null;
-    if (TimerControls.remaining() != 0) {
-        alert = LoadGameOver(false);
-    } else {
-        alert = LoadGameOver(true);
-    }
-    
+    let alert = LoadGameOver();
     k.scene('gameover', alert.build);
     k.go('gameover');
     console.log('GAME OVER!');
