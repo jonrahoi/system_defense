@@ -2,6 +2,10 @@
  * Holds a controller for manipulating components on the PlayField.
  * 
  * In charge of adding/removing INTERFACE components & connections
+ * 
+ * MAIN COMMUNICATION BETWEEN interface AND game logic.
+ * Each function "directs" information to verify and create components/connections
+ * within Interface and Game Logic
  */
 
 
