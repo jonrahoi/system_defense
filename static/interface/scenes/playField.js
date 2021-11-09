@@ -201,17 +201,30 @@ function drag() {
     };
 }
 
-PlayField.prototype.addDragableIcon = function(sprite, pos) {
-    return k.add([
-        k.sprite(sprite),
+// Take in simple string name for a component 
+PlayField.prototype.placeComponent = function(componentName, pos) {
+    console.log('ADDING COMPONENT');
+    let specs = this.currentLvlLogic.componentSpecs(componentName);
+    let size = this.scaleComponentImage(ComponentImgWidth, ComponentImgHeight);
+    let clientTag = specs.isClient ? "client" : "processor";
+    let id = ViewComponent(componentName, specs.isClient).id()
+    let t = k.add([
+        k.sprite(componentName, { width: size.width, height: size.height}),
         k.pos(pos),
         k.area(),
-        k.scale(width * height * 0.00000014),
-        origin("center"),
+        //TODO: make icon not draggable when "c" or "d" are held
+        /*
+        if (!isKeyDown("c") && !isKeyDown("d")) {
+            drag(),
+        }
+        */
         drag(),
-        k.color(255, 255, 255),
+        clientTag,
+        componentName, // use id as tag also?
+        id,
         k.mouseRelease(() => {
             dragging = null;
+
             const mouseX = k.mousePos().x
             const mouseY = k.mousePos().y
             const leftBorder = this.containerParams.x
@@ -219,10 +232,27 @@ PlayField.prototype.addDragableIcon = function(sprite, pos) {
             const upBorder = this.containerParams.y
             const bottomBorder = this.containerParams.y + this.containerParams.height
             if (mouseX >= leftBorder && mouseX <= rightBorder && mouseY >= upBorder && mouseY <= bottomBorder) {
-                // if ()
+                const test = true;
+                if (/* verification function for components */test) {
+                    temp = 1;
+                    componentArr.push([pos, clientTag, componentName, id]);
+                    
+                }
+            }
 
-
-
+            // if (desTaken == 1) {
+            //     srcPos = desPos;
+            //     desPos = k.mousePos();
+            // } else if (srcTaken == 1) {
+            //     desPos = k.mousePos();
+            //     desTaken = 1;
+            // }
+        
+            /***************************************************
+                 I took this out of "addDraggableIcon()" and got rid of it because it was redundant
+                not sure if you needed this but everything else was the same
+             **************************************************
+                
                 // TODO: add component with id and position
                 // Maybe do this: create a list of added components and assign id to them
                 // const id = generateID()
@@ -245,20 +275,13 @@ PlayField.prototype.addDragableIcon = function(sprite, pos) {
                     // TODO: generate ids for src and des in some place
                     // TODO: verify the connection
                     // this.controls.connect(srcID, desID);
-                    // TODO: drawLine() is not working somehow
-                    // k.drawLine([
-                    //     p1: srcPos,
-                    //     p2: desPos
-                    // ]);
-                    console.log("Connection created");
-                    console.log("srcpos: " +srcPos.x + " & " + srcPos.y);
-                    console.log("despos: " + desPos.x+ " & " + desPos.y);
                 }
-            }
-           
+            ***************************************************/
+            
         })
     ]);
-}
+    // return ["a","b","c","d","e","f"];
+};
 
 /* ********************************************************************** *
 *                  Add containers & objects to view                      *
@@ -331,80 +354,32 @@ PlayField.prototype.buildObject = function() {
     // })
 
 
-    const dragablePos = k.vec2(width * 0.15, height * 0.89);
+    const draggablePos = k.vec2(width * 0.15, height * 0.89);
     this.serverBtn.clicks(() => {
-        // this.addDragableIcon("server", dragablePos);
-        this.placeComponent("WEB_SERVER", dragablePos);
+        this.placeComponent("WEB_SERVER", draggablePos);
     });
 
     this.routerBtn.clicks(() => {
-        this.placeComponent("ROUTER", dragablePos);
+        this.placeComponent("ROUTER", draggablePos);
     });
 
     this.cacheBtn.clicks(() => {
-        this.placeComponent("CACHE", dragablePos);
+        this.placeComponent("CACHE", draggablePos);
     });
 
     this.databaseBtn.clicks(() => {
-        this.placeComponent("DATABASE", dragablePos);
+        this.placeComponent("DATABASE", draggablePos);
     });
 
     this.desktopBtn.clicks(() => {
-        this.placeComponent("DESKTOP", dragablePos);
+        this.placeComponent("DESKTOP", draggablePos);
     });
 
     this.hubBtn.clicks(() => {
-        this.placeComponent("HUB", dragablePos);
+        this.placeComponent("HUB", draggablePos);
     });
 
 }
-
-// Take in simple string name for a component 
-PlayField.prototype.placeComponent = function(componentName, pos) {
-    console.log('ADDING COMPONENT');
-    let specs = this.currentLvlLogic.componentSpecs(componentName);
-    let size = this.scaleComponentImage(ComponentImgWidth, ComponentImgHeight);
-    let clientTag = specs.isClient ? "client" : "processor";
-    let id = ViewComponent(componentName, specs.isClient).id()
-    let t = k.add([
-        k.sprite(componentName, { width: size.width, height: size.height}),
-        k.pos(pos),
-        k.area(),
-        drag(),
-        clientTag,
-        componentName, // use id as tag also?
-        id,
-        k.mouseRelease(() => {
-            dragging = null;
-
-            const mouseX = k.mousePos().x
-            const mouseY = k.mousePos().y
-            const leftBorder = this.containerParams.x
-            const rightBorder = this.containerParams.x + this.containerParams.width
-            const upBorder = this.containerParams.y
-            const bottomBorder = this.containerParams.y + this.containerParams.height
-            if (mouseX >= leftBorder && mouseX <= rightBorder && mouseY >= upBorder && mouseY <= bottomBorder) {
-                const test = true;
-                if (/* verification function for components */test) {
-                    temp = 1;
-                    componentArr.push([pos, clientTag, componentName, id]);
-                    
-                }
-            }
-
-
-            // if (desTaken == 1) {
-            //     srcPos = desPos;
-            //     desPos = k.mousePos();
-            // } else if (srcTaken == 1) {
-            //     desPos = k.mousePos();
-            //     desTaken = 1;
-            // }
-        })
-    ]);
-    // return ["a","b","c","d","e","f"];
-};
-
 
 // Takes in two sprite/Kaboom objects. (unsure about this. at least one 
 //      alternative is to use ids)
