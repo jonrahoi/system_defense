@@ -33,7 +33,7 @@ const width = window.innerWidth; // or k.width()?
 const height = window.innerHeight; // k.height()?
 let componentArr = new Array();
 let connectionArr = new Array();
-let tempArr = new Array();
+// let tempArr = new Array();
 let temp = 0;
 
 export function PlayField(bannerActions) {
@@ -316,28 +316,19 @@ PlayField.prototype.buildObject = function() {
     this.desktopBtn = this.addStaticIcon("desktop", k.vec2(width * 0.75, h2));
     this.hubBtn = this.addStaticIcon("hub", k.vec2(width * 0.87, h2));
 
-    // let i = 0;
     // k.onUpdate(() => {
-    //     k.add([
-    //         k.text("testing purpose"),
-    //         pos(0, i),
-    //     ]);
-    //     i += 50;
+    //     if (temp == 1) {
+    //         for (let i = 0; i < componentArr.length; i++) {
+    //             k.add([
+    //                 k.text(componentArr[i][3], {
+    //                     size: width * height * 0.000025,
+    //                 }),
+    //                 k.pos(0, i*50)
+    //             ]);
+    //         }
+    //     }
+    //     temp == 0;
     // })
-
-    k.onUpdate(() => {
-        if (temp == 1) {
-            for (let i = 0; i < tempArr.length; i++) {
-                k.add([
-                    k.text(tempArr[i][2], {
-                        size: width * height * 0.000025,
-                    }),
-                    k.pos(0, i*50)
-                ]);
-            }
-        }
-        temp == 0;
-    })
 
 
     const dragablePos = k.vec2(width * 0.15, height * 0.89);
@@ -383,6 +374,7 @@ PlayField.prototype.placeComponent = function(componentName, pos) {
     let specs = this.currentLvlLogic.componentSpecs(componentName);
     let size = this.scaleComponentImage(ComponentImgWidth, ComponentImgHeight);
     let clientTag = specs.isClient ? "client" : "processor";
+    let id = ViewComponent(componentName, specs.isClient).id()
     let t = k.add([
         k.sprite(componentName, { width: size.width, height: size.height}),
         k.pos(pos),
@@ -390,7 +382,7 @@ PlayField.prototype.placeComponent = function(componentName, pos) {
         drag(),
         clientTag,
         componentName, // use id as tag also?
-        ViewComponent(componentName, specs.isClient),
+        id,
         k.mouseRelease(() => {
             dragging = null;
 
@@ -416,7 +408,13 @@ PlayField.prototype.placeComponent = function(componentName, pos) {
                     // }
                     temp = 1;
                     // tempArr =  ["a","b","c","d","e","f"];
-                    tempArr.push([pos, clientTag, componentName, ViewComponent(componentName, specs.isClient).id()]);
+                    // k.add([
+                    //     k.text("current id: " + ViewComponent(componentName, specs.isClient).id(), {
+                    //         size: width * height * 0.000025,
+                    //     }),
+                    //     k.pos(600, 0)
+                    // ]);
+                    componentArr.push([pos, clientTag, componentName, id]);
                     
                 }
             }
