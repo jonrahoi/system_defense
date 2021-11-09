@@ -331,6 +331,7 @@ PlayField.prototype.buildObject = function() {
         //         k.text(tempArr[5]),
         //     ]);
         // }
+        i+=50;
     })
 
 
