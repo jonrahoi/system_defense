@@ -316,22 +316,27 @@ PlayField.prototype.buildObject = function() {
     this.desktopBtn = this.addStaticIcon("desktop", k.vec2(width * 0.75, h2));
     this.hubBtn = this.addStaticIcon("hub", k.vec2(width * 0.87, h2));
 
-    const testTemp = k.add([
-                        k.text("testTemp"),
-                    ]);
+    // let i = 0;
+    // k.onUpdate(() => {
+    //     k.add([
+    //         k.text("testing purpose"),
+    //         pos(0, i),
+    //     ]);
+    //     i += 50;
+    // })
 
-    let i = 0;
     k.onUpdate(() => {
-        k.add([
-                k.text("testing purpose"),
-                pos(0, i),
-            ]);
-        // if (temp == 1) {
-        //     k.add([
-        //         k.text(tempArr[5]),
-        //     ]);
-        // }
-        i+=50;
+        if (temp == 1) {
+            for (let i = 0; i < tempArr.length; i++) {
+                k.add([
+                    k.text(tempArr[i][2], {
+                        size: width * height * 0.000025,
+                    }),
+                    k.pos(0, i*50)
+                ]);
+            }
+        }
+        temp == 0;
     })
 
 
@@ -410,7 +415,8 @@ PlayField.prototype.placeComponent = function(componentName, pos) {
                     //     ]);
                     // }
                     temp = 1;
-                    tempArr =  ["a","b","c","d","e","f"];
+                    // tempArr =  ["a","b","c","d","e","f"];
+                    tempArr.push([pos, clientTag, componentName, ViewComponent(componentName, specs.isClient).id()]);
                     
                 }
             }
