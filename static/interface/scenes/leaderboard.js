@@ -90,8 +90,6 @@ Leaderboard.prototype.init = function() {
 
 
 Leaderboard.prototype.buildScene = function() {
-    console.log(this.params);
-    console.log(this.objects);
     // Backdrop color
     k.add([
         k.rect(this.params.width, this.params.height),

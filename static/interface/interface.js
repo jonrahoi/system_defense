@@ -14,6 +14,7 @@ import GameLogic from '../core/core.js';
 import State from '../../shared/state.js';
 import { assetEntries } from '../shared/lookup.js'
 import TimerControls from '../utilities/timer.js';
+
 import LevelView from './scenes/levelView.js';
 import GameOver from './scenes/gameOver.js';
 import Leaderboard from './scenes/leaderboard.js';
@@ -96,7 +97,7 @@ Interface.prototype.loadScenes = function() {
         TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
 
     if (TESTING) {
-        let totalLevels = 5; // HARD CODED (just for testing)
+        let totalLevels = 6; // HARD CODED (just for testing)
         const lvlUp = () => { if (State.levelNumber < totalLevels) { this.goLevel(State.levelNumber+1); } };
         const lvlDown = () => { if (State.levelNumber > 1) { this.goLevel(State.levelNumber-1); } };
         level.test(lvlUp, lvlDown);
@@ -117,12 +118,6 @@ Interface.prototype.goLevel = function(levelNum) {
 
     levelNum = levelNum || State.levelNumber + 1;
     this.currentLvlLogic = this.gameLogic.getLevel(levelNum);
-
-    // Remove previous levelObj's binding to Timer
-    let prevLvlLogic = sceneTracker.level.currentLvlLogic;
-    if (prevLvlLogic) {
-        TimerControls.unregister(prevLvlLogic.processInterval, prevLvlLogic);
-    }
 
     sceneTracker.level.load(this.currentLvlLogic);
 

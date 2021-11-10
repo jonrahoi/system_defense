@@ -8,10 +8,7 @@
 
 import k from '../kaboom/index.js';
 
-import { addSprite, addText, centered, scaleComponentImage } from '../kaboom/objectHandler.js';
-import { dragControls, drag } from '../kaboom/components/drag.js';
-import { selectControls, select } from '../kaboom/components/select.js';
-import InterfaceComponent from '../kaboom/components/interfaceComponent.js';
+import { centered, scaleComponentImage } from '../kaboom/graphicUtils.js';
 import FieldController from './fieldControls.js';
 
 
@@ -111,7 +108,7 @@ SelectionBar.prototype.init = function(screenX, screenY, screenWidth, screenHeig
 };
 
 /*
- * Expected to receive object directly from config file.
+ * Expected to receive object directly from levels config file.
  * Both parameters will be objects of the form:
  * [
  *   {
@@ -202,14 +199,14 @@ SelectionBar.prototype.buildObject = function() {
     // Place processors - unknown amount so must loop
     for (const [name, attributes] of Object.entries(this.objects)) {
         // First place icon
-        let processorBtn = addSprite(name.toLowerCase(), {
-            width: attributes.width,
-            height: attributes.height,
-            xPos: attributes.x,
-            yPos: attributes.y,
-            opacity: attributes.opacity,
-            area: true
-        });
+        let spriteDef = [
+            k.sprite(name.toLowerCase(), { width: attributes.width, 
+                        height: attributes.height }),
+            k.pos(attributes.x, attributes.y),
+            k.opacity(attributes.opacity),
+            k.area()
+        ];
+        let processorBtn = k.add(spriteDef);
         
         processorBtn.clicks(() => this.update(name));
 
@@ -217,11 +214,16 @@ SelectionBar.prototype.buildObject = function() {
 
         // Then place text underneath
         let labelText = attributes.text;
-        const label = addText(formatLabel(name, attributes.quantity), {
-            size: labelText.height, width: labelText.width,
-            xPos: labelText.x, yPos: labelText.y, origin: labelText.origin,
-            color: labelText.color, opacity: labelText.opacity
-        })
+        let textDef = [
+            k.text(formatLabel(name, attributes.quantity), 
+                    { size: labelText.height, width: labelText.width }),
+            k.pos(labelText.x, labelText.y),
+            k.origin(labelText.origin),
+            k.color(...labelText.color),
+            k.opacity(labelText.opacity)
+        ];
+
+        let label = k.add(textDef);
         attributes['textGraphic'] = label;
     };
 };
@@ -248,14 +250,15 @@ SelectionBar.prototype.update = function(componentName, amount = -1) {
                 k.destroy(target.iconGraphic);
                 delete target.iconGraphic;
 
-                let targetBtn = addSprite(componentName.toLowerCase(), {
-                    width: target.width,
-                    height: target.height,
-                    xPos: target.x,
-                    yPos: target.y,
-                    opacity: target.opacity,
-                    area: true
-                });
+                let spriteDef = [
+                    k.sprite(componentName.toLowerCase(), { width: target.width, 
+                                height: target.height }),
+                    k.pos(target.x, target.y),
+                    k.opacity(target.opacity),
+                    k.area()
+                ];
+                let targetBtn = k.add(spriteDef);
+
                 targetBtn.clicks(() => this.update(componentName));
 
                 target.iconGraphic = targetBtn;
@@ -276,15 +279,14 @@ SelectionBar.prototype.update = function(componentName, amount = -1) {
 
                 k.destroy(target.iconGraphic);
 
-                let targetBtn = addSprite(componentName.toLowerCase(), {
-                    width: target.width,
-                    height: target.height,
-                    xPos: target.x,
-                    yPos: target.y,
-                    opacity: UNAVAILABLE_OPACITY,
-                    area: true
-                });
-
+                let spriteDef = [
+                    k.sprite(componentName.toLowerCase(), { width: target.width, 
+                                height: target.height }),
+                    k.pos(target.x, target.y),
+                    k.opacity(target.opacity),
+                    k.area()
+                ]
+                let targetBtn = k.add(spriteDef);
                 target.iconGraphic = targetBtn;
 
                 target.textGraphic.text = formatLabel(componentName, 0);

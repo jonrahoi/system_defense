@@ -38,13 +38,9 @@ var levelDefs = {
         ],
         "initProcessors": [
             {
-                "name": "GATEWAY", 
+                "name": "SWITCH", 
                 "quantity": 1
             },
-            {
-                "name": "LOAD_BALANCER", 
-                "quantity": 1
-            }
         ],
         "availableProcessors": [
             {
@@ -71,25 +67,21 @@ var levelDefs = {
                 "quantity": 1
             },
             {
-                "name": "LAPTOP",
+                "name": "ALEXA", 
                 "quantity": 1
             }
         ],
         "initProcessors": [
             { 
-                "name": "MODEM",
+                "name": "LOAD_BALANCER",
                 "quantity": 1
             },
             { 
-                "name": "ROUTER",
+                "name": "SWITCH",
                 "quantity": 1
             }
         ],
         "availableProcessors": [
-            {
-                "name": "LOAD_BALANCER", 
-                "quantity": 1
-            },
             {
                 "name": "GATEWAY", 
                 "quantity": 1
@@ -103,7 +95,7 @@ var levelDefs = {
                 "quantity": 2
             },
             {
-                "name": "CACHE", 
+                "name": "HUB", 
                 "quantity": 1
             }
         ]
@@ -117,14 +109,10 @@ var levelDefs = {
                 "name": "DESKTOP",
                 "quantity": 1
             },
-            {
-                "name": "LAPTOP",
-                "quantity": 1
-            }
         ],
         "initProcessors": [
             { 
-                "name": "LOAD_BALANCER",
+                "name": "MODEM",
                 "quantity": 2
             },
             { 
@@ -138,10 +126,6 @@ var levelDefs = {
                 "quantity": 1
             },
             {
-                "name": "GATEWAY", 
-                "quantity": 1
-            },
-            {
                 "name": "SERVER", 
                 "quantity": 2
             },
@@ -152,6 +136,10 @@ var levelDefs = {
             {
                 "name": "MODEM", 
                 "quantity": 1
+            },
+            {
+                "name": "CACHE",
+                "quantity": 1
             }
         ]
     },
@@ -161,25 +149,29 @@ var levelDefs = {
         "coinReward": 350,
         "initClients": [
             {
-                "name": "CLOUD_COMPUTE",
+                "name": "DESKTOP",
+                "quantity": 1
+            },
+            {
+                "name": "LAPTOP",
                 "quantity": 1
             }
         ],
         "initProcessors": [
             { 
                 "name": "SERVER",
-                "quantity": 3
+                "quantity": 1
             },
             { 
                 "name": "DATABASE",
                 "quantity": 1
-            }
-        ],
-        "availableProcessors": [
+            },
             {
                 "name": "LOAD_BALANCER", 
                 "quantity": 1
             },
+        ],
+        "availableProcessors": [
             {
                 "name": "GATEWAY", 
                 "quantity": 1
@@ -195,10 +187,53 @@ var levelDefs = {
             {
                 "name": "DATABASE", 
                 "quantity": 2
+            }
+        ]
+    },
+    "6": {
+        "timeLimit": 120,
+        "goal": 150,
+        "coinReward": 500,
+        "initClients": [
+            {
+                "name": "CLOUD_COMPUTE",
+                "quantity": 1
+            },
+        ],
+        "initProcessors": [
+            { 
+                "name": "SERVER",
+                "quantity": 3
+            },
+            { 
+                "name": "DATABASE",
+                "quantity": 1
+            }
+        ],
+        "availableProcessors": [
+            {
+                "name": "LOAD_BALANCER", 
+                "quantity": 2
+            },
+            {
+                "name": "GATEWAY", 
+                "quantity": 2
+            },
+            {
+                "name": "MODEM", 
+                "quantity": 2
+            },
+            {
+                "name": "ROUTER", 
+                "quantity": 1
+            },
+            {
+                "name": "DATABASE", 
+                "quantity": 2
             },
             {
                 "name": "CACHE", 
-                "quantity": 2
+                "quantity": 1
             }
         ]
     }

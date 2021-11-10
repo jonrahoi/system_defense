@@ -17,6 +17,7 @@ var destSelected = null;
 
 var count = 0;
 
+// Controls for when a component is selected 
 export const selectControls = {
     release: () => { 
         if (currSelected) {
@@ -30,6 +31,7 @@ export const selectControls = {
         currSelected = context; }
 };
 
+// Controls for when a component is selected with the INTENT of connecting
 export const connectControls = {
     release: () => { 
         if (srcSelected) { srcSelected.unselected(); } 

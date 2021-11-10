@@ -21,7 +21,6 @@ import FieldController from '../modules/fieldControls.js';
 
 import { dragControls, drag } from '../kaboom/components/drag.js';
 import { selectControls, connectControls, select } from '../kaboom/components/select.js';
-import { addSprite, addText } from '../kaboom/objectHandler.js';
 
 export function LevelView() {
     this.init();
@@ -107,6 +106,21 @@ LevelView.prototype.buildScene = function() {
     this.initLevel();
     this.registerEvents();
 };
+
+// Load a level object into this view
+LevelView.prototype.load = function(levelLogic) {
+    this.currentLvlLogic = levelLogic;
+    FieldController.loadLogic(levelLogic); 
+    this.selectionBar.setComponents(levelLogic.specs.availableProcessors);
+};
+
+// Meant to represent updating animations. However these will most likely
+// be dealt with by another module
+LevelView.prototype.update = function(timestamp, speedup) {
+    // Probably don't need to redraw this every timestep?
+    console.log(`Animation timestep: ${timestamp} @ ${speedup}x`);
+};
+
 
 // Deal with mouse & keyboard events 
 LevelView.prototype.registerEvents = function() { 
@@ -241,19 +255,7 @@ LevelView.prototype.initLevel = function() {
     }
 };
 
-// Load a level object into this view
-LevelView.prototype.load = function(levelLogic) {
-    this.currentLvlLogic = levelLogic;
-    FieldController.loadLogic(levelLogic); 
-    this.selectionBar.setComponents(levelLogic.specs.availableProcessors);
-};
 
-// Meant to represent updating animations. However these will most likely
-// be dealt with by another module
-LevelView.prototype.update = function(timestamp, speedup) {
-    // Probably don't need to redraw this every timestep?
-    console.log(`Animation timestep: ${timestamp} @ ${speedup}x`);
-};
 
 
 

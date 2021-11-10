@@ -1,5 +1,6 @@
 var componentDefs = {
   "clients": {
+
     "IPHONE": {
       "type": "HARDWARE",
       "cost": 50,
@@ -31,10 +32,19 @@ var componentDefs = {
       "maxOutputs": 10,
       "requestCapacity": 8,
       "description": "I'm a cloud-computing software"
+    },
+    "ALEXA": {
+      "type": "HARDWARE",
+      "cost": 40,
+      "maxInputs": 1,
+      "maxOutputs": 1,
+      "requestCapacity": 1,
+      "description": "I'm Alexa!"
     }
-
   },
+
   "processors": {
+
     "GATEWAY": {
       "type": "HARDWARE",
       "cost": 30,
@@ -46,12 +56,21 @@ var componentDefs = {
     },
     "HUB": {
       "type": "HARDWARE",
-      "cost": 20,
+      "cost": 30,
       "maxInputs": 2,
       "maxOutputs": 2,
       "requestCapacity": 3,
       "throughput": 10,
       "description": "I'm a hub"
+    },
+    "SWITCH": {
+      "type": "HARDWARE",
+      "cost": 20,
+      "maxInputs": 2,
+      "maxOutputs": 2,
+      "requestCapacity": 2,
+      "throughput": 8,
+      "description": "I'm a switch"
     },
     "MODEM": {
       "type": "HARDWARE",

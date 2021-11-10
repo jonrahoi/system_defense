@@ -41,6 +41,7 @@ export const assetDirectory = {
     },
     'images': {
         'components': {
+            'alexa': 'assets/images/components/alexa.png',
             'cache': 'assets/images/components/cache.png',
             'cloud_compute': 'assets/images/components/cloud_compute.png',
             'database': 'assets/images/components/database.png',
@@ -52,7 +53,8 @@ export const assetDirectory = {
             'load_balancer': 'assets/images/components/load_balancer.png',
             'modem': 'assets/images/components/modem.png',
             'router': 'assets/images/components/router.png',
-            'server': 'assets/images/components/server.png'
+            'server': 'assets/images/components/server.png',
+            'switch': 'assets/images/components/switch.png'
         },
         'ui': {
             'captain_circled': 'assets/images/ui/captain_circled.png',

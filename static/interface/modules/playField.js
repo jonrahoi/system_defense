@@ -99,7 +99,6 @@ PlayField.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
 };
 
 
-
 PlayField.prototype.buildObject = function() {
 
     // Outer rectangle container
@@ -149,6 +148,15 @@ PlayField.prototype.inProcessorSide = function(x, y, w, h, centerOrigin=true) {
 };
 
 
+
+
+/*
+ * Simple object used to store a rectangle's coordinates
+ * 
+ * Used solely to give a "body" to each part of the play field in order to test
+ * if a point is in one of the two spaces (client or processor)
+ */
+
 function BoundaryRect (x, y, w, h) {
     this.width = w;
     this.height = h;
@@ -177,6 +185,7 @@ function BoundaryRect (x, y, w, h) {
         return [x, y];
     };
 
+    // These "centered" functions assume a centered origin
     this.containsCentered = (x, y, w, h) => {
         return (x - w/2) >= this.leftBoundary && (x + w/2) <= this.rightBoundary && 
                 (y - h/2) >= this.topBoundary && (y + h/2) <= this.bottomBoundary;

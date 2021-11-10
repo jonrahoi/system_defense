@@ -28,15 +28,12 @@ const SCROLLBAR_WIDTH = 15; // TODO: this should be accessible through the brows
 
 export function StatusBar(screenX, screenY, screenWidth, screenHeight) {
 
-    
-
     this.init(screenX, screenY, screenWidth, screenHeight);
 
     // Expose function anonymously to ensure correct context
     this.build = () => { this.buildObject(); };
 
     // Register function to update status bar time
-    console.log('Connected timer to status bar');
     TimerControls.register(this.updateTime, this, TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
 
     // Register function update status bar state values

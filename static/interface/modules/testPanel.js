@@ -10,8 +10,7 @@ import k from '../kaboom/index.js';
 
 import InterfaceComponent from '../kaboom/components/interfaceComponent.js';
 import State from '../../shared/state.js';
-import generateID from '../kaboom/components/interfaceComponent.js';
-import { centered } from '../kaboom/objectHandler.js';
+import { centered } from '../kaboom/graphicUtils.js';
 
 
 export function TestLevelChange(x, y, width, height, lvlUpFunc, lvlDownFunc) {
@@ -35,8 +34,8 @@ export function TestLevelChange(x, y, width, height, lvlUpFunc, lvlDownFunc) {
 
 TestLevelChange.prototype.buildObject = function() {
 
-    // Level Up
-    let lvlUpBtn = k.add([
+    // Level Down
+    let lvlDownBtn = k.add([
         k.rect(this.params.width, this.params.height),
         k.pos(this.params.x, this.params.y),
         k.area(),
@@ -44,7 +43,7 @@ TestLevelChange.prototype.buildObject = function() {
         k.opacity(0.8),
         k.outline(2, k.color(0, 0, 0)),
     ]);
-    lvlUpBtn.clicks(this.params.lvlUpFunc);
+    lvlDownBtn.clicks(this.params.lvlDownFunc);
 
     let textCenter = centered(
         { width: this.params.textWidth, height: this.params.textHeight },
@@ -53,7 +52,7 @@ TestLevelChange.prototype.buildObject = function() {
         'middle', 'center');
 
     k.add([
-        k.text("Level Up", { size: this.params.textHeight, 
+        k.text("Level Down", { size: this.params.textHeight, 
                                 width: this.params.textWidth }),
         k.pos(textCenter.x, textCenter.y),
         k.color(0, 0, 0),
@@ -61,9 +60,9 @@ TestLevelChange.prototype.buildObject = function() {
         k.origin('center')
     ]);
 
-    // Level Down
+    // Level Up
     let x = this.params.x + this.params.xSpacer;
-    let lvlDownBtn = k.add([
+    let lvlUpBtn = k.add([
         k.rect(this.params.width, this.params.height),
         k.pos(x, this.params.y),
         k.area(),
@@ -71,7 +70,7 @@ TestLevelChange.prototype.buildObject = function() {
         k.opacity(0.8),
         k.outline(2, k.color(0, 0, 0)),
     ]);
-    lvlDownBtn.clicks(this.params.lvlDownFunc);
+    lvlUpBtn.clicks(this.params.lvlUpFunc);
 
     textCenter = centered(
         { width: this.params.textWidth, height: this.params.textHeight },
@@ -80,7 +79,7 @@ TestLevelChange.prototype.buildObject = function() {
         'middle', 'center');
 
     k.add([
-        k.text("Level Down", { size: this.params.textHeight, 
+        k.text("Level Up", { size: this.params.textHeight, 
                                 width: this.params.textWidth }),
         k.pos(textCenter.x, textCenter.y),
         k.color(0, 0, 0),

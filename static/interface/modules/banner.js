@@ -7,7 +7,7 @@
  */
 
 import k from "../kaboom/index.js";
-import { centered } from '../kaboom/objectHandler.js';
+import { centered } from '../kaboom/graphicUtils.js';
 import { SceneControls } from '../interface.js';
 
 /*
@@ -51,7 +51,7 @@ Banner.prototype.init = function(screenX, screenY, screenWidth, screenHeight) {
         displayIconXSpacerRatio: 0.25, // spacing ratio based on scaled icon width
         constrolIconXSpacerRatio: 0.35, // spacing ratio based on scaled icon height
 
-        titleWidthRatio: 0.13, // ratio of the title's width to screen width
+        titleWidthRatio: 0.15, // ratio of the title's width to screen width
         titleHeightRatio: 0.75, // ratio of the title's height to screen height
 
         displayIconOpacity: k.opacity(0.7), // opacity of display-only icons
