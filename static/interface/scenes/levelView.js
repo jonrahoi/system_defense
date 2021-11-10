@@ -21,13 +21,13 @@ import FieldController from '../modules/fieldControls.js';
 
 import { dragControls, drag } from '../kaboom/components/drag.js';
 import { selectControls, connectControls, select } from '../kaboom/components/select.js';
-import { addSprite, addText } from '../kaboom/spriteHandler.js';
+import { addSprite, addText } from '../kaboom/objectHandler.js';
 
-export function LevelView(bannerActions) {
-    this.init(bannerActions);
+export function LevelView() {
+    this.init();
+
     this.scene = () => { this.buildScene(); };
     this.test = (lvlUpFunc, lvlDownFunc) => { this.includeLvlButtons(lvlUpFunc, lvlDownFunc); };
-
 };
 
 
@@ -37,15 +37,15 @@ export function LevelView(bannerActions) {
 // (would get complicated when setting each section's 'x' value)
 const viewLayout = {
     banner: {
-        heightRatio: 0.1, 
+        heightRatio: 0.045, 
         widthRatio: 1,
     },
     statusBar: {
-        heightRatio: 0.04,
+        heightRatio: 0.05,
         widthRatio: 1
     },
     playField: {
-        heightRatio: 0.72, 
+        heightRatio: 0.775, 
         widthRatio: 1
     },
     selectionBar: {
@@ -54,7 +54,7 @@ const viewLayout = {
     }
 }
 
-LevelView.prototype.init = function(bannerActions) {
+LevelView.prototype.init = function() {
 
     // Define screen sizes for each view section
     let currY = 0;
@@ -72,8 +72,7 @@ LevelView.prototype.init = function(bannerActions) {
         viewLayout.banner.x, 
         viewLayout.banner.y, 
         viewLayout.banner.width, 
-        viewLayout.banner.height,
-        bannerActions);
+        viewLayout.banner.height);
         
     this.statusBar = new StatusBar(
         viewLayout.statusBar.x,
@@ -100,7 +99,6 @@ LevelView.prototype.init = function(bannerActions) {
 
 // Used as the actual scene "object" for Kaboom
 LevelView.prototype.buildScene = function() {
-
     this.bannerBar.build();
     this.statusBar.build();
     this.playField.build();
@@ -204,6 +202,9 @@ LevelView.prototype.registerEvents = function() {
 // Add all of the predefined, initial components to the PlayField
 // Methodology isn't perfect but it's a start
 LevelView.prototype.initLevel = function() {
+    if (!this.currentLvlLogic) {
+        return;
+    }
 
     let initClients = this.currentLvlLogic.specs.initClients;
     let initProcessors = this.currentLvlLogic.specs.initProcessors;

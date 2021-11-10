@@ -34,7 +34,10 @@ export const assetDirectory = {
         'play': 'assets/icons/play.png',
         'pause': 'assets/icons/pause.png',
         'restart': 'assets/icons/restart.png',
-        'fastForward': 'assets/icons/fast_forward.png'
+        'fastForward': 'assets/icons/fast_forward.png',
+
+        // Miscellaneous
+        'back': 'assets/icons/back.png'
     },
     'images': {
         'components': {

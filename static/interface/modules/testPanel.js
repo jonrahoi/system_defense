@@ -11,7 +11,7 @@ import k from '../kaboom/index.js';
 import InterfaceComponent from '../kaboom/components/interfaceComponent.js';
 import State from '../../shared/state.js';
 import generateID from '../kaboom/components/interfaceComponent.js';
-import { centered } from '../kaboom/spriteHandler.js';
+import { centered } from '../kaboom/objectHandler.js';
 
 
 export function TestLevelChange(x, y, width, height, lvlUpFunc, lvlDownFunc) {

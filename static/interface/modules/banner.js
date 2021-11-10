@@ -7,6 +7,8 @@
  */
 
 import k from "../kaboom/index.js";
+import { centered } from '../kaboom/objectHandler.js';
+import { SceneControls } from '../interface.js';
 
 /*
     * ------------------------------ BANNER -----------------------------------
@@ -19,16 +21,9 @@ import k from "../kaboom/index.js";
 const iconWidth = 512;
 const iconHeight = 512;
 
-const heightRatio = 0.08; // the height of the banner based on the given screenHeight
+const usfScale = 1.8; // Special case for odd-shaped icons
 
-// Special case due to shape of icon
-const usfCSIcon = {
-    widthScale: 2.2,
-    heightScale: 2.2
-};
-
-export function Banner(screenX, screenY, screenWidth, screenHeight, bannerActions) {
-    this.actions = bannerActions;
+export function Banner(screenX, screenY, screenWidth, screenHeight) {
     this.init(screenX, screenY, screenWidth, screenHeight);
 }
 
@@ -49,15 +44,15 @@ Banner.prototype.init = function(screenX, screenY, screenWidth, screenHeight) {
         backgroundOpacity: k.opacity(1), // opacity of the background color
 
         xInnerOffsetRatio: 0.01, // distance from left/right-most objects to banner left/right boundary
-        yInnerOffsetRatio: 0.02, // distance from top/bottom of objects to banner top/bottom
+        yInnerOffsetRatio: 0, // distance from top/bottom of objects to banner top/bottom
 
-        controlIconScale: 0.45, // used to resize the control icons (home, volume, settings...)
+        controlIconScale: 0.6, // used to resize the control icons (home, volume, settings...)
 
         displayIconXSpacerRatio: 0.25, // spacing ratio based on scaled icon width
         constrolIconXSpacerRatio: 0.35, // spacing ratio based on scaled icon height
 
-        titleWidthRatio: 5.8, // ratio of the title's width to a display-only icon's width
-        titleHeightRatio: 0.66, // ratio of the title's height to a display-only icon's height
+        titleWidthRatio: 0.13, // ratio of the title's width to screen width
+        titleHeightRatio: 0.75, // ratio of the title's height to screen height
 
         displayIconOpacity: k.opacity(0.7), // opacity of display-only icons
         controlIconOpacity: k.opacity(0.9), // opacity of control-enabled icons
@@ -91,13 +86,12 @@ Banner.prototype.init = function(screenX, screenY, screenWidth, screenHeight) {
 
     // Sets the size of the title text box
     this.params['titleText'] = {
-        width: this.params.displayIcons.width * this.params.titleWidthRatio,
-        height: this.params.displayIcons.height * this.params.titleHeightRatio
-    }
+        width: this.params.width * this.params.titleWidthRatio,
+        height: this.params.height * this.params.titleHeightRatio
+    };
 
     // Add offset to bottom of banner to provide spacing
     this.params['height'] += this.params.yInnerSpacer;
-
 
     /* 
      * Objects inside the banner (aka icons)
@@ -105,26 +99,29 @@ Banner.prototype.init = function(screenX, screenY, screenWidth, screenHeight) {
     this.objects = {
         
         usf: { 
+            width: this.params.displayIcons.width * usfScale,
+            height: this.params.displayIcons.height * usfScale,
             x: (this.params.x + this.params.xInnerSpacer), // left-most edge
-            y: (this.params.y + this.params.displayIcons.ySpacer + this.params.yInnerSpacer) 
+            y: (this.params.y + this.params.displayIcons.ySpacer + this.params.yInnerSpacer - ((this.params.displayIcons.height * usfScale) / 4)) 
         },
         
-        usfCS: { // SPECIAL CASE
-            width: this.params.displayIcons.width * usfCSIcon.widthScale,
-            height: this.params.displayIcons.height * usfCSIcon.heightScale,
+        usfCS: {
+            width: this.params.displayIcons.width * usfScale,
+            height: this.params.displayIcons.height * usfScale,
             x: ((this.params.x + this.params.xInnerSpacer) // left-most edge
-                        + this.params.displayIcons.width // usf icon
+                        + (this.params.displayIcons.width * usfScale) // usf icon
                         + this.params.displayIcons.xSpacer), // this icon spacer
-            y: (this.params.y + this.params.yInnerSpacer 
-                        + ((this.params.height / 2) - ((this.params.displayIcons.height * usfCSIcon.heightScale) / 2))) 
+            y: (this.params.y + this.params.displayIcons.ySpacer + this.params.yInnerSpacer - ((this.params.displayIcons.height * usfScale) / 4))
         },
 
         titleText: {
             width: this.params.titleText.width, 
-            height: this.params.titleText.height, 
-            x: ((this.params.width / 2) // banner midpoint
-                        - (this.params.titleText.width / 2)), // width of title + captain "block"
-            y: (this.params.y + this.params.yInnerSpacer)
+            height: this.params.titleText.height,
+            // x: ((this.params.width / 2) // banner midpoint
+            //             - (this.params.titleText.width / 2)), // width of title + captain "block"
+            // y: (this.params.y + 2 * this.params.yInnerSpacer)
+            x: this.params.width / 2, 
+            y: this.params.height / 2
         },
 
         captain: { 
@@ -185,14 +182,14 @@ Banner.prototype.build = function() {
 
     // USF icon
     k.add([
-        k.sprite('usf', { width: this.params.displayIcons.width, 
-                            height: this.params.displayIcons.height }),
+        k.sprite('usf', { width: this.objects.usf.width, 
+                            height: this.objects.usf.height }),
         k.pos(this.objects.usf.x, this.objects.usf.y),
         this.params.displayIconOpacity,
     ]);
 
     // USFCS icon
-    k.add([ // SPECIAL CASE
+    k.add([
         k.sprite('usfCS', { width: this.objects.usfCS.width, 
                             height: this.objects.usfCS.height }),
         k.pos(this.objects.usfCS.x, this.objects.usfCS.y),
@@ -209,9 +206,11 @@ Banner.prototype.build = function() {
 
     // Title
     k.add([
-        k.text('Captain Client', { size: this.objects.titleText.height }),
+        k.text('Captain Client', { width: this.objects.titleText.width, 
+                                    size: this.objects.titleText.height }),
         k.pos(this.objects.titleText.x, this.objects.titleText.y),
         this.params.titleOpacity,
+        k.origin('center')
     ]);
 
     // Home icon
@@ -242,9 +241,9 @@ Banner.prototype.build = function() {
     ]);
 
     // Connect buttons to control functions
-    homeBtn.clicks(this.actions.goHome);
+    homeBtn.clicks(SceneControls.goHome);
     muteBtn.clicks(() => console.log("MUTE CLICKED"));
-    settingsBtn.clicks(this.actions.settings);
+    settingsBtn.clicks(SceneControls.goSettings);
 };
 
 export default Banner;

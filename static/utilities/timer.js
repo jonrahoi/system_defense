@@ -92,16 +92,20 @@ const Timer = {
         // Unsure about this. Emit a callback to all those registered as
         // BASE_INTERVAL or SPEEDUP_INTERVAL. 
         // Meant to notify that time has been explicitly updated
-        Timer._executeCallbacks(RegistrationTypes.BASE_INTERVAL);
-        Timer._executeCallbacks(RegistrationTypes.SPEEDUP_INTERVAL);
+        Timer._listeners[RegistrationTypes.BASE_INTERVAL].dispatch(Timer._time, Timer._speedup)
+        Timer._listeners[RegistrationTypes.SPEEDUP_INTERVAL].dispatch(Timer._time, Timer._speedup)
     },
 
-    reset: function() { // REMOVES ALL LISTENERS
+    reset: function() {
         Timer.stop();
-        delete Timer._listeners;
-        Timer._listeners = Object.assign({}, ...Object.values(RegistrationTypes).map(x => ({ [x]: new Broadcast() })));
         Timer._duration = INIT_DURATION;
         Timer._time = INIT_DURATION;
+    },
+
+    restore: function() { // REMOVES ALL LISTENERS
+        Timer.reset();
+        delete Timer._listeners;
+        Timer._listeners = Object.assign({}, ...Object.values(RegistrationTypes).map(x => ({ [x]: new Broadcast() })));
     },
 
     speedUp: function() {
@@ -121,32 +125,34 @@ const Timer = {
         
         // Prevent the same listener function to register for the same type twice
         if (Timer._listeners[type].has(listenerFunc, context)) { return; }
-
         return Timer._listeners[type].register(listenerFunc, context);
 
     },
 
+    unregisterListener: function(listenerFunc, context, type=RegistrationTypes.BASE_INTERVAL) {
+        // Ensure the type of interval being requested exists
+        if (!Object.values(RegistrationTypes).includes(type)) { return; }
+        return Timer._listeners[type].remove(listenerFunc, context);
+    },
+
+    // Alert all listeners of new data
     // NO TYPE CHECK (this will be called a lot and it may become inefficient. 
     //                  + it's meant to be a private function so type checks 
     //                  are done already by `registerListener()`)
-    _executeCallbacks: (type) => { Timer._listeners[type].dispatch(Timer._time, Timer._speedup); },
-
-    // Alert all listeners of new data
     _intervalCallback: (() => {
         const callback = () => {
 
             if (--Timer._time < 0) {
                 Timer.stop();
-                Timer._executeCallbacks(RegistrationTypes.TIMEOUT);
+                Timer._listeners[RegistrationTypes.TIMEOUT].dispatch(Timer._time, Timer._speedup);
                 return;
             }
             
             if (Timer._time % Timer._speedup == 0) {
-                Timer._executeCallbacks(RegistrationTypes.BASE_INTERVAL);
+                Timer._listeners[RegistrationTypes.BASE_INTERVAL].dispatch(Timer._time, Timer._speedup);
             }
             
-            Timer._executeCallbacks(RegistrationTypes.SPEEDUP_INTERVAL);
-            console.log();
+            Timer._listeners[RegistrationTypes.SPEEDUP_INTERVAL].dispatch(Timer._time, Timer._speedup);
         };
         return callback;
     })()
@@ -158,10 +164,13 @@ export const TimerControls = {
     pause: Timer.pause,
     restart: Timer.restart,
     reset: Timer.reset,
+    restore: Timer.restore,
+    running: Timer.running,
     fastforward: Timer.speedUp,
     remaining: Timer.remaining,
 
     register: Timer.registerListener,
+    unregister: Timer.unregisterListener,
     RegistrationTypes: RegistrationTypes
 };
 

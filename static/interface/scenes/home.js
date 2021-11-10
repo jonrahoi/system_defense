@@ -1,5 +1,9 @@
 
-/* GRAPHIC SPACING DEFINITIONS
+/* 
+Object used as the home page/main menu of the game.
+
+
+GRAPHIC SPACING DEFINITIONS
 
 Legend:
 - yO & xO = yOffset & xOffset --> provide ability to "offset" object from center
@@ -31,13 +35,14 @@ ________________________________________________________________________________
 */
 
 import k from '../kaboom/index.js';
+import { SceneControls } from '../interface.js';
 
 // Constant image size
 const backgroundImgWidth = 1200;
 const backgroundImgHeight = 800;
 
-export function Home(menuActions) {    
-    this.actions = menuActions;
+export function Home(levelOneFunc) {
+    this.levelOneFunc = levelOneFunc;
     this.init();
 
     // necessary to preserve `this` reference (check out arrow functions if unfamiliar)
@@ -60,7 +65,7 @@ Home.prototype.init = function() {
 
         titleWidthRatio: 0.35, // ratio compared to the screen width
         titleHeightRatio: 0.08, // ratio compared to the screen height
-        yTitleOffsetRatio: 0.5, // ratio of y-spacing from screen top based on title height
+        yTitleOffsetRatio: 0.75, // ratio of y-spacing from screen top based on title height
 
         menuBox: {
             backgroundColor: k.color(52, 149, 235), // background color of the menu box
@@ -154,7 +159,7 @@ Home.prototype.init = function() {
     this.objects['title'] = {
         width: this.params.titleWidth,
         height: this.params.titleHeight,
-        x: ((this.params.screenWidth / 2) - (this.params.titleWidth / 2)),
+        x: this.params.screenWidth / 2,
         y: (this.params.screenY + this.params.yTitleSpacer)
     }
 
@@ -209,6 +214,7 @@ Home.prototype.buildScene = function() {
     k.add([
         k.text('Captain Client', { size: this.objects.title.height, width: this.objects.title.width }),
         k.pos(this.objects.title.x, this.objects.title.y),
+        k.origin('center')
     ]);
 
     // Menu Box
@@ -271,9 +277,9 @@ Home.prototype.buildScene = function() {
     ]);
 
     // Connect buttons to control functions
-    playBtn.clicks(this.actions.play);
-    leaderboardBtn.clicks(this.actions.leaderboard);
-    settings_btn.clicks(this.actions.settings);
+    playBtn.clicks(this.levelOneFunc);
+    leaderboardBtn.clicks(SceneControls.goLeaderboard);
+    settings_btn.clicks(SceneControls.goSettings);
 };
 
 

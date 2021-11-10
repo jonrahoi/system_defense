@@ -10,11 +10,10 @@
 import Broadcast from '../utilities/broadcast.js';
 
 export var State = {
-    // _listeners: new Broadcast(),
     register: (func, context) => { State._listeners.register(func, context); },
     stateChange: () => { State._listeners.dispatch(); }
 
-    // THESE VALUES ACTUALLY EXIST but they aren't defined on initiliazation
+    // THESE VALUES ACTUALLY EXIST but they aren't defined on initiliazation (see `reset()`)
     // coins: 0, // coins in “wallet”
     // score: 0, // current accumulated score
     // level: 1, // current level
@@ -41,7 +40,7 @@ export const StateMachine = {
     levelChange: function(levelNumber, newSpecs) {
         State.coins += newSpecs.coinReward; // want to add on to existing?
         State.goal = newSpecs.goal;
-        State.level = levelNumber;
+        State.levelNumber = levelNumber;
         State.stateChange();
     },
     // functions to modify state from within `GameLogic`
@@ -79,7 +78,7 @@ export const StateMachine = {
                 value: 0,
                 writable: true
             },
-            level: {
+            levelNumber: {
                 value: 1,
                 writable: true
             },

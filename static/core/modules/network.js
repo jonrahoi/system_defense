@@ -102,6 +102,12 @@ export default class Network{
         }
 
         if (target !== -1){
+            let srcComponent = this.components[srcId];
+            let desComponent = this.components[desId];
+
+            srcComponent.removeOutput();
+            desComponent.removeInput();
+            
             this.connections.splice(target, 1)
         }
     }

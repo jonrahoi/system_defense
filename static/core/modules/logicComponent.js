@@ -22,6 +22,16 @@ export default function LogicComponent(id, name, specs) {
     this.requestQueue = [];
     this.forwardFunc = undefined; // not yet implemented
     this.build(specs);
+
+    /* HAS THESE PROPERTIES AS WELL. ACQUIRED BY `this.build(specs)`:
+     * type
+     * cost
+     * maxInputs
+     * maxOutputs
+     * requestCapacity
+     * (throughput) - if processor
+     * description
+     */
 }
 
 // may be able to integrate into construtor...

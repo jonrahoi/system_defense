@@ -8,7 +8,7 @@
 
 import k from '../kaboom/index.js';
 
-import { addSprite, addText, centered, scaleComponentImage } from '../kaboom/spriteHandler.js';
+import { addSprite, addText, centered, scaleComponentImage } from '../kaboom/objectHandler.js';
 import { dragControls, drag } from '../kaboom/components/drag.js';
 import { selectControls, select } from '../kaboom/components/select.js';
 import InterfaceComponent from '../kaboom/components/interfaceComponent.js';
@@ -106,6 +106,8 @@ SelectionBar.prototype.init = function(screenX, screenY, screenWidth, screenHeig
         return dim;
     })();
 
+
+    this.objects = {};
 };
 
 /*

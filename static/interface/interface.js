@@ -11,31 +11,31 @@
 
 import k from './kaboom/index.js';
 import GameLogic from '../core/core.js';
-
-import { assetEntries } from '../shared/lookup.js';
-
+import State from '../../shared/state.js';
+import { assetEntries } from '../shared/lookup.js'
 import TimerControls from '../utilities/timer.js';
-
-import { LoadHomeScene, LoadGameOver, LoadLeaderboardScene, 
-            LoadLevelScene, LoadSettingsScene } from './scenes/sceneManager.js';
+import LevelView from './scenes/levelView.js';
+import GameOver from './scenes/gameOver.js';
+import Leaderboard from './scenes/leaderboard.js';
+import Settings from './scenes/settings.js';
+import Home from './scenes/home.js';
 
 const TESTING = true;
 const REL_PATH_TO_ROOT = '../';
 
 
-export default function Interface() { 
-    this.sceneControls = {
-        goHome: () => { TimerControls.reset(); this.loadHomeScreen() },
-        play: this.startGame.bind(this),
-        leaderboard: this.viewLeaderboard.bind(this),
-        settings: this.viewSettings.bind(this)   
-    }
-};
+export default function Interface() { this.sceneTracker = {}; };
+
+const sceneTracker = {};
 
 // Load all necessary Kaboom components and other setup
 Interface.prototype.init = function() {
     k.load(new Promise((resolve, reject) => {
-        this.loadAllSprites();
+        
+        // Load all ui icons, background images, etc.
+        for (const [name, loc] of Object.entries(assetEntries(2, REL_PATH_TO_ROOT))) {
+            k.loadSprite(name, loc);
+        }
 
         // Load custom shaders
         k.loadShader("green_tint",
@@ -56,67 +56,91 @@ Interface.prototype.init = function() {
 
         resolve('ok');
     }));
-    
-    this.loadHomeScreen();
-};
 
-// Load all sprites that will be used throughout the game
-Interface.prototype.loadAllSprites = function() {
-    // Load all ui icons, background images, etc.
-    for (const [name, loc] of Object.entries(assetEntries(2, REL_PATH_TO_ROOT))) {
-        k.loadSprite(name, loc);
-    }
-};
-
-Interface.prototype.loadHomeScreen = function() {
-    const home = LoadHomeScene(this.sceneControls);
-    k.scene('home', home.scene);
-    k.go('home');
-};
-
-
-Interface.prototype.startGame = function() {
-    console.log('LOADING GAME...');
-    
-    TimerControls.register(this.gameOver, this, TimerControls.RegistrationTypes.TIMEOUT);
-    // Build game logic object and get first level (object)
+    // Build game logic object
     this.gameLogic = new GameLogic();
-    this.levelChange(1);
+
+    // Load all game scenes
+    this.loadScenes();
+    SceneControls.goHome();
 };
 
-Interface.prototype.viewLeaderboard = function() {
-    let leaderboard = LoadLeaderboardScene();
-    return;
-};
+Interface.prototype.loadScenes = function() {
 
-Interface.prototype.viewSettings = function() {
-    let settings = LoadSettingsScene();
-    return;
-}
+    let home = new Home(() => { this.goLevel(1); });
+    sceneTracker['home'] = home;
+    home.scene();
+    k.scene('home', home.scene);
 
-Interface.prototype.levelChange = function(levelNum) {
-    this.currentLvlLogic = this.gameLogic.getLevel(levelNum);
-    const currentLvlScene = LoadLevelScene(this.currentLvlLogic, this.sceneControls);
-    
+    let leaderboard = new Leaderboard();
+    sceneTracker['leaderboard'] = leaderboard;
+    leaderboard.scene();
+    k.scene('leaderboard', leaderboard.scene.bind(this));
+
+    let settings = new Settings();
+    sceneTracker['settings'] = settings;
+    settings.scene();
+    k.scene('settings', settings.scene);
+
+    let level = new LevelView();
+    sceneTracker['level'] = level;
+    level.scene();
+    k.scene('level', level.scene);
+
+    // Connect the level scene to the timer
+    TimerControls.register(level.update, level); // default interval type
+
+    // Connect this levels' callback function to the timer (Game Logic's callback)
+    // Want it to be registered with SPEEDUP intervals
+    TimerControls.register(this.gameLogic.processInterval, this.gameLogic, 
+        TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
+
     if (TESTING) {
         let totalLevels = 5; // HARD CODED (just for testing)
-        const lvlUp = () => { if (this.currentLvlLogic.number < totalLevels) { this.levelChange(this.currentLvlLogic.number+1); } };
-        const lvlDown = () => { if (this.currentLvlLogic.number > 1) { this.levelChange(this.currentLvlLogic.number-1); } };
-        currentLvlScene.test(lvlUp, lvlDown);
+        const lvlUp = () => { if (State.levelNumber < totalLevels) { this.goLevel(State.levelNumber+1); } };
+        const lvlDown = () => { if (State.levelNumber > 1) { this.goLevel(State.levelNumber-1); } };
+        level.test(lvlUp, lvlDown);
+        k.scene('level', level.scene);
         console.log('Initiated level testing...');
     }
-    
-    let sceneName = `level_${levelNum}`;
-    k.scene(sceneName, currentLvlScene.scene);
-    k.go(sceneName);
-    
-    console.log('CHANGED SCENE: ', sceneName);
+
+    let gameover = new GameOver();
+    sceneTracker['gameover'] = gameover;
+    gameover.scene();
+    k.scene('gameover', gameover.scene.bind(this));
+
+    // Connect gameover to timer
+    TimerControls.register(SceneControls.goGameover, SceneControls, TimerControls.RegistrationTypes.TIMEOUT);
 };
 
+Interface.prototype.goLevel = function(levelNum) {
 
-Interface.prototype.gameOver = function() {
-    let alert = LoadGameOver();
-    k.scene('gameover', alert.build);
-    k.go('gameover');
-    console.log('GAME OVER!');
+    levelNum = levelNum || State.levelNumber + 1;
+    this.currentLvlLogic = this.gameLogic.getLevel(levelNum);
+
+    // Remove previous levelObj's binding to Timer
+    let prevLvlLogic = sceneTracker.level.currentLvlLogic;
+    if (prevLvlLogic) {
+        TimerControls.unregister(prevLvlLogic.processInterval, prevLvlLogic);
+    }
+
+    sceneTracker.level.load(this.currentLvlLogic);
+
+    // setup timer for this level
+    let timeLimit = this.currentLvlLogic.specs.timeLimit;
+    TimerControls.init(timeLimit);
+
+    console.log(`CHANGED SCENE: level ${levelNum}`);
+    k.go('level');
+};
+
+export const SceneControls = {
+    goHome: () => { TimerControls.reset(); k.go('home'); },
+    goLeaderboard: () => k.go('leaderboard'),
+    goSettings: () => k.go('settings'),
+    goGameover: (win) => { 
+        win = win || Timer.remaining() !== 0;
+        sceneTracker.gameover.init(win);
+        k.go('gameover');
+    }
 };

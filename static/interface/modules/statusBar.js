@@ -28,16 +28,19 @@ const SCROLLBAR_WIDTH = 15; // TODO: this should be accessible through the brows
 
 export function StatusBar(screenX, screenY, screenWidth, screenHeight) {
 
-    // Register function to update status bar time
-    TimerControls.register(this.updateTime, this, TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
-
-    // Register function update status bar state values
-    State.register(this.updateState, this);
+    
 
     this.init(screenX, screenY, screenWidth, screenHeight);
 
     // Expose function anonymously to ensure correct context
     this.build = () => { this.buildObject(); };
+
+    // Register function to update status bar time
+    console.log('Connected timer to status bar');
+    TimerControls.register(this.updateTime, this, TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
+
+    // Register function update status bar state values
+    State.register(this.updateState, this);
 };
 
 
@@ -57,14 +60,14 @@ StatusBar.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
         backgroundColor: k.color(135, 145, 160), // solid color to fill status bar
         backgroundOpacity: k.opacity(1), // opacity of the background color
 
-        xInnerOffsetRatio: 0, // distance from left/right-most objects to status bar left/right boundary
-        yInnerOffsetRatio: 0.1, // distance from top/bottom of objects to status bar top/bottom        
+        xInnerOffsetRatio: 0.005, // distance from left/right-most objects to status bar left/right boundary
+        yInnerOffsetRatio: 0.2, // distance from top/bottom of objects to status bar top/bottom        
 
         iconXSpacerRatio: 0.25, // spacing ratio based on scaled icon width
         iconYSpacerRatio: 0.0, // spacing ratio based on scaled icon height
 
-        controlIconScale: 0.85, // used to resize the control icons (play, pause, restart...)
-        constrolIconXSpacerRatio: 0.35 // spacing ratio based on scaled icon width
+        controlIconScale: 1, // used to resize the control icons (play, pause, restart...)
+        constrolIconXSpacerRatio: 0.45 // spacing ratio based on scaled icon width
     };
     
     // Calculated spacing for the status bar's inner boundaries
@@ -128,7 +131,7 @@ StatusBar.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
     // Use LEFT edge as reference //
 
     this.objects['levelIcon'] = { 
-        x: (this.params.x + this.params.xObjSpacer), // left-most edge
+        x: (this.params.x + this.params.xObjSpacer + this.params.xInnerSpacer), // left-most edge
         y: (this.params.y + this.params.yObjSpacer + this.params.yInnerSpacer) 
     };
     
@@ -190,7 +193,7 @@ StatusBar.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
     // Use RIGHT edge as reference //
 
     this.objects['restartIcon'] = {
-        x: ((this.params.x + this.params.width) // furthest right edge
+        x: ((this.params.x + this.params.width - this.params.xInnerSpacer) // furthest right edge
             - (this.params.xObjSpacer) // offset
             - this.params.controlIcons.width), // this icon 
         y: (this.params.y + this.params.controlIcons.ySpacer + this.params.yInnerSpacer)
@@ -261,7 +264,7 @@ StatusBar.prototype.buildObject = function() {
 
     // Level text
     this.levelText = k.add([
-        k.text(State.level, { size: this.objects.levelText.height, 
+        k.text(State.levelNumber, { size: this.objects.levelText.height, 
                         width: this.objects.levelText.width }),
         k.pos(this.objects.levelText.x, this.objects.levelText.y),
     ]);
@@ -365,9 +368,6 @@ StatusBar.prototype.buildObject = function() {
 
 
 StatusBar.prototype.updateState = function() {
-    // Update everything? otherwise have to store values which could cause issues
-    // Should this be combined with `handleClock()`. i.e. do we want to update
-    // every status at EVERY time interval
     this.coinsText.text = State.coins;
     this.scoreText.text = State.score;
     this.requestsText.text = State.numCompletedReqs + '/' + State.goal;

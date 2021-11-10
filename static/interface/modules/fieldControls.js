@@ -11,13 +11,13 @@
 
 import k from '../kaboom/index.js';
 
-import { addSprite, addRect } from '../kaboom/spriteHandler.js';
+import { addSprite, addRect } from '../kaboom/objectHandler.js';
 import { dragControls, drag } from '../kaboom/components/drag.js';
 import { selectControls, select } from '../kaboom/components/select.js';
 import { ConnectionDisplayParams } from '../kaboom/components/interfaceConnection.js';
 import InterfaceComponent from '../kaboom/components/interfaceComponent.js';
 import InterfaceConnection from '../kaboom/components/interfaceConnection.js';
-import { scaleComponentImage } from '../kaboom/spriteHandler.js';
+import { scaleComponentImage } from '../kaboom/objectHandler.js';
 
 // Factory function to generate UUIDs
 const generateID = () => {
