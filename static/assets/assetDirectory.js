@@ -34,20 +34,27 @@ export const assetDirectory = {
         'play': 'assets/icons/play.png',
         'pause': 'assets/icons/pause.png',
         'restart': 'assets/icons/restart.png',
-        'fastForward': 'assets/icons/fast_forward.png'
+        'fastForward': 'assets/icons/fast_forward.png',
+
+        // Miscellaneous
+        'back': 'assets/icons/back.png'
     },
     'images': {
         'components': {
+            'alexa': 'assets/images/components/alexa.png',
             'cache': 'assets/images/components/cache.png',
+            'cloud_compute': 'assets/images/components/cloud_compute.png',
             'database': 'assets/images/components/database.png',
             'desktop':  'assets/images/components/desktop.png',
             'gateway': 'assets/images/components/gateway.png',
             'hub': 'assets/images/components/hub.png',
             'iphone': 'assets/images/components/iphone.png',
+            'laptop': 'assets/images/components/laptop.png',
             'load_balancer': 'assets/images/components/load_balancer.png',
             'modem': 'assets/images/components/modem.png',
             'router': 'assets/images/components/router.png',
-            'server': 'assets/images/components/server.png'
+            'server': 'assets/images/components/server.png',
+            'switch': 'assets/images/components/switch.png'
         },
         'ui': {
             'captain_circled': 'assets/images/ui/captain_circled.png',

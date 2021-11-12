@@ -6,6 +6,7 @@
 export const k = kaboom({
 	// width: 640,
 	// height: 480,
+	global: false,
 	scale: 1,
 	clearColor: [0, 0, 0, 1]
 });

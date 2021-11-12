@@ -19,6 +19,7 @@
  * available as parameters to functions being registered as listeners
  */
 
+import Broadcast from './broadcast.js';
 
 const DFLT_INTERVAL = 1000; // in ms
 const INIT_DURATION = 10; // # of intervals to execute
@@ -35,8 +36,8 @@ const Timer = {
     paused: false,
     running: false,
 
-    _bindings: Object.assign({}, 
-        ...Object.values(RegistrationTypes).map(x => ({ [x]: []}))),
+    _listeners: Object.assign({}, 
+        ...Object.values(RegistrationTypes).map(x => ({ [x]: new Broadcast() }))),
 
     _defaultInterval: DFLT_INTERVAL,
     _currentInterval: DFLT_INTERVAL,
@@ -91,16 +92,20 @@ const Timer = {
         // Unsure about this. Emit a callback to all those registered as
         // BASE_INTERVAL or SPEEDUP_INTERVAL. 
         // Meant to notify that time has been explicitly updated
-        Timer._executeCallbacks(RegistrationTypes.BASE_INTERVAL);
-        Timer._executeCallbacks(RegistrationTypes.SPEEDUP_INTERVAL);
+        Timer._listeners[RegistrationTypes.BASE_INTERVAL].dispatch(Timer._time, Timer._speedup)
+        Timer._listeners[RegistrationTypes.SPEEDUP_INTERVAL].dispatch(Timer._time, Timer._speedup)
     },
 
-    reset: function() { // REMOVES ALL LISTENERS
+    reset: function() {
         Timer.stop();
-        delete Timer._bindings;
-        Timer._bindings = Object.assign({}, ...Object.values(RegistrationTypes).map(x => ({ [x]: []})));
         Timer._duration = INIT_DURATION;
         Timer._time = INIT_DURATION;
+    },
+
+    restore: function() { // REMOVES ALL LISTENERS
+        Timer.reset();
+        delete Timer._listeners;
+        Timer._listeners = Object.assign({}, ...Object.values(RegistrationTypes).map(x => ({ [x]: new Broadcast() })));
     },
 
     speedUp: function() {
@@ -111,9 +116,7 @@ const Timer = {
         Timer.start();
     },
 
-    remaining: function() {
-        return Timer._time;
-    },
+    remaining: () => { return Timer._time; },
 
     registerListener: function(listenerFunc, context, type=RegistrationTypes.BASE_INTERVAL) {
         
@@ -121,75 +124,35 @@ const Timer = {
         if (!Object.values(RegistrationTypes).includes(type)) { return; }
         
         // Prevent the same listener function to register for the same type twice
-        if (Timer._bindings[type].includes(listenerFunc)) { return; }
+        if (Timer._listeners[type].has(listenerFunc, context)) { return; }
+        return Timer._listeners[type].register(listenerFunc, context);
 
-        var binding = Timer._bind(listenerFunc, context);
-
-        Timer._bindings[type].push(binding);
-
-        return binding;
     },
 
-    _bind: (listenerFunc, context) => {
-        const binding = {
-            _listenerFunc: listenerFunc,
-            _context: context,
-            params: null,
-        
-            // Execute callback function of this object with passed in parameters
-            execute: function (paramsArray) {
-                var params = params ? params.concat(paramsArray) : paramsArray;
-                var handlerReturn = this._listenerFunc.apply(this._context, params);
-                return handlerReturn;
-            },
-        
-            getListener: function () {
-                return this._listenerFunc;
-            },
-        
-            // Delete all stored data
-            destroy: function () {
-                delete this._listenerFunc;
-                delete this._context;
-            }
-        };
-    
-        return binding;
-    },
-
-    // NO TYPE CHECK (this will be called a lot and it may become inefficient. 
-    //                  + it's meant to be a private function so type checks 
-    //                  are done already by `registerListener()`)
-    _executeCallbacks: function(type) {
-        
-        var numBindings = Timer._bindings[type].length;
-        if (!numBindings) { return; }
-
-        var paramsArray = [Timer._time, Timer._speedup];
-
-        // Execute all of the callbacks until end of the list or until a callback returns `false` 
-        do { 
-            numBindings--; 
-        } while (Timer._bindings[type][numBindings] && 
-                    Timer._bindings[type][numBindings].execute(paramsArray) != false);
+    unregisterListener: function(listenerFunc, context, type=RegistrationTypes.BASE_INTERVAL) {
+        // Ensure the type of interval being requested exists
+        if (!Object.values(RegistrationTypes).includes(type)) { return; }
+        return Timer._listeners[type].remove(listenerFunc, context);
     },
 
     // Alert all listeners of new data
+    // NO TYPE CHECK (this will be called a lot and it may become inefficient. 
+    //                  + it's meant to be a private function so type checks 
+    //                  are done already by `registerListener()`)
     _intervalCallback: (() => {
         const callback = () => {
 
             if (--Timer._time < 0) {
                 Timer.stop();
-                Timer._executeCallbacks(RegistrationTypes.TIMEOUT);
+                Timer._listeners[RegistrationTypes.TIMEOUT].dispatch(Timer._time, Timer._speedup);
                 return;
             }
             
             if (Timer._time % Timer._speedup == 0) {
-                Timer._executeCallbacks(RegistrationTypes.BASE_INTERVAL);
+                Timer._listeners[RegistrationTypes.BASE_INTERVAL].dispatch(Timer._time, Timer._speedup);
             }
             
-            Timer._executeCallbacks(RegistrationTypes.SPEEDUP_INTERVAL);
-            console.log();
+            Timer._listeners[RegistrationTypes.SPEEDUP_INTERVAL].dispatch(Timer._time, Timer._speedup);
         };
         return callback;
     })()
@@ -201,10 +164,13 @@ export const TimerControls = {
     pause: Timer.pause,
     restart: Timer.restart,
     reset: Timer.reset,
+    restore: Timer.restore,
+    running: Timer.running,
     fastforward: Timer.speedUp,
     remaining: Timer.remaining,
 
     register: Timer.registerListener,
+    unregister: Timer.unregisterListener,
     RegistrationTypes: RegistrationTypes
 };
 
@@ -301,7 +267,6 @@ function TimerTester () {
             
             var input = result.action;
             if (inputOptions.includes(input)) {
-                // controls.input();
                 TimerControls[input]();
             }
         });

@@ -1,4 +1,3 @@
-import { Connection } from "./Connection.js";
 /*
  * Implementation of a component object (either a client or processor)
  *
@@ -11,25 +10,28 @@ import { Connection } from "./Connection.js";
  * Has no knowledge of position, image display, etc. Only knows the number
  * of input/output connections and relevant number of requests.
  */
-export default function LogicComponent(id, name, specs, x=0, y=0) {
+export default function LogicComponent(id, name, specs) {
     this.id = id;
     this.name = name;
-
-    this.x = x;
-    this.y = y;
 
     this.connectedInputs = 0;
     this.connectedOutputs = 0;
     this.numProcessing = 0;
     this.numProcessed = 0;
 
-    this.maxInputs = 999;
-    this.maxOutputs = 999;
-
-    this.connections = [];
     this.requestQueue = [];
     this.forwardFunc = undefined; // not yet implemented
     this.build(specs);
+
+    /* HAS THESE PROPERTIES AS WELL. ACQUIRED BY `this.build(specs)`:
+     * type
+     * cost
+     * maxInputs
+     * maxOutputs
+     * requestCapacity
+     * (throughput) - if processor
+     * description
+     */
 }
 
 // may be able to integrate into construtor...
@@ -61,10 +63,10 @@ LogicComponent.prototype.removeOutput = function() {
 };
 
 LogicComponent.prototype.hasAvailableInput = function() {
-    return this.connectedInputs < this.maxInputs;
+    return this.connectedInputs < this.level[1].maxInputs;
 };
 LogicComponent.prototype.hasAvailableOutput = function() {
-    return this.connectedOutputs < this.maxOutputs;
+    return this.connectedOutputs < this.level[1].maxOutputs;
 };
 
 /** Request management **/
@@ -101,68 +103,4 @@ LogicComponent.prototype.hardReset = function() {
     this.softReset();
     this.connectedInputs = 0;
     this.connectedOutputs = 0;
-};
-
-LogicComponent.prototype.setX = function(x) {
-  this.x = Math.max(pos,0)
-};
-
-LogicComponent.prototype.setY = function(y) {
-  this.y = Math.max(pos,0)
-};
-LogicComponent.prototype.getX = function() {
-  return this.x
-};
-LogicComponent.prototype.getY = function() {
-  return this.y
-};
-LogicComponent.prototype.getID = function() {
-  return this.id
-};
-// get all the connections base on this node
-LogicComponent.prototype.getPrevNeighbors = function() {
-  let nodes = [];
-  this.connections.forEach(function(connection) {
-      if (connection.src.id !== this.id) {
-          nodes.push(connection.src);
-      }
-  }.bind(this));
-  return nodes;
-};
-// get all the connection in this node 
-LogicComponent.prototype.getNextNeighbors = function() {
-  let nodes = [];
-  this.connections.forEach(function(connection) {
-      if (connection.des.id !== this.id) {
-          nodes.push(connection.des);
-      }
-  }.bind(this));
-  return nodes;
-};
-
-/**
- * 
- * @param {LogicComponent} target 
- * @returns 
- */
-LogicComponent.prototype.getOutputConnection = function(target) {
-  return this.connections.find(c => {
-    return c.target.equals(target);
-  });
-};
-// checking if it is the same node
-LogicComponent.prototype.equals = function(other) {
-  if (!(other instanceof LogicComponent)) {
-    return false;
-  }
-  return other.id === this.id;
-};
-// add and serach connection
-LogicComponent.prototype.addConnection = function(connection) {
-  if (!(connection instanceof Connection)){
-    console.debug("addConnection's input is not Connection")
-    return false
-  }
-  this.connections.push(connection);
-  return true
 };

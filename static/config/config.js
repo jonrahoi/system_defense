@@ -1,4 +1,4 @@
-export const config = {
+var config = {
     'volume': 100
 };
 
