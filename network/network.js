@@ -3,7 +3,6 @@ import { Connection } from './Connection';
 
 class Network{
   constructor(){
-      
       this.components = {}; 
   
       //   componentID1: componentExample1, 
