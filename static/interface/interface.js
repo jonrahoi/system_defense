@@ -12,7 +12,7 @@
 import k from './kaboom/index.js';
 import GameLogic from '../core/core.js';
 import State from '../../shared/state.js';
-import { assetEntries } from '../shared/lookup.js'
+import { AssetConfig, ComponentConfig } from '../shared/lookup.js'
 import TimerControls from '../utilities/timer.js';
 
 import LevelView from './scenes/levelView.js';
@@ -23,18 +23,24 @@ import Home from './scenes/home.js';
 
 const TESTING = true;
 const REL_PATH_TO_ROOT = '../';
-
-
-export default function Interface() { this.sceneTracker = {}; };
-
 const sceneTracker = {};
+
+
+export default function Interface() { };
+
 
 // Load all necessary Kaboom components and other setup
 Interface.prototype.init = function() {
+
     k.load(new Promise((resolve, reject) => {
         
         // Load all ui icons, background images, etc.
-        for (const [name, loc] of Object.entries(assetEntries(2, REL_PATH_TO_ROOT))) {
+        for (const [name, loc] of Object.entries(AssetConfig.entries(REL_PATH_TO_ROOT))) {
+            k.loadSprite(name, loc);
+        }
+    
+        // Load all component images
+        for (const [name, loc] of Object.entries(ComponentConfig.images(REL_PATH_TO_ROOT))) {
             k.loadSprite(name, loc);
         }
 
@@ -91,6 +97,10 @@ Interface.prototype.loadScenes = function() {
     // Connect the level scene to the timer
     TimerControls.register(level.update, level); // default interval type
 
+    // Connect the level scene to the game state
+    var stagePassed = () => { if (State.stagePassed) { this.handleStageClear(); }};
+    State.register(stagePassed, this);
+
     // Connect this levels' callback function to the timer (Game Logic's callback)
     // Want it to be registered with SPEEDUP intervals
     TimerControls.register(this.gameLogic.processInterval, this.gameLogic, 
@@ -98,9 +108,14 @@ Interface.prototype.loadScenes = function() {
 
     if (TESTING) {
         let totalLevels = 6; // HARD CODED (just for testing)
-        const lvlUp = () => { if (State.levelNumber < totalLevels) { this.goLevel(State.levelNumber+1); } };
-        const lvlDown = () => { if (State.levelNumber > 1) { this.goLevel(State.levelNumber-1); } };
-        level.test(lvlUp, lvlDown);
+        const stageFuncs = {
+            up: () => this.handleStageClear()
+        };
+        const lvlFuncs = {
+            up: () => { if (State.levelNumber < totalLevels) { this.goLevel(State.levelNumber+1); } },
+            down: () => { if (State.levelNumber > 1) { this.goLevel(State.levelNumber-1); } }
+        };
+        level.test(stageFuncs, lvlFuncs);
         k.scene('level', level.scene);
         console.log('Initiated level testing...');
     }
@@ -110,31 +125,59 @@ Interface.prototype.loadScenes = function() {
     gameover.scene();
     k.scene('gameover', gameover.scene.bind(this));
 
-    // Connect gameover to timer
-    TimerControls.register(SceneControls.goGameover, SceneControls, TimerControls.RegistrationTypes.TIMEOUT);
+    // Connect gameover to timer (using a wrapper function to indiciate game lost)
+    var timeExpired = () => SceneControls.goGameover(false);
+    TimerControls.register(timeExpired, SceneControls, TimerControls.RegistrationTypes.TIMEOUT);
+
+    // Connect gameover to coins/budget
+    var bankrupt = () => { if (State.coins <= 0) { SceneControls.goGameover(false); } };
+    State.register(bankrupt, SceneControls);
 };
 
 Interface.prototype.goLevel = function(levelNum) {
+    TimerControls.pause() // Ensure timer is stopped first
+    console.log("LEVEL CLEARED!");
 
     levelNum = levelNum || State.levelNumber + 1;
     this.currentLvlLogic = this.gameLogic.getLevel(levelNum);
 
+    if (!this.currentLvlLogic) {
+        // GAME WON
+        SceneControls.goGameover(true);
+        return;
+    }
+    
     sceneTracker.level.load(this.currentLvlLogic);
 
     // setup timer for this level
-    let timeLimit = this.currentLvlLogic.specs.timeLimit;
+    let timeLimit = this.currentLvlLogic.levelSpecs.timeLimit;
     TimerControls.init(timeLimit);
 
     console.log(`CHANGED SCENE: level ${levelNum}`);
     k.go('level');
 };
 
+
+Interface.prototype.handleStageClear = function() {
+
+    let currStageNum = State.stageNumber;
+    let nextStageSpecs = this.gameLogic.getStage(currStageNum + 1);
+
+    if (nextStageSpecs) {
+        sceneTracker.level.stageCleared(nextStageSpecs);
+    } else {
+        // Completed stage, time for a new level :)
+        this.goLevel(State.levelNumber + 1);
+    }
+}
+
+
 export const SceneControls = {
     goHome: () => { TimerControls.reset(); k.go('home'); },
     goLeaderboard: () => k.go('leaderboard'),
     goSettings: () => k.go('settings'),
-    goGameover: (win) => { 
-        win = win || Timer.remaining() !== 0;
+    goGameover: (win) => {
+        TimerControls.restore(); // completely wipe the timer
         sceneTracker.gameover.init(win);
         k.go('gameover');
     }

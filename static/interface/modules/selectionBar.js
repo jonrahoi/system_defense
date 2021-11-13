@@ -200,8 +200,7 @@ SelectionBar.prototype.buildObject = function() {
     for (const [name, attributes] of Object.entries(this.objects)) {
         // First place icon
         let spriteDef = [
-            k.sprite(name.toLowerCase(), { width: attributes.width, 
-                        height: attributes.height }),
+            k.sprite(name, { width: attributes.width, height: attributes.height }),
             k.pos(attributes.x, attributes.y),
             k.opacity(attributes.opacity),
             k.area()
@@ -251,8 +250,7 @@ SelectionBar.prototype.update = function(componentName, amount = -1) {
                 delete target.iconGraphic;
 
                 let spriteDef = [
-                    k.sprite(componentName.toLowerCase(), { width: target.width, 
-                                height: target.height }),
+                    k.sprite(componentName, { width: target.width, height: target.height }),
                     k.pos(target.x, target.y),
                     k.opacity(target.opacity),
                     k.area()
@@ -269,7 +267,7 @@ SelectionBar.prototype.update = function(componentName, amount = -1) {
         } else {
             // Have at least 1 remaining of this component
             if (amount < 0) {
-                if (!FieldController.placeComponent(componentName.toLowerCase(), k.vec2(...COMPONENT_SPAWN_POS), false)) {
+                if (!FieldController.placeComponent(componentName, k.vec2(...COMPONENT_SPAWN_POS))) {
                     return false;
                 }
             }
@@ -280,7 +278,7 @@ SelectionBar.prototype.update = function(componentName, amount = -1) {
                 k.destroy(target.iconGraphic);
 
                 let spriteDef = [
-                    k.sprite(componentName.toLowerCase(), { width: target.width, 
+                    k.sprite(componentName, { width: target.width, 
                                 height: target.height }),
                     k.pos(target.x, target.y),
                     k.opacity(target.opacity),

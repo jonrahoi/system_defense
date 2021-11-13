@@ -16,8 +16,8 @@
   },
   "homepage": "https://github.com/jonrahoi/system_defense#readme",
   "dependencies": {
-    "fastify": "^3.22.1",
-    "fastify-static": "^4.4.2"
+    "fastify": "^3.23.1",
+    "fastify-static": "^4.5.0"
   },
   "author": "CS490",
   "license": "ISC",

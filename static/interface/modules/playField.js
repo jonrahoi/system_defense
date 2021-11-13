@@ -22,7 +22,8 @@ PlayField.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
         height: screenHeight, // height of the total field (expand to fill screen height)
 
         clientToProcRatio: 0.1, // ratio of width between client space and processor space
-        
+        endpointToProcRatio: 0.1,
+
         outlineWidth: 2,
         outlineColor: k.color(255, 255, 255),
 
@@ -52,6 +53,16 @@ PlayField.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
 
             xInnerOffsetRatio: 0,
             yInnerOffsetRatio: 0
+        },
+
+        endpointSpace: {
+            y: screenY,
+            height: screenHeight,
+            backgroundColor: k.color(100, 160, 200),
+            backgroundOpacity: k.opacity(0.5),
+
+            xInnerOffsetRatio: 0,
+            yInnerOffsetRatio: 0
         }
     };
 
@@ -70,6 +81,10 @@ PlayField.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
     processorSpaceParams['width'] = (this.params.width * (1 - this.params.clientToProcRatio)) - this.params.edgeBoundary.width;
     processorSpaceParams['xInnerSpacer'] = processorSpaceParams.width * processorSpaceParams.xInnerOffsetRatio;
     processorSpaceParams['yInnerSpacer'] = processorSpaceParams.height * processorSpaceParams.yInnerOffsetRatio;
+
+    let endpointSpaceParams = this.params.endpointSpace;
+    endpointSpaceParams['width'] = (processorSpaceParams.width * (this.params.endpointToProcRatio));
+    endpointSpaceParams['x'] = this.params.x + this.params.width - endpointSpaceParams.width;
 
 
     this.clientSpace = {
@@ -96,6 +111,18 @@ PlayField.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
     this.processorSpace['rect'] = new BoundaryRect(this.processorSpace.x, this.processorSpace.y, 
         this.processorSpace.width, this.processorSpace.height);
 
+    
+    this.endpointSpace = {
+        x: screenX + this.params.width - endpointSpaceParams.width,
+        y: screenY,
+        width: endpointSpaceParams.width,
+        height: screenHeight,
+        p1: k.vec2(endpointSpaceParams.x, endpointSpaceParams.y),
+        p2: k.vec2(endpointSpaceParams.x + endpointSpaceParams.width, 
+            endpointSpaceParams.y + endpointSpaceParams.height)
+    };
+    this.endpointSpace['rect'] = new BoundaryRect(this.endpointSpace.x, this.endpointSpace.y, 
+        this.endpointSpace.width, this.endpointSpace.height);
 };
 
 

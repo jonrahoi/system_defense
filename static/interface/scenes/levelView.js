@@ -17,16 +17,19 @@ import SelectionBar from '../modules/selectionBar.js';
 import PlayField from '../modules/playField.js';
 import TestLevelChange from '../modules/testPanel.js';
 import State from '../../shared/state.js';
-import FieldController from '../modules/fieldControls.js';
+import FieldControls from '../modules/fieldControls.js';
+import TimerControls from '../../utilities/timer.js';
 
 import { dragControls, drag } from '../kaboom/components/drag.js';
 import { selectControls, connectControls, select } from '../kaboom/components/select.js';
+
+
 
 export function LevelView() {
     this.init();
 
     this.scene = () => { this.buildScene(); };
-    this.test = (lvlUpFunc, lvlDownFunc) => { this.includeLvlButtons(lvlUpFunc, lvlDownFunc); };
+    this.test = (stageFuncs, lvlFuncs) => { this.includeLvlButtons(stageFuncs, lvlFuncs); };
 };
 
 
@@ -103,23 +106,59 @@ LevelView.prototype.buildScene = function() {
     this.playField.build();
     this.selectionBar.build();
 
-    this.initLevel();
+    this.initStage();
     this.registerEvents();
 };
 
 // Load a level object into this view
 LevelView.prototype.load = function(levelLogic) {
     this.currentLvlLogic = levelLogic;
-    FieldController.loadLogic(levelLogic); 
-    this.selectionBar.setComponents(levelLogic.specs.availableProcessors);
+
+    // Remove all components from the screen
+    k.destroyAll('_component');
+
+    FieldControls.loadLogic(levelLogic);
+    this.selectionBar.setComponents(levelLogic.levelSpecs.availableComponents);
 };
 
-// Meant to represent updating animations. However these will most likely
-// be dealt with by another module
+// Meant to represent updating animations. However these could be dealt with through Kaboom
+// UPDATE ALL REQUESTS HERE?
 LevelView.prototype.update = function(timestamp, speedup) {
-    // Probably don't need to redraw this every timestep?
     console.log(`Animation timestep: ${timestamp} @ ${speedup}x`);
 };
+
+// Add all of the predefined, initial components to the PlayField
+// Methodology isn't perfect but it's a start
+LevelView.prototype.initStage = function() {
+    if (!this.currentLvlLogic) {
+        return;
+    }
+
+    let initClients = this.currentLvlLogic.levelSpecs.clients;
+    let initProcessors = this.currentLvlLogic.levelSpecs.processors;
+    let initEndpoints = this.currentLvlLogic.levelSpecs.endpoints;
+
+    FieldControls.initStage(initClients, initProcessors, initEndpoints, this.playField);
+};
+
+
+LevelView.prototype.stageCleared = function(newStageSpecs) {
+    // maybe alert here?
+    console.log("STAGE CLEARED!");
+    TimerControls.append(newStageSpecs.timeBonus);
+    
+    let addedClients = newStageSpecs.addedClients;
+    let addedProcessors = newStageSpecs.addedProcessors;
+    let addedEndpoints = newStageSpecs.addedEndpoints;
+
+    // Update selection bar with newly available components
+    let additionalComponents = newStageSpecs.additionalComponents;
+    for (const component of additionalComponents) {
+        this.selectionBar.update(component.name, component.quantity);
+    }
+    // Store data in Game Logic
+    FieldControls.initStage(addedClients, addedProcessors, addedEndpoints, this.playField);
+}
 
 
 // Deal with mouse & keyboard events 
@@ -129,12 +168,8 @@ LevelView.prototype.registerEvents = function() {
         if (k.isMouseMoved() && dragControls.current()) {
             let currDrag = dragControls.current();
             k.cursor("move");
-            if (currDrag.is('processor')) {
-                let offset = this.playField.inProcessorSide(pos.x, pos.y, currDrag.width, currDrag.height);
-                currDrag.updatePos(k.vec2(...offset));
-            } else if (currDrag.is('client')) {
-                // Unsure if dragging clients is allowed?
-            } 
+            let offset = this.playField.inProcessorSide(pos.x, pos.y, currDrag.width, currDrag.height);
+            currDrag.updatePos(k.vec2(...offset));
         }
     });
     
@@ -180,7 +215,7 @@ LevelView.prototype.registerEvents = function() {
             if (c.hasPoint(pos)) {
                 connectControls.acquire(c);
                 if (connectControls.isValid()) {
-                    FieldController.connect(connectControls.current().src, connectControls.current().dest);
+                    FieldControls.connect(connectControls.current().src, connectControls.current().dest);
                     connectControls.release();
                 }
                 return;
@@ -197,9 +232,9 @@ LevelView.prototype.registerEvents = function() {
             if (selection.is('deletable')) {
                 if (selection.is('connection')) {
                     selectControls.release();
-                    return FieldController.disconnect(selection.src(), selection.dest());
+                    return FieldControls.disconnect(selection.src(), selection.dest());
                 }
-                if (FieldController.removeComponent(selection)) {
+                if (FieldControls.removeComponent(selection)) {
                     let componentName = selection.name().toUpperCase();
                     this.selectionBar.update(componentName, 1);
                 }
@@ -213,47 +248,7 @@ LevelView.prototype.registerEvents = function() {
 };
 
 
-// Add all of the predefined, initial components to the PlayField
-// Methodology isn't perfect but it's a start
-LevelView.prototype.initLevel = function() {
-    if (!this.currentLvlLogic) {
-        return;
-    }
 
-    let initClients = this.currentLvlLogic.specs.initClients;
-    let initProcessors = this.currentLvlLogic.specs.initProcessors;
-
-    let numClients = Object.values(initClients).reduce((acc,curr) => acc = acc + curr["quantity"],0);
-    let numProcessors = Object.values(initProcessors).reduce((acc,curr) => acc = acc + curr["quantity"],0);
-
-    // Evenly space clients within the clientSpace
-    let clientSpace = this.playField.clientSpace.rect;
-    let initClientX = clientSpace.leftBoundary + (clientSpace.width / 2);
-    let initClientYSpacer = clientSpace.height / (numClients + 1);
-
-    let currY = clientSpace.topBoundary + initClientYSpacer;
-    for (const client of initClients) {
-        // NOTE: can't delete initial components
-        for (let i = 0; i < client.quantity; i++) {
-            FieldController.placeComponent(client.name, k.vec2(initClientX, currY), true, true);
-            currY += initClientYSpacer;
-        }
-    }
-
-    // Spread processors out in a line on the field
-    let processorSpace = this.playField.processorSpace.rect;
-    let initProcessorY = processorSpace.topBoundary + (processorSpace.height / 2);
-    let initProcessorXSpacer = processorSpace.width / (numProcessors + 1);
-
-    let currX = processorSpace.leftBoundary + initProcessorXSpacer;
-    for (const processor of initProcessors) {
-        // NOTE: can't delete initial components
-        for (let i = 0; i < processor.quantity; i++) {
-            FieldController.placeComponent(processor.name, k.vec2(currX, initProcessorY), false, true);
-            currX += initClientYSpacer;
-        }
-    }
-};
 
 
 
@@ -263,12 +258,16 @@ LevelView.prototype.initLevel = function() {
 * TESTING *
 **********/
 
-LevelView.prototype.includeLvlButtons = function(lvlUpFunc, lvlDownFunc) {
-    let width = 75;
-    let height = 15;
+LevelView.prototype.includeLvlButtons = function(stageFuncs, lvlFuncs) {
+    let width = 300;
+    let height = 60;
 
-    this.levelBtns = new TestLevelChange(viewLayout.playField.x + (viewLayout.playField.width - (3 * width)), 
-    viewLayout.playField.y + height, width, height, lvlUpFunc, lvlDownFunc);
+    this.levelBtns = new TestLevelChange(
+        viewLayout.playField.x + (viewLayout.playField.width - width),
+        viewLayout.playField.y, 
+        width, 
+        height, 
+        stageFuncs, lvlFuncs);
 
     // override scene function
     this.scene = () => { this.buildScene(); this.levelBtns.build(); };

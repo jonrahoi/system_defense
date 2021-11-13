@@ -24,8 +24,6 @@ import State from '../../shared/state.js';
 const iconWidth = 512;
 const iconHeight = 512;
 
-const SCROLLBAR_WIDTH = 15; // TODO: this should be accessible through the browser?
-
 export function StatusBar(screenX, screenY, screenWidth, screenHeight) {
 
     this.init(screenX, screenY, screenWidth, screenHeight);
@@ -35,6 +33,7 @@ export function StatusBar(screenX, screenY, screenWidth, screenHeight) {
 
     // Register function to update status bar time
     TimerControls.register(this.updateTime, this, TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
+    TimerControls.register(this.updateTime, this, TimerControls.RegistrationTypes.TIME_ADJUSTEMENT);
 
     // Register function update status bar state values
     State.register(this.updateState, this);
@@ -51,7 +50,7 @@ StatusBar.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
     this.params = { 
         x: screenX, // starting x-pos for the status bar
         y: screenY, // starting y-pos for the status bar
-        width: screenWidth - SCROLLBAR_WIDTH, // width of the status bar (expand to fill screen width)
+        width: screenWidth, // width of the status bar (expand to fill screen width)
         height: screenHeight, // height of the status bar (expand to fill screen)
 
         backgroundColor: k.color(135, 145, 160), // solid color to fill status bar
@@ -95,6 +94,18 @@ StatusBar.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
     this.params['textObjs'] = { // would be nice if these could auto-size...
         level: {
             width: this.params.iconWidth * 1.5,
+            height: this.params.iconHeight * 0.95
+        },
+        expenses: {
+            width: this.params.iconWidth * 2,
+            height: this.params.iconHeight * 0.95
+        },
+        throughput: {
+            width: this.params.iconWidth * 2,
+            height: this.params.iconHeight * 0.95
+        },
+        latency: {
+            width: this.params.iconWidth * 2,
             height: this.params.iconHeight * 0.95
         },
 
@@ -161,13 +172,56 @@ StatusBar.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
     };
     
     this.objects['coinsText'] = {
-        x: (this.objects.coinsIcon.x + this.params.iconWidth + this.params.xObjSpacer),// coins icon + spacer
+        x: (this.objects.coinsIcon.x + this.params.iconWidth + this.params.xObjSpacer), // coins icon + spacer
         y: ((this.objects.coinsIcon.y)
             + ((this.params.iconHeight / 2)
             - (this.params.textObjs.coins.height / 2))), // add offset for text height
         width: this.params.textObjs.coins.width,
         height: this.params.textObjs.coins.height
     };
+
+    this.objects['expensesIcon'] = {
+        x: (this.objects.coinsText.x + this.objects.coinsText.width + this.params.xObjSpacer), // coins text + spacer
+        y: (this.params.y + this.params.yObjSpacer + this.params.yInnerSpacer)
+    };
+
+    this.objects['expensesText'] = {
+        x: (this.objects.expensesIcon.x + this.params.iconWidth + this.params.xObjSpacer), // expenses icon + spacer
+        y: ((this.objects.expensesIcon.y)
+            + ((this.params.iconHeight / 2)
+            - (this.params.textObjs.expenses.height / 2))), // add offset for text height
+        width: this.params.textObjs.expenses.width,
+        height: this.params.textObjs.expenses.height
+    };
+
+    this.objects['throughputIcon'] = {
+        x: (this.objects.expensesText.x + this.objects.expensesText.width + this.params.xObjSpacer), // coins text + spacer
+        y: (this.params.y + this.params.yObjSpacer + this.params.yInnerSpacer)
+    };
+
+    this.objects['throughputText'] = {
+        x: (this.objects.throughputIcon.x + this.params.iconWidth + this.params.xObjSpacer), // expenses icon + spacer
+        y: ((this.objects.throughputIcon.y)
+            + ((this.params.iconHeight / 2)
+            - (this.params.textObjs.throughput.height / 2))), // add offset for text height
+        width: this.params.textObjs.throughput.width,
+        height: this.params.textObjs.throughput.height
+    };
+
+    this.objects['latencyIcon'] = {
+        x: (this.objects.throughputText.x + this.objects.throughputText.width + this.params.xObjSpacer), // coins text + spacer
+        y: (this.params.y + this.params.yObjSpacer + this.params.yInnerSpacer)
+    };
+
+    this.objects['latencyText'] = {
+        x: (this.objects.latencyIcon.x + this.params.iconWidth + this.params.xObjSpacer), // expenses icon + spacer
+        y: ((this.objects.latencyIcon.y)
+            + ((this.params.iconHeight / 2)
+            - (this.params.textObjs.latency.height / 2))), // add offset for text height
+        width: this.params.textObjs.latency.width,
+        height: this.params.textObjs.latency.height
+    };
+
 
     // Use mid line as reference //
     this.objects['requestsIcon'] = {
@@ -294,6 +348,48 @@ StatusBar.prototype.buildObject = function() {
         k.pos(this.objects.coinsText.x, this.objects.coinsText.y),
     ]);
 
+    // Expenses icon
+    k.add([
+        k.sprite('expenses', { width: this.params.iconWidth, 
+                            height: this.params.iconHeight }),
+        k.pos(this.objects.expensesIcon.x, this.objects.expensesIcon.y),
+    ]);
+
+    // Expenses text
+    this.expensesText = k.add([
+        k.text(State.expenses, { size: this.objects.expensesText.height, 
+                            width: this.objects.expensesText.width }),
+        k.pos(this.objects.expensesText.x, this.objects.expensesText.y),
+    ]);
+
+    // Throughput icon
+    k.add([
+        k.sprite('throughput', { width: this.params.iconWidth, 
+                            height: this.params.iconHeight }),
+        k.pos(this.objects.throughputIcon.x, this.objects.throughputIcon.y),
+    ]);
+
+    // Throughput text
+    this.throughputText = k.add([
+        k.text(State.throughput, { size: this.objects.throughputText.height, 
+                            width: this.objects.throughputText.width }),
+        k.pos(this.objects.throughputText.x, this.objects.throughputText.y),
+    ]);
+
+    // Latency icon
+    k.add([
+        k.sprite('latency', { width: this.params.iconWidth, 
+                            height: this.params.iconHeight }),
+        k.pos(this.objects.latencyIcon.x, this.objects.latencyIcon.y),
+    ]);
+
+    // Latency text
+    this.latencyText = k.add([
+        k.text(State.latency, { size: this.objects.latencyText.height, 
+                            width: this.objects.latencyText.width }),
+        k.pos(this.objects.latencyText.x, this.objects.latencyText.y),
+    ]);
+
     // Requests icon
     k.add([
         k.sprite('requests', { width: this.params.iconWidth, 
@@ -302,9 +398,8 @@ StatusBar.prototype.buildObject = function() {
     ]);
 
     // Requests text
-    let reqText = State.numCompletedReqs + '/' + State.goal;
     this.requestsText = k.add([
-        k.text(reqText, { size: this.objects.requestsText.height, 
+        k.text('0/' + State.goal, { size: this.objects.requestsText.height, 
                             width: this.objects.requestsText.width }),
         k.pos(this.objects.requestsText.x, this.objects.requestsText.y),
     ]);
@@ -367,6 +462,9 @@ StatusBar.prototype.buildObject = function() {
 StatusBar.prototype.updateState = function() {
     this.coinsText.text = State.coins;
     this.scoreText.text = State.score;
+    this.expensesText.text = State.expenses;
+    this.throughputText.text = State.throughput;
+    this.latencyText.text = State.latency;
     this.requestsText.text = State.numCompletedReqs + '/' + State.goal;
 };
 

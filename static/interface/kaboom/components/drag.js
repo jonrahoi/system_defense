@@ -19,7 +19,7 @@ export function drag() {
     return {
         require: [ "pos", "area", ],
         updatePos(pos) {
-            dragging = true; 
+            dragging = true;
             this.pos = pos.sub(dragStart);
         },
     };

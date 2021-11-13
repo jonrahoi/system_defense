@@ -63,7 +63,7 @@ Home.prototype.init = function() {
         backdropColor: k.color(180, 200, 250), // backdrop color (behind transparent image)
         backdropOpacity: k.opacity(1), // opacity of backdrop
 
-        titleWidthRatio: 0.35, // ratio compared to the screen width
+        titleWidthRatio: 0.45, // ratio compared to the screen width
         titleHeightRatio: 0.08, // ratio compared to the screen height
         yTitleOffsetRatio: 0.75, // ratio of y-spacing from screen top based on title height
 

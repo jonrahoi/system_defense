@@ -17,6 +17,7 @@ import { ConnectionDisplayParams } from '../kaboom/components/interfaceConnectio
 import InterfaceComponent from '../kaboom/components/interfaceComponent.js';
 import InterfaceConnection from '../kaboom/components/interfaceConnection.js';
 import { scaleComponentImage } from '../kaboom/graphicUtils.js';
+import State from '../../shared/state.js';
 
 
 
@@ -37,7 +38,129 @@ const FieldControls = {
 
     loadLogic: (levelLogic) => FieldControls.logicControls = levelLogic,
 
-    placeComponent: function(componentName, pos, isClient=false, initial=false) { 
+    initStage: (addedClients, addedProcessors, addedEndpoints, playField) => {
+        // Minimal safety checks... assumed to be OK because no user intervention here
+
+        let newComponents = {};
+        let size = scaleComponentImage();
+
+        let baseParams = [
+            k.area(),
+            k.origin('center'),
+            '_component', // used as a group identifier
+            'selectable',
+            select()
+        ];
+
+        let numAddedClients = Object.values(addedClients).reduce((acc,curr) => acc = acc + curr["quantity"], 0);
+        let numAddedProcessors = Object.values(addedProcessors).reduce((acc,curr) => acc = acc + curr["quantity"], 0);
+        let numAddedEndPoints = Object.values(addedEndpoints).reduce((acc,curr) => acc = acc + curr["quantity"], 0);
+
+        let totalNumClients = numAddedClients + State.placedClientIDs.length;
+        let totalNumProcessors = numAddedProcessors + State.placedProcessorIDs.length;
+        let totalNumEndpoints = numAddedEndPoints + State.placedEndpointIDs.length;
+
+        if (numAddedClients) {
+            let clientSpace = playField.clientSpace.rect;
+            let initClientX = clientSpace.leftBoundary + (clientSpace.width / 2);
+            let initClientYSpacer = clientSpace.height / (totalNumClients + 1);
+    
+            let currClientY = clientSpace.topBoundary + initClientYSpacer;
+    
+            // First adjust all existing client's positions
+            for (const clientID of State.placedClientIDs) {
+                let interfaceClient = k.get(clientID);
+                // Safety check
+                if (interfaceClient.length === 1) {
+                    let c = interfaceClient[0];
+                    c.pos = k.vec2(initClientX, currClientY);
+                    currClientY += initClientYSpacer;
+                }
+            }
+            // Then add the new stage's clients
+            for (const client of addedClients) {
+                // NOTE: can't delete initial components
+                for (let i = 0; i < client.quantity; i++) {
+                    let newID = generateID();
+                    let tags = FieldControls.logicControls.componentSpecs(client.name).tags;
+                    tags.push(newID, client.name);
+                    let kaboomParams = [k.sprite(client.name, size), k.pos(k.vec2(initClientX, currClientY)), 
+                        InterfaceComponent(client.name, newID, tags)];
+    
+                    k.add(baseParams.concat(kaboomParams, tags));
+                    newComponents[newID] = client.name;
+                    currClientY += initClientYSpacer;
+                }
+            }
+        }
+
+        baseParams.push('draggable');
+        baseParams.push(drag());
+
+        if (numAddedProcessors) {
+            // Spread processors out in a line on the field
+            let processorSpace = playField.processorSpace.rect;
+            let initProcessorY = processorSpace.topBoundary + (processorSpace.height / 2);
+            let initProcessorXSpacer = processorSpace.width / (numAddedProcessors + 1);
+    
+            let currProcessorX = processorSpace.leftBoundary + initProcessorXSpacer;
+            for (const processor of addedProcessors) {
+                // NOTE: can't delete initial components
+                for (let i = 0; i < processor.quantity; i++) {
+                    let newID = generateID();
+                    let tags = FieldControls.logicControls.componentSpecs(processor.name).tags;
+                    tags.push(newID, processor.name);
+                    let kaboomParams = [k.sprite(processor.name, size), k.pos(k.vec2(currProcessorX, initProcessorY)), 
+                        InterfaceComponent(processor.name, newID, tags)];
+
+                    k.add(baseParams.concat(kaboomParams, tags));
+                    newComponents[newID] = processor.name;
+                    currProcessorX += initProcessorXSpacer;
+                }
+            }
+        }
+
+        if (numAddedEndPoints) {
+            // Spread endpoints out in a line on the field
+            let endpointSpace = playField.endpointSpace.rect;
+            let initEndpointX = endpointSpace.leftBoundary + (endpointSpace.width / 2);
+            let initEndpointYSpacer = endpointSpace.height / (numAddedEndPoints + 1);
+    
+            let currEndpointY = endpointSpace.topBoundary + initEndpointYSpacer;
+    
+            // First adjust all existing endpoint's positions
+            for (const endpointID of State.placedEndpointIDs) {
+                let interfaceEndpoint = k.get(endpointID);
+                // Safety check
+                if (interfaceEndpoint.length === 1) {
+                    let c = interfaceEndpoint[0];
+                    c.pos = k.vec2(initEndpointX, currEndpointY);
+                    currEndpointY += initEndpointYSpacer;
+                }
+            }
+    
+            // Then add the new stage's endpoints
+            for (const endpoint of addedEndpoints) {
+                // NOTE: can't delete endpoints
+                for (let i = 0; i < endpoint.quantity; i++) {
+                    let newID = generateID();
+                    let tags = FieldControls.logicControls.componentSpecs(endpoint.name).tags;
+                    tags.push(newID, endpoint.name);
+                    let kaboomParams = [k.sprite(endpoint.name, size), k.pos(k.vec2(initEndpointX, currEndpointY)), 
+                        InterfaceComponent(endpoint.name, newID, tags)];
+
+                    k.add(baseParams.concat(kaboomParams, tags));
+                    newComponents[newID] = endpoint.name;
+                    currEndpointY += initEndpointYSpacer;
+                }
+            }
+        }
+
+        // Store new data in Game Logic
+        FieldControls.logicControls.initStage(newComponents);
+    },
+
+    placeComponent: function(componentName, pos) { 
 
         // Safety check. Need logicControls to communicate with Game Logic
         if (FieldControls.logicControls === null) {
@@ -45,39 +168,33 @@ const FieldControls = {
             return;
         }
 
-        let clientTag = isClient ? "client" : "processor";
         let newID = generateID();
-        let logicResponse = FieldControls.logicControls.addComponent(componentName, newID, initial);
+        let logicResponse = FieldControls.logicControls.addComponent(componentName, newID);
 
-        // Don't really need this check if it's an initial value. Should always be valid
         if (!logicResponse.valid) {
             console.log(logicResponse.info);
             return;
         }
 
-        var name = () => componentName;
         let size = scaleComponentImage();
-        let baseParams = [
-            k.sprite(componentName.toLowerCase(), 
-                        { width: size.width, height: size.height }),
+        let tags = FieldControls.logicControls.componentSpecs(componentName).tags;
+        let params = [
+            k.sprite(componentName, { width: size.width, height: size.height }),
             k.pos(pos),
             k.area(),
-            k.origin('center')
+            k.origin('center'),
+            componentName, 
+            newID,
+            '_component', // used as a group identifier
+            'selectable', 
+            'deletable',
+            'draggable',
+            drag(),
+            select(),
+            InterfaceComponent(componentName, newID, tags)
         ];
-
-        let tags = [clientTag, componentName, 'selectable'];
-        let properties = [name(), select(), InterfaceComponent(componentName, newID, clientTag)];
-
-        if (!initial) {
-            tags.push('deletable');
-        }
-        if (!isClient) {
-            tags.push('draggable');
-            properties.push(drag());
-        }
         
-        let spriteDef = baseParams.concat(tags, properties);
-        return k.add(spriteDef);
+        return k.add(params);
     },
 
     connect: function(srcComponent, destComponent) {

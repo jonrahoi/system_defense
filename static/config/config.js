@@ -1,5 +1,9 @@
-var config = {
-    'volume': 100
+var gameConfig = {
+    'refundRate': 0.75,
+    /*
+     * difficulty: 'easy', 'intermediate', 'hard'
+     * ....
+     */
 };
 
-export default config;
+export default gameConfig;

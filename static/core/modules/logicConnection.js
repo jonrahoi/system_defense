@@ -11,15 +11,28 @@ export default class LogicConnection{
         this.src = src
         this.des = des
         this.options = options || {}
-        this.load = {}
+        this.latency = options.latency
+        this.load = []
     }
 
-
-    processRequests(){}
-    blocked(){}
-    addRequest(){}
+    processTimestep(){
+        let req;
+        let i = this.load.length;
+        let reqArray = [];
+        while (i--) {
+            req = this.load[i];
+            if (++req[0] >= this.options.latency) {
+                this.load.splice(i, 1);
+                this.des.enqueue(req[1]);
+                reqArray.push(req[1]);
+            }
+        }
+        return reqArray;
+    }
+    addRequest(req){
+        this.load.push([0, req]);
+    }
     removeRequest(){}
-
 
     equals(other){
         if (!(other instanceof LogicConnection)) {
@@ -31,5 +44,9 @@ export default class LogicConnection{
 
     equals(srcId, desId) {
         return this.src.id === srcId && this.des.id === desId;
+    }
+
+    reset() {
+        this.load = [];
     }
 }
