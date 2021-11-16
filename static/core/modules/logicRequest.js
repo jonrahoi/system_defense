@@ -1,21 +1,18 @@
 
-// Factory function to generate UUIDs
-const generateID = () => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-};
+
+import generateUUID from '../../utilities/uuid.js';
+
 const TIMEOUT = 20;
 
 export var LogicRequest = (source, destID) => {
 
     var req = {
-        id: generateID(),
+        id: generateUUID(),
         age: 0,
 
         currComponent: source,
         nextComponent: undefined,
+        prevConnection: undefined,
         currConnection: undefined,
 
         destID: destID,
@@ -36,6 +33,7 @@ export var LogicRequest = (source, destID) => {
         pendingProcessing: function(component) {
             this.currComponent = component;
             this.nextComponent = null;
+            this.prevConnection = this.currConnection;
             this.currConnection = null;
 
             this._stateChange();
@@ -50,6 +48,7 @@ export var LogicRequest = (source, destID) => {
 
         // Called by a component when it's done processing THIS request (gives it a new connection and component)
         transmit: function(connection) { 
+            this.prevConnection = this.currConnection;
             this.currConnection = connection;
             this.currComponent = null;
 

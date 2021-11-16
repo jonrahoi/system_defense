@@ -9,7 +9,7 @@
  */
 
 
-import k from '../kaboom/index.js';
+import k from '../kaboom/kaboom.js';
 
 import Banner from '../modules/banner.js';
 import StatusBar from '../modules/statusBar.js';
@@ -26,8 +26,9 @@ import { selectControls, connectControls, select } from '../kaboom/components/se
 
 
 export function LevelView() {
-    this.init();
+    this.newComponents = {};
 
+    this.init();
     this.scene = () => { this.buildScene(); };
     this.test = (stageFuncs, lvlFuncs) => { this.includeLvlButtons(stageFuncs, lvlFuncs); };
 };
@@ -39,19 +40,19 @@ export function LevelView() {
 // (would get complicated when setting each section's 'x' value)
 const viewLayout = {
     banner: {
-        heightRatio: 0.045, 
+        heightRatio: 0.05, 
         widthRatio: 1,
     },
     statusBar: {
-        heightRatio: 0.05,
+        heightRatio: 0.055,
         widthRatio: 1
     },
     playField: {
-        heightRatio: 0.775, 
+        heightRatio: 0.765, 
         widthRatio: 1
     },
     selectionBar: {
-        heightRatio: 0.14,
+        heightRatio: 0.13,
         widthRatio: 1
     }
 }
@@ -97,6 +98,12 @@ LevelView.prototype.init = function() {
         viewLayout.selectionBar.height
     );
 
+    // Update selection bar with newly available components and store new data in Game Logic
+    this.buildStage = () => { 
+        this.selectionBar.addComponents(this.newComponents.additionalComponents); 
+        FieldControls.initStage(this.newComponents.clients, this.newComponents.processors, 
+                                    this.newComponents.endpoints, this.playField);
+    };
 };
 
 // Used as the actual scene "object" for Kaboom
@@ -105,77 +112,73 @@ LevelView.prototype.buildScene = function() {
     this.statusBar.build();
     this.playField.build();
     this.selectionBar.build();
-
-    this.initStage();
+    
+    this.buildStage();
     this.registerEvents();
+};
+
+// Meant to represent updating animations. However these could be dealt with through Kaboom
+// UPDATE ALL REQUESTS HERE? (@see State.requestStates)
+LevelView.prototype.update = function(timestamp, speedup) {
+    console.log(`Animation timestep: ${timestamp} @ ${speedup}x`);
 };
 
 // Load a level object into this view
 LevelView.prototype.load = function(levelLogic) {
-    this.currentLvlLogic = levelLogic;
 
     // Remove all components from the screen
     k.destroyAll('_component');
 
     FieldControls.loadLogic(levelLogic);
-    this.selectionBar.setComponents(levelLogic.levelSpecs.availableComponents);
+    this.selectionBar.clear();
+    this.initStage(levelLogic.levelSpecs, true);
 };
 
-// Meant to represent updating animations. However these could be dealt with through Kaboom
-// UPDATE ALL REQUESTS HERE?
-LevelView.prototype.update = function(timestamp, speedup) {
-    console.log(`Animation timestep: ${timestamp} @ ${speedup}x`);
-};
+// Seti[] new stage data for the existing playfield and selection bar
+LevelView.prototype.initStage = function(newStageSpecs, newLevel=false) {
+    let clients, processors, endpoints, additionalComponents;
+    if (newLevel) {
+        this.newComponents['clients'] = newStageSpecs.clients;
+        this.newComponents['processors'] = newStageSpecs.processors;
+        this.newComponents['endpoints'] = newStageSpecs.endpoints;
+        this.newComponents['additionalComponents'] = newStageSpecs.availableComponents;
+    } else {
+        // alert here?
+        console.log("STAGE CLEARED!");
+        TimerControls.append(newStageSpecs.timeBonus);
+        
+        this.newComponents['clients'] = newStageSpecs.addedClients;
+        this.newComponents['processors'] = newStageSpecs.addedProcessors;
+        this.newComponents['endpoints'] = newStageSpecs.addedEndpoints;
+        this.newComponents['additionalComponents'] = newStageSpecs.additionalComponents;
 
-// Add all of the predefined, initial components to the PlayField
-// Methodology isn't perfect but it's a start
-LevelView.prototype.initStage = function() {
-    if (!this.currentLvlLogic) {
-        return;
+        this.buildStage();
     }
-
-    let initClients = this.currentLvlLogic.levelSpecs.clients;
-    let initProcessors = this.currentLvlLogic.levelSpecs.processors;
-    let initEndpoints = this.currentLvlLogic.levelSpecs.endpoints;
-
-    FieldControls.initStage(initClients, initProcessors, initEndpoints, this.playField);
 };
 
-
-LevelView.prototype.stageCleared = function(newStageSpecs) {
-    // maybe alert here?
-    console.log("STAGE CLEARED!");
-    TimerControls.append(newStageSpecs.timeBonus);
-    
-    let addedClients = newStageSpecs.addedClients;
-    let addedProcessors = newStageSpecs.addedProcessors;
-    let addedEndpoints = newStageSpecs.addedEndpoints;
-
-    // Update selection bar with newly available components
-    let additionalComponents = newStageSpecs.additionalComponents;
-    for (const component of additionalComponents) {
-        this.selectionBar.update(component.name, component.quantity);
-    }
-    // Store data in Game Logic
-    FieldControls.initStage(addedClients, addedProcessors, addedEndpoints, this.playField);
-}
-
-
-// Deal with mouse & keyboard events 
+// Deal with mouse & keyboard events. Connect TimerControls and State callbacks
 LevelView.prototype.registerEvents = function() { 
+
+    // Register function to update status bar time
+    TimerControls.register(this.statusBar.updateTime, this.statusBar, TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
+    TimerControls.register(this.statusBar.updateTime, this.statusBar, TimerControls.RegistrationTypes.TIME_ADJUSTEMENT);
+
+    // Register function update status bar state values
+    State.register(this.statusBar.updateState, this.statusBar);
+
     // When left button is HELD --> start of drag
     k.onMouseDown('left', (pos) => {
         if (k.isMouseMoved() && dragControls.current()) {
             let currDrag = dragControls.current();
             k.cursor("move");
-            let offset = this.playField.inProcessorSide(pos.x, pos.y, currDrag.width, currDrag.height);
+            let offset = this.playField.confineComponentSpace(pos.x, pos.y, currDrag.width, currDrag.height);
             currDrag.updatePos(k.vec2(...offset));
         }
     });
     
     // When left button is released --> end a drag or display selection
     k.onMouseRelease('left', (pos) => {
-        if (!dragControls.dragging()) {
+        if (!dragControls.isDragging()) {
             // Get all processors
             let selectables = k.get('selectable');
             for (const c of selectables) {
@@ -271,28 +274,6 @@ LevelView.prototype.includeLvlButtons = function(stageFuncs, lvlFuncs) {
 
     // override scene function
     this.scene = () => { this.buildScene(); this.levelBtns.build(); };
-};
-
-
-// Beta version. Will most likely come in handy later. Not currently used
-const SyncComponets = function() {
-    // remove components that game logic has removed
-    k.every('client', (obj) => {
-        if (!State.visibleClientIDs.includes(obj.getId())) {
-            k.destroy(obj);
-        }
-    });
-    k.every('processor', (obj) => {
-        if (!State.visibleProcessorIDs.includes(obj.getId())) {
-            k.destroy(obj);
-        }
-    });
-    k.every('connection', (obj) => {
-        let exists = State.connections.find(x => { obj.equals(x); });
-        if (!exists) {
-            k.destroy(obj);
-        }
-    })
 };
 
 export default LevelView;

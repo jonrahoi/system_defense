@@ -5,7 +5,7 @@
 import LogicComponent from './logicComponent.js';
 import LogicConnection from './logicConnection.js';
 import connectionTypes from '../../config/connections.js';
-import findNetworkPath from './requestTransmitting.js';
+import findNetworkPath from '../../config/transmission.js';
 
 export default class Network{
     constructor(){
@@ -131,7 +131,6 @@ export default class Network{
         if (!this.hasComponent(component)) {
             this.components[component.id] = component;
             this.adjList.set(component.id, {});
-            component.setTransmission(this.transmitFunc.bind(this));
         } else {
             return {
                 valid: false,
@@ -186,7 +185,6 @@ export default class Network{
             };
         }
 
-        // var connection = new LogicConnection(srcComponent, destComponent, options);
         if (this.hasConnection(connection)) { 
             return {
                 valid: false,

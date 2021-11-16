@@ -8,7 +8,7 @@
  * of the component IDs. (ie. viewComponent (id=1234) <==> logicComponent (id=1234))
  */
 
-import k from '../index.js';
+import k from '../kaboom.js';
 
 /**
  * Custom Kaboom component

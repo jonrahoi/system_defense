@@ -56,10 +56,10 @@ export const StateMachine = {
 
 
     levelChange: function(levelNumber, newSpecs) {
-        State.stagePassed = false;
-        State.levelPassed = false;
+        // State.stagePassed = false;
+        // State.levelPassed = false;
         State.coins = newSpecs.budget;
-        State.goal = newSpecs.goal;
+        // State.goalCount = newSpecs.goalCount;
         State.levelNumber = levelNumber;
         State.prevScore = State.score;
         State.stageNumber = 1;
@@ -81,7 +81,7 @@ export const StateMachine = {
         State.stagePassed = false;
         State.levelPassed = false;
         State.coins += newSpecs.coinReward;
-        State.goal = newSpecs.goal;
+        State.goalCount = newSpecs.goalCount;
         State.stageNumber = stageNumber;
         State.networkType = newSpecs.networkType;
         State.stageDescription = newSpecs.description;
@@ -147,6 +147,7 @@ export const StateMachine = {
                 return;
             }
         }
+        State.stateChange();
     },
     
     reset: function() {

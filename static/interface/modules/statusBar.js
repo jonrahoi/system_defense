@@ -8,21 +8,20 @@
  */
 
 
-import k from "../kaboom/index.js";
+import k from "../kaboom/kaboom.js";
 
 import TimerControls from '../../utilities/timer.js';
 import State from '../../shared/state.js';
+import { ScaledIcon } from '../kaboom/graphicUtils.js';
 
 /*
-    * ------------------------------ BANNER -----------------------------------
-    * USFLogo USFCSLogo               TITLE  CapLogo  HOME VOLUME/MUTE SETTINGS
-    * ---------------------------- STATUS BAR ---------------------------------
-    * LEVEL X SCORE X COINS X              COMPLETE/GOAL TIME PLAY|PAUSE|RESTART
+* ------------------------------------------------------ BANNER -----------------------------------------------------
+* USFLogo USFCSLogo                                                 TITLE CapLogo           HOME VOLUME/MUTE SETTINGS
+* --------------------------------------------------- STATUS BAR ----------------------------------------------------
+* LEVEL X SCORE X COINS X EXPENSES X THROUGHPUT X LATENCY X         COMPLETE/GOAL             TIME PLAY|PAUSE|RESTART
 */
 
-// ALL ICONS HAVE SAME SIZE (512p x 512p)
-const iconWidth = 512;
-const iconHeight = 512;
+
 
 export function StatusBar(screenX, screenY, screenWidth, screenHeight) {
 
@@ -30,13 +29,6 @@ export function StatusBar(screenX, screenY, screenWidth, screenHeight) {
 
     // Expose function anonymously to ensure correct context
     this.build = () => { this.buildObject(); };
-
-    // Register function to update status bar time
-    TimerControls.register(this.updateTime, this, TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
-    TimerControls.register(this.updateTime, this, TimerControls.RegistrationTypes.TIME_ADJUSTEMENT);
-
-    // Register function update status bar state values
-    State.register(this.updateState, this);
 };
 
 
@@ -53,8 +45,8 @@ StatusBar.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
         width: screenWidth, // width of the status bar (expand to fill screen width)
         height: screenHeight, // height of the status bar (expand to fill screen)
 
-        backgroundColor: k.color(135, 145, 160), // solid color to fill status bar
-        backgroundOpacity: k.opacity(1), // opacity of the background color
+        backgroundColor: [135, 145, 160], // solid color to fill status bar
+        backgroundOpacity: 1, // opacity of the background color
 
         xInnerOffsetRatio: 0.005, // distance from left/right-most objects to status bar left/right boundary
         yInnerOffsetRatio: 0.2, // distance from top/bottom of objects to status bar top/bottom        
@@ -62,222 +54,135 @@ StatusBar.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
         iconXSpacerRatio: 0.25, // spacing ratio based on scaled icon width
         iconYSpacerRatio: 0.0, // spacing ratio based on scaled icon height
 
-        controlIconScale: 1, // used to resize the control icons (play, pause, restart...)
-        constrolIconXSpacerRatio: 0.45 // spacing ratio based on scaled icon width
+        btnXSpacerRatio: 0.4, // spacing ratio based on scaled icon width
+
+        // Details about status bar items. They will be displayed from left 
+        // to right in the top-to-bottom order defined here. 
+        // All text ratios are relative to iconWidth and iconHeight
+        leftItems: [
+            { name: 'level', type: 'text', widthRatio: 2.5, heightRatio: 0.95 }, 
+            { name: 'score', type: 'text', widthRatio: 3, heightRatio: 0.95}, 
+            { name: 'coins', type: 'text', widthRatio: 3, heightRatio: 0.95 }, 
+            { name: 'expenses', type: 'text', widthRatio: 2, heightRatio: 0.95 },
+            { name: 'throughput', type: 'text', widthRatio: 2, heightRatio: 0.95 }, 
+            { name: 'latency', type: 'text', widthRatio: 2, heightRatio: 0.95 }
+        ],
+        
+        middleItems: [
+            { name: 'requests', type: 'text', widthRatio: 4, heightRatio: 0.95 }
+        ],
+        
+        rightItems: [
+            { name: 'timer', type: 'text', widthRatio: 3, heightRatio: 0.95 }, 
+            { name: 'play', type: 'btn' }, 
+            { name: 'pause', type: 'btn' }, 
+            { name: 'fastForward', type: 'btn' },
+            { name: 'restart', type: 'btn' } 
+        ]
     };
     
     // Calculated spacing for the status bar's inner boundaries
     this.params['xInnerSpacer'] = this.params.xInnerOffsetRatio * this.params.width;
-    this.params['yInnerSpacer'] = (this.params.yInnerOffsetRatio * this.params.height);
-
-    // Scaling factor for the status bar's icons
-    this.params['iconRatio'] = Math.min(((this.params.width - (2 * this.params.xInnerSpacer)) / iconWidth), 
-                                        ((this.params.height - (2 * this.params.yInnerSpacer)) / iconHeight));
+    this.params['yInnerSpacer'] = this.params.yInnerOffsetRatio * this.params.height;
 
     // Universal sizing of the status bar's icons
-    this.params['iconWidth'] = (iconWidth * this.params.iconRatio);
-    this.params['iconHeight'] = (iconHeight * this.params.iconRatio);
+    let iconSize = ScaledIcon(this.params.width - (2 * this.params.xInnerSpacer), (this.params.height - (2 * this.params.yInnerSpacer)));
+    this.params['iconWidth'] = iconSize.width;
+    this.params['iconHeight'] = iconSize.height;
 
     // Spacers between objects in the status bar
     this.params['xObjSpacer'] = this.params.iconWidth * this.params.iconXSpacerRatio;
     this.params['yObjSpacer'] = this.params.iconHeight * this.params.iconYSpacerRatio;
 
-    // Sizing and spacing for the control-enabled icons
-    this.params['controlIcons'] = { // icons with actions (home, volume, settings)
-        width: iconWidth * this.params.iconRatio * this.params.controlIconScale, // scaled width based on above ratio
-        height: iconHeight * this.params.iconRatio * this.params.controlIconScale // scaled height based on above ratio
-    };
-    this.params['controlIcons'].xSpacer = this.params.controlIcons.width * this.params.constrolIconXSpacerRatio;
-    this.params['controlIcons'].ySpacer = ((this.params.height- (2 * this.params.yInnerSpacer)) / 2) - (this.params.controlIcons.height / 2);
+    this.params['btnXSpacer'] = this.params.iconWidth * this.params.btnXSpacerRatio;
+    this.params['btnYSpacer'] = ((this.params.height- (2 * this.params.yInnerSpacer)) / 2) - (this.params.iconHeight / 2);
 
-    // Sizing for the various text labels
-    this.params['textObjs'] = { // would be nice if these could auto-size...
-        level: {
-            width: this.params.iconWidth * 1.5,
-            height: this.params.iconHeight * 0.95
-        },
-        expenses: {
-            width: this.params.iconWidth * 2,
-            height: this.params.iconHeight * 0.95
-        },
-        throughput: {
-            width: this.params.iconWidth * 2,
-            height: this.params.iconHeight * 0.95
-        },
-        latency: {
-            width: this.params.iconWidth * 2,
-            height: this.params.iconHeight * 0.95
-        },
-
-        // These need to be larger (longer)
-
-        score: {
-            width: this.params.iconWidth * 3,
-            height: this.params.iconHeight * 0.95
-        },
-        coins: {
-            width: this.params.iconWidth * 3,
-            height: this.params.iconHeight * 0.95
-        },
-        time: {
-            width: this.params.iconWidth * 3,
-            height: this.params.iconHeight * 0.95
-        },
-        requests: {
-            width: this.params.iconWidth * 4,
-            height: this.params.iconHeight * 0.95
-        }
-    };
-    // this.params['height'] += (this.params.yInnerSpacer); // essentially add the ySpacer to the bottom
-
-
+    // Apply text ratios to all text objects
+    for (let item of this.params.leftItems.concat(this.params.middleItems, this.params.rightItems)) {
+        item['width'] = item.widthRatio * this.params.iconWidth;
+        item['height'] = item.heightRatio * this.params.iconHeight;
+    }
+    
     /* 
      * Objects inside the status bar (aka buttons and icons)
      */
     this.objects = {};
+
+    // Function to calculate the width of a group of items
+    const findWidth = (() => {
+        return (acc, x) => {
+            acc += this.params.iconWidth;
+            if (x.type === 'text') {
+                acc += (this.params.xObjSpacer) + x.width;
+            } 
+            if (acc !== 0) {
+                if (x.type === 'text') {
+                    acc += (this.params.xObjSpacer);
+                } else if (x.type === 'btn') {
+                    acc += this.params.btnXSpacer;
+                }
+            }
+            return acc;
+        };
+    })();
+
+    // Find the total width occupied by the middle and right items
+    let middleWidth = this.params.middleItems.reduce(findWidth, 0);
+    let rightWidth = this.params.rightItems.reduce(findWidth, 0);
     
-    // Use LEFT edge as reference //
+    // Function to assign positions and predefined params to graphic object 
+    const buildItem = (() => {
+        return (item, prevX, prevY) => {
+            let iconName = `${item.name}Icon`;
+            let textName = `${item.name}Text`;
+            if (item.type === 'btn') {
+                prevX += this.params.btnXSpacer;
+                this.objects[iconName] = {
+                    x: prevX,
+                    y: prevY
+                };
+                Object.assign(this.objects[iconName], item);
+                return prevX + this.params.iconWidth;
+            } else if (item.type === 'text') {
+                prevX += this.params.xObjSpacer;
+                let textX = (prevX + this.params.iconWidth + this.params.xObjSpacer);
+                this.objects[iconName] = {
+                    x: prevX,
+                    y: prevY
+                };
+                this.objects[textName] = {
+                    x: textX,
+                    y: (prevY
+                        + ((this.params.iconHeight / 2)
+                        - (item.height / 2)))
+                }
+                Object.assign(this.objects[iconName], item);
+                Object.assign(this.objects[textName], item);
+                return (textX + item.width);
+            }
+        };
+    })();
 
-    this.objects['levelIcon'] = { 
-        x: (this.params.x + this.params.xObjSpacer + this.params.xInnerSpacer), // left-most edge
-        y: (this.params.y + this.params.yObjSpacer + this.params.yInnerSpacer) 
-    };
+    // Loop over leftItems
+    let prevY = this.params.y + this.params.btnYSpacer + this.params.yInnerSpacer;
+    let prevX = this.params.x + this.params.xInnerSpacer;
+    for (let item of this.params.leftItems) {
+        prevX = buildItem(item, prevX, prevY);
+    }
     
-    this.objects['levelText'] = {  
-        x: (this.objects.levelIcon.x + this.params.iconWidth + this.params.xObjSpacer), // level icon + spacer for this text
-        y:  (this.objects.levelIcon.y
-            + ((this.params.iconHeight / 2)
-            - (this.params.textObjs.level.height / 2))), // add offset for text height
-        width: this.params.textObjs.level.width,
-        height: this.params.textObjs.level.height
-    };
-    
-    this.objects['scoreIcon'] = {
-        x: (this.objects.levelText.x + this.objects.levelText.width + this.params.xObjSpacer), // level text + spacer
-        y: (this.params.y + this.params.yObjSpacer + this.params.yInnerSpacer) 
-    };
-    
-    this.objects['scoreText'] = {
-        x: (this.objects.scoreIcon.x + this.params.iconWidth + this.params.xObjSpacer), // score icon + spacer
-        y: ((this.objects.scoreIcon.y)
-            + ((this.params.iconHeight / 2)
-            - (this.params.textObjs.score.height / 2))), // add offset for text height
-        width: this.params.textObjs.score.width,
-        height: this.params.textObjs.score.height
-    };
+    // Loop over middleItems
+    prevX = ((this.params.x + (this.params.width / 2)) // mid point of bar
+            - (middleWidth / 4)); // half of group width & another half for centering
+    for (let item of this.params.middleItems) {
+        prevX = buildItem(item, prevX, prevY);
+    }
 
-    this.objects['coinsIcon'] = {
-        x: (this.objects.scoreText.x + this.objects.scoreText.width + this.params.xObjSpacer), // score text + spacer
-        y: (this.params.y + this.params.yObjSpacer + this.params.yInnerSpacer)
-    };
-    
-    this.objects['coinsText'] = {
-        x: (this.objects.coinsIcon.x + this.params.iconWidth + this.params.xObjSpacer), // coins icon + spacer
-        y: ((this.objects.coinsIcon.y)
-            + ((this.params.iconHeight / 2)
-            - (this.params.textObjs.coins.height / 2))), // add offset for text height
-        width: this.params.textObjs.coins.width,
-        height: this.params.textObjs.coins.height
-    };
-
-    this.objects['expensesIcon'] = {
-        x: (this.objects.coinsText.x + this.objects.coinsText.width + this.params.xObjSpacer), // coins text + spacer
-        y: (this.params.y + this.params.yObjSpacer + this.params.yInnerSpacer)
-    };
-
-    this.objects['expensesText'] = {
-        x: (this.objects.expensesIcon.x + this.params.iconWidth + this.params.xObjSpacer), // expenses icon + spacer
-        y: ((this.objects.expensesIcon.y)
-            + ((this.params.iconHeight / 2)
-            - (this.params.textObjs.expenses.height / 2))), // add offset for text height
-        width: this.params.textObjs.expenses.width,
-        height: this.params.textObjs.expenses.height
-    };
-
-    this.objects['throughputIcon'] = {
-        x: (this.objects.expensesText.x + this.objects.expensesText.width + this.params.xObjSpacer), // coins text + spacer
-        y: (this.params.y + this.params.yObjSpacer + this.params.yInnerSpacer)
-    };
-
-    this.objects['throughputText'] = {
-        x: (this.objects.throughputIcon.x + this.params.iconWidth + this.params.xObjSpacer), // expenses icon + spacer
-        y: ((this.objects.throughputIcon.y)
-            + ((this.params.iconHeight / 2)
-            - (this.params.textObjs.throughput.height / 2))), // add offset for text height
-        width: this.params.textObjs.throughput.width,
-        height: this.params.textObjs.throughput.height
-    };
-
-    this.objects['latencyIcon'] = {
-        x: (this.objects.throughputText.x + this.objects.throughputText.width + this.params.xObjSpacer), // coins text + spacer
-        y: (this.params.y + this.params.yObjSpacer + this.params.yInnerSpacer)
-    };
-
-    this.objects['latencyText'] = {
-        x: (this.objects.latencyIcon.x + this.params.iconWidth + this.params.xObjSpacer), // expenses icon + spacer
-        y: ((this.objects.latencyIcon.y)
-            + ((this.params.iconHeight / 2)
-            - (this.params.textObjs.latency.height / 2))), // add offset for text height
-        width: this.params.textObjs.latency.width,
-        height: this.params.textObjs.latency.height
-    };
-
-
-    // Use mid line as reference //
-    this.objects['requestsIcon'] = {
-        x: ((this.params.x + (this.params.width / 2)) // mid point of bar
-            - ((this.params.iconWidth + this.params.textObjs.requests.width) / 2)), // half req icon & text (bundled)
-        y: (this.params.y + this.params.yObjSpacer + this.params.yInnerSpacer)
-    };
-
-    this.objects['requestsText'] = {
-        x: (this.objects.requestsIcon.x
-            + (this.params.iconWidth) // half req icon & text (bundled)
-            + (this.params.xObjSpacer)), // spacer for this text
-        y: ((this.objects.requestsIcon.y)
-            + ((this.params.iconHeight / 2)
-            - (this.params.textObjs.requests.height / 2))), // add offset for text height
-        width: this.params.textObjs.requests.width,
-        height: this.params.textObjs.requests.height
-    };
-
-    // Use RIGHT edge as reference //
-
-    this.objects['restartIcon'] = {
-        x: ((this.params.x + this.params.width - this.params.xInnerSpacer) // furthest right edge
-            - (this.params.xObjSpacer) // offset
-            - this.params.controlIcons.width), // this icon 
-        y: (this.params.y + this.params.controlIcons.ySpacer + this.params.yInnerSpacer)
-    };
-
-    this.objects['fastForwardIcon'] = {
-        x: (this.objects.restartIcon.x - (this.params.controlIcons.width + this.params.controlIcons.xSpacer)), // fastForward icon + spacer
-        y: (this.params.y + this.params.controlIcons.ySpacer + this.params.yInnerSpacer)
-    };
-
-    this.objects['pauseIcon'] = {
-        x: (this.objects.fastForwardIcon.x - (this.params.controlIcons.width + this.params.controlIcons.xSpacer)), // restart icon + spacer
-        y: (this.params.y + this.params.controlIcons.ySpacer + this.params.yInnerSpacer)
-    };
-
-    this.objects['playIcon'] = {
-        x: (this.objects.pauseIcon.x - (this.params.controlIcons.width + this.params.controlIcons.xSpacer)), // pause icon + spacer
-        y: (this.params.y + this.params.controlIcons.ySpacer + this.params.yInnerSpacer)
-    };
-    
-    this.objects['timeText'] = { 
-        x: (this.objects.playIcon.x - (this.params.textObjs.time.width + (this.params.controlIcons.xSpacer * 3))), // play icon + spacer
-        y: ((this.objects.playIcon.y)
-            + ((this.params.iconHeight / 2)
-            - (this.params.textObjs.time.height / 2))), // add offset for text height
-        width: this.params.textObjs.time.width,
-        height: this.params.textObjs.time.height
-    };
-
-    this.objects['timeIcon'] = {
-        x: (this.objects.timeText.x - (this.params.controlIcons.width + this.params.controlIcons.xSpacer)), // time icon + spacer 
-        y: (this.params.y + this.params.yObjSpacer + this.params.yInnerSpacer) 
-    };
+    // Loop over rightItems
+    prevX = (this.params.x + this.params.width) - // far right edge
+        (this.params.xInnerSpacer + this.params.xObjSpacer + rightWidth); // left-most point of group
+    for (let item of this.params.rightItems) {
+        prevX = buildItem(item, prevX, prevY);
+    }
 
     // Function to share dimensions of this status bar
     this.dimensions = (() => {
@@ -292,7 +197,6 @@ StatusBar.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
 };
 
 
-
 /**
  * Adds all of the graphic objects to the screen using the initialized parameters
  */
@@ -302,154 +206,45 @@ StatusBar.prototype.buildObject = function() {
     k.add([
         k.rect(this.params.width, this.params.height),
         k.pos(this.params.x, this.params.y),
-        this.params.backgroundColor,
-        this.params.backgroundOpacity
+        k.color(...this.params.backgroundColor),
+        k.opacity(this.params.backgroundOpacity)
     ]);
 
-    // Level icon
-    k.add([
-        k.sprite('level', { width: this.params.iconWidth, 
-                            height: this.params.iconHeight }),
-        k.pos(this.objects.levelIcon.x, this.objects.levelIcon.y),
-    ]);
+    // Loop over all defined graphic objects and add them to the scene
+    let itemName, spriteParams, text;
+    for (const [name, params] of Object.entries(this.objects)) {
+        // Add icon
+        itemName = name.slice(0, -4); // remove tag of 'Icon' or 'Text'
+        if (name.includes('Icon')) {
+            spriteParams = [
+                k.sprite(itemName, { width: this.params.iconWidth, 
+                                    height: this.params.iconHeight }),
+                k.pos(params.x, params.y)];
 
-    // Level text
-    this.levelText = k.add([
-        k.text(State.levelNumber, { size: this.objects.levelText.height, 
-                        width: this.objects.levelText.width }),
-        k.pos(this.objects.levelText.x, this.objects.levelText.y),
-    ]);
+            if (params.type == 'btn') {
+                spriteParams.push(k.area()); // necessary for clicks
+                this[`${itemName}Btn`] = k.add(spriteParams);
+            } else {
+                k.add(spriteParams);
+            }
+        } 
 
-    // Score icon
-    k.add([
-        k.sprite('score', { width: this.params.iconWidth, 
-                            height: this.params.iconHeight }),
-        k.pos(this.objects.scoreIcon.x, this.objects.scoreIcon.y),
-    ]);
-
-    // Score text
-    this.scoreText = k.add([
-        k.text(State.score, { size: this.objects.scoreText.height, 
-                            width: this.objects.scoreText.width }),
-        k.pos(this.objects.scoreText.x, this.objects.scoreText.y),
-    ]);
-
-    // Coins icon
-    k.add([
-        k.sprite('coins', { width: this.params.iconWidth, 
-                            height: this.params.iconHeight }),
-        k.pos(this.objects.coinsIcon.x, this.objects.coinsIcon.y),
-    ]);
-
-    // Coins text
-    this.coinsText = k.add([
-        k.text(State.coins, { size: this.objects.coinsText.height, 
-                            width: this.objects.coinsText.width }),
-        k.pos(this.objects.coinsText.x, this.objects.coinsText.y),
-    ]);
-
-    // Expenses icon
-    k.add([
-        k.sprite('expenses', { width: this.params.iconWidth, 
-                            height: this.params.iconHeight }),
-        k.pos(this.objects.expensesIcon.x, this.objects.expensesIcon.y),
-    ]);
-
-    // Expenses text
-    this.expensesText = k.add([
-        k.text(State.expenses, { size: this.objects.expensesText.height, 
-                            width: this.objects.expensesText.width }),
-        k.pos(this.objects.expensesText.x, this.objects.expensesText.y),
-    ]);
-
-    // Throughput icon
-    k.add([
-        k.sprite('throughput', { width: this.params.iconWidth, 
-                            height: this.params.iconHeight }),
-        k.pos(this.objects.throughputIcon.x, this.objects.throughputIcon.y),
-    ]);
-
-    // Throughput text
-    this.throughputText = k.add([
-        k.text(State.throughput, { size: this.objects.throughputText.height, 
-                            width: this.objects.throughputText.width }),
-        k.pos(this.objects.throughputText.x, this.objects.throughputText.y),
-    ]);
-
-    // Latency icon
-    k.add([
-        k.sprite('latency', { width: this.params.iconWidth, 
-                            height: this.params.iconHeight }),
-        k.pos(this.objects.latencyIcon.x, this.objects.latencyIcon.y),
-    ]);
-
-    // Latency text
-    this.latencyText = k.add([
-        k.text(State.latency, { size: this.objects.latencyText.height, 
-                            width: this.objects.latencyText.width }),
-        k.pos(this.objects.latencyText.x, this.objects.latencyText.y),
-    ]);
-
-    // Requests icon
-    k.add([
-        k.sprite('requests', { width: this.params.iconWidth, 
-                                height: this.params.iconHeight }),
-        k.pos(this.objects.requestsIcon.x, this.objects.requestsIcon.y),
-    ]);
-
-    // Requests text
-    this.requestsText = k.add([
-        k.text('0/' + State.goal, { size: this.objects.requestsText.height, 
-                            width: this.objects.requestsText.width }),
-        k.pos(this.objects.requestsText.x, this.objects.requestsText.y),
-    ]);
-
-    // Timer icon
-    k.add([
-        k.sprite('timer', { width: this.params.iconWidth, 
-                            height: this.params.iconHeight }),
-        k.pos(this.objects.timeIcon.x, this.objects.timeIcon.y),
-    ]);
-
-    // Time text
-    this.timeText = k.add([
-        k.text(prettifyTime(TimerControls.remaining()), { size: this.objects.timeText.height, 
-                            width: this.objects.timeText.width }),
-        k.pos(this.objects.timeText.x, this.objects.timeText.y),
-    ]);
-
-    // Play icon
-    this.playBtn = k.add([
-        k.sprite('play', { width: this.params.controlIcons.width, 
-                            height: this.params.controlIcons.height }),
-        k.pos(this.objects.playIcon.x, this.objects.playIcon.y),
-        k.area(),
-        "play",
-    ]);
-
-    // Pause icon
-    this.pauseBtn = k.add([
-        k.sprite('pause', { width: this.params.controlIcons.width, 
-                            height: this.params.controlIcons.height }),
-        k.pos(this.objects.pauseIcon.x, this.objects.pauseIcon.y),
-        k.area(),
-    ]);
-
-    // Restart icon
-    this.restartBtn = k.add([
-        k.sprite('restart', { width: this.params.controlIcons.width, 
-                                height: this.params.controlIcons.height }),
-        k.pos(this.objects.restartIcon.x, this.objects.restartIcon.y),
-        k.area(),
-    ]);
-
-    // Fast forward icon
-    this.fastForwardBtn = k.add([
-        k.sprite('fastForward', { width: this.params.controlIcons.width, 
-                                height: this.params.controlIcons.height }),
-        k.pos(this.objects.fastForwardIcon.x, this.objects.fastForwardIcon.y),
-        k.area(),
-    ]);
+        // Add text
+        else if (name.includes('Text')) {
+            // Special cases
+            if (itemName == 'timer') {
+                text = prettifyTime(TimerControls.remaining());
+            } else if (itemName == 'level') {
+                text = State.levelNumber + '.' + State.stageNumber;
+            } else {
+                text = State[itemName]
+            }
+            this[name] = k.add([
+                k.text(text, { size: params.height, width: params.width }),
+                k.pos(params.x, params.y)
+            ]);
+        }
+    }
 
     // Connect buttons to control functions
     this.playBtn.clicks(TimerControls.play);
@@ -458,23 +253,25 @@ StatusBar.prototype.buildObject = function() {
     this.fastForwardBtn.clicks(TimerControls.fastforward);
 };
 
-
+// Updates status bar text. Called on when State is changed
 StatusBar.prototype.updateState = function() {
+    this.levelText.text = State.levelNumber + '.' + State.stageNumber;
     this.coinsText.text = State.coins;
     this.scoreText.text = State.score;
     this.expensesText.text = State.expenses;
     this.throughputText.text = State.throughput;
     this.latencyText.text = State.latency;
-    this.requestsText.text = State.numCompletedReqs + '/' + State.goal;
+    this.requestsText.text = State.numCompletedReqs + '/' + State.goalCount;
 };
 
+// Updates time text. Called on every timestep from Timer
 StatusBar.prototype.updateTime = function(timestamp, speedup) {
     console.log(`STATUS BAR timestep: ${timestamp} @ ${speedup}x`);
-    this.timeText.text = prettifyTime(timestamp);
+    this.timerText.text = prettifyTime(timestamp);
 };
 
 
-// helper function for displaying remaining time
+// Helper function for displaying remaining time
 const prettifyTime = (secs) => {
     let remainingSecs = secs % 60;
     return Math.floor(secs / 60) 

@@ -6,11 +6,10 @@
  */
 
 
-import k from '../kaboom/index.js';
+import k from '../kaboom/kaboom.js';
 
 import InterfaceComponent from '../kaboom/components/interfaceComponent.js';
 import State from '../../shared/state.js';
-import { centered } from '../kaboom/graphicUtils.js';
 
 export function TestLevelChange(x, y, width, height, stageFuncs, lvlFuncs) {
     this.init(x, y, width, height, stageFuncs, lvlFuncs);

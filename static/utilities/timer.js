@@ -106,7 +106,7 @@ const Timer = {
     },
 
     append: function(time) {
-        Timer.pause();
+        Timer.stop();
         Timer._time += Math.max(0, time);
 
         Timer._listeners[RegistrationTypes.TIME_ADJUSTEMENT].dispatch(Timer._time, Timer._speedup)

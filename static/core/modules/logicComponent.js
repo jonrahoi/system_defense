@@ -13,45 +13,43 @@
 
 // *** BASE ClASS *** //
 
-export default function LogicComponent(id, name, specs, goal) {
+export default function LogicComponent(id, name, specs, transmission) {
     this.id = id;
     this.name = name;
-    this.goal = goal; // goal number of requests to process
-    this.goalMet = false;
+    this.level = 0; // temp initial upgrade level
     
     this.connectedInputs = 0;
     this.connectedOutputs = 0;
-    this.numProcessed = 0;
+    this.numTransmitted = 0;
+    this.numReceived = 0;
     
     this.incomingRequestQueue = []; // all of these requests are blocked
     
-    this.transmitFunc = undefined; // will provide the next component for a request given it's destination
+    this.transmitFunc = transmission; // will provide the next component for a request given it's destination
     
     Object.assign(this, specs);
+    this.upgrade();
     
-    /* HAS THESE PROPERTIES AS WELL. ACQUIRED BY `this.build(specs)`:
-    * tags
-    * usageCost
-    * cost
-    * maxInputs
-    * maxOutputs
-    * (transmitRate) - if client
-    * (receiveRate) - if client
-    * requestCapacity
-    * (throughput) - if processor
-    * upgrades
-    * description
-    */
+    /* HAS PROPERTIES FROM CONFIG FILE AS WELL. ACQUIRED BY `Object.assign(this, specs)`: */
 }
 
 
 LogicComponent.prototype.setGoal = function(goal) {
-    this.goal = goal;
+    this.goal = goal; // goal number of requests to process
+    this.goalMet = false;
 };
 
-LogicComponent.prototype.setTransmission = function(transmitFunc) {
+LogicComponent.prototype.setTransmitFunc = function(transmitFunc) {
     this.transmitFunc = transmitFunc;
-}
+};
+
+LogicComponent.prototype.upgrade = function() {
+    if (this.hasOwnProperty('upgrades')) { // would be acquired by config file
+        this.level += 1;
+        let upgradeSpecs = this.upgrades[this.level];
+        Object.assign(this, upgradeSpecs);
+    }
+};
 
 /** Game IO control **/
 LogicComponent.prototype.addInput = function() {
@@ -97,7 +95,8 @@ LogicComponent.prototype.isAvailable = function() {
 
 /** Component control **/
 LogicComponent.prototype.softReset = function() {
-    this.numProcessed = 0;
+    this.numTransmitted = 0;
+    this.numReceived = 0;
     this.goal = null;
     this.goalMet = false;
     this.incomingRequestQueue = [];
@@ -106,5 +105,7 @@ LogicComponent.prototype.hardReset = function() {
     this.softReset();
     this.connectedInputs = 0;
     this.connectedOutputs = 0;
+    this.level = 0;
+    this.upgrade();
 };
 
