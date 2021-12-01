@@ -1,9 +1,36 @@
-/*
- * 
- */
 
+/* GRAPHIC SPACING DEFINITIONS
 
-import k from '../kaboom.js';
+Legend:
+- yO & xO = yOffset & xOffset --> provide ability to "offset" object from center
+- yOS & xOS = yOuterSpacer & xOuterSpacer --> gives "cusion" between outer objects
+- yIS & xIS = yInnerSpacer & yInnerSpacer --> gives "cusion" between inner objects
+
+                        (PARENT OBJECT (aka Window/Screen))
+________________________________________________________________________________
+|                                        | yO                                  |
+|                                       --                                     |
+|                                        | yOS                                 |
+|          ______________________________________________________________      |
+|          |                             | yIS                          |      |
+|          |                            --                              |      |
+|          |                                                            |      |
+|          |                                                            |      |
+|          |                                                            |      |
+| -- | --  | -- |                                                       |      |
+| xO | xOS | xIS                                                        |      |
+|          |                                                            |      |
+|          |                                                            |      |
+|          |                                                            |      |
+|          |                                                            |      |
+|          |                (CHILD OBJECT (aka MenuBox))                |      |
+|          --------------------------------------------------------------      |
+|                                                                              |
+|                                                                              |
+--------------------------------------------------------------------------------
+*/
+
+import k from '../kaboom/index.js';
 
 // Constant image size
 const backgroundImgWidth = 1200;
@@ -11,101 +38,119 @@ const backgroundImgHeight = 800;
 
 export function Home(menuActions) {    
     this.actions = menuActions;
-    this.buildParameters();
+    this.init();
 
     // necessary to preserve `this` reference (check out arrow functions if unfamiliar)
     this.scene = () => { this.buildScene(); };
 };
 
-Home.prototype.buildParameters = function() {
+/**
+ * Initialize all parameters (sizing, position, spacing...) for the welcome scene
+ */
+Home.prototype.init = function() {
     
     this.params = {
-        screenX: 0,
-        screenY: 0,
-        screenWidth: k.width(),
-        screenHeight: k.height(),
+        screenX: 0, // minimum x value relative to screenWidth
+        screenY: 0, // minimum y value relative to screenHeight
+        screenWidth: k.width(), // total screen width
+        screenHeight: k.height(), // total screen height
 
-        backdropColor: k.color(180, 200, 250),
-        backdropOpacity: k.opacity(1),
+        backdropColor: k.color(180, 200, 250), // backdrop color (behind transparent image)
+        backdropOpacity: k.opacity(1), // opacity of backdrop
 
         titleWidthRatio: 0.35, // ratio compared to the screen width
         titleHeightRatio: 0.08, // ratio compared to the screen height
-        yTitleOffsetRatio: 0.5, // y-spacing from screen top based on title height
+        yTitleOffsetRatio: 0.5, // ratio of y-spacing from screen top based on title height
 
-        menu: {
-            backgroundColor: k.color(52, 149, 235),
-            backgroundOpacity: k.opacity(0.5),
+        menuBox: {
+            backgroundColor: k.color(52, 149, 235), // background color of the menu box
+            backgroundOpacity: k.opacity(0.5), // opacity of the menu box
             
-            numXButtons: 1,
-            numYButtons: 3,
-            buttonColor: k.color(0, 0, 0),
-            buttonOpacity: k.opacity(0.9),
+            numXButtons: 1, // number of buttons stacked vertically
+            numYButtons: 3, // number of buttons positioned horizontally
+            buttonColor: k.color(0, 0, 0), // universal color of the menu buttons
+            buttonOpacity: k.opacity(0.9), // universal opacity of the menu buttons
 
-            textColor: k.color(255, 255, 255),
-            textOpacity: k.opacity(0.9),
+            textColor: k.color(255, 255, 255), // universal color of the menu buttons' text
+            textOpacity: k.opacity(0.9), // universal opacity of the menu buttons' text
 
-            yOffsetRatio: 0.7, // spacing from top of screen (offets menu lower from center)
+            yOffsetRatio: 0.7, // ratio of spacing from top of screen (offets menu lower from center)
 
-            xInnerOffsetRatio: 0.03, // distance from left/right-most objects to menu left/right boundary
-            yInnerOffsetRatio: 0.04, // distance from top/bottom of objects to menu top/bottom
+            xInnerOffsetRatio: 0.03, // ratio of distance from left/right-most objects to menu left/right boundary
+            yInnerOffsetRatio: 0.04, // ratio of distance from top/bottom of objects to menu top/bottom
 
-            xOuterOffsetRatio: 0.42, // distance from screen left/right to boundary of menu
-            yOuterOffsetRatio: 0.2, // distance from screen top/button to boundary of menu
+            xOuterOffsetRatio: 0.42, // ratio of distance from screen left/right to boundary of menu
+            yOuterOffsetRatio: 0.2, // ratio of distance from screen top/button to boundary of menu
 
+            xButtonSpacerRatio: 0.1, // ratio of x-spacing ratio based on button width
+            yButtonSpacerRatio: 0.1, // ratio of y-spacing ratio based on button height
 
-            xButtonSpacerRatio: 0.1, // spacing ratio based on button width
-            yButtonSpacerRatio: 0.1, // spacing ratio based on button height
-
-            textWidthRatio: 0.65,
-            textHeightRatio: 0.5,
+            textWidthRatio: 0.65, // ratio of text width based on button width
+            textHeightRatio: 0.5 // ratio of text height based on button height
         }
     };
 
-    this.params['backgroundRatio'] = Math.min(this.params.screenWidth / backgroundImgWidth, 
+    // Ratio for the background image size
+    this.params['backgroundImgRatio'] = Math.min(this.params.screenWidth / backgroundImgWidth, 
                                                 this.params.screenHeight / backgroundImgHeight);
+    
+    // Adjusted width/height for the background image
     this.params['backgroundWidth'] = this.params.backgroundRatio * backgroundImgWidth;
     this.params['backgroundHeight'] = this.params.backgroundRatio * backgroundImgHeight;
     
+    // Adjusted width/height for the title text
     this.params['titleWidth'] = this.params.screenWidth * this.params.titleWidthRatio;
     this.params['titleHeight'] = this.params.screenHeight * this.params.titleHeightRatio;
+
+    // Calculated distance between top of title and top of screen
     this.params['yTitleSpacer'] = this.params.titleHeight * this.params.yTitleOffsetRatio;
 
-    let menuParams = this.params.menu;
 
-    this.params['yOffsetSpacer'] = this.params.screenHeight * menuParams.yOffsetRatio;
+    let menuBoxParams = this.params.menuBox;
 
-    menuParams['xOuterSpacer'] = this.params.screenWidth * menuParams.xOuterOffsetRatio;
-    menuParams['yOuterSpacer'] = (this.params.screenHeight - this.params.yOffsetSpacer) * menuParams.yOuterOffsetRatio;
+    // Set spacing between the top of the screen and the top of the menu box
+    this.params['yOffsetSpacer'] = this.params.screenHeight * menuBoxParams.yOffsetRatio;
 
-    menuParams['width'] = (this.params.screenWidth - (menuParams.xOuterSpacer * 2));
-    menuParams['height'] = ((this.params.screenHeight  - this.params.yOffsetSpacer) - (menuParams.yOuterSpacer * 2));
+    // Set spacing between the boundary of the menu box and it's neighbors (essentially expand it's bounding box)
+    menuBoxParams['xOuterSpacer'] = this.params.screenWidth * menuBoxParams.xOuterOffsetRatio;
+    menuBoxParams['yOuterSpacer'] = (this.params.screenHeight - this.params.yOffsetSpacer) * menuBoxParams.yOuterOffsetRatio;
 
-    menuParams['x'] = (this.params.screenX + ((this.params.screenWidth - menuParams.width) / 2)); // init x + half screen width - half panel width
-    menuParams['y'] = (this.params.screenY + ((this.params.screenHeight - menuParams.height + this.params.yOffsetSpacer) / 2)); // init y + half screen height - half panel height + offsetSpacer
+    // Calculated width/height of the menu box based on the previously defined spacers and screen dimensions
+    menuBoxParams['width'] = (this.params.screenWidth - (menuBoxParams.xOuterSpacer * 2));
+    menuBoxParams['height'] = ((this.params.screenHeight  - this.params.yOffsetSpacer) - (menuBoxParams.yOuterSpacer * 2));
 
-    menuParams['xInnerSpacer'] = menuParams.width * menuParams.xInnerOffsetRatio;
-    menuParams['yInnerSpacer'] = menuParams.height * menuParams.yInnerOffsetRatio; 
+    // x & y of top-left cornor of the menu box
+    menuBoxParams['x'] = (this.params.screenX + ((this.params.screenWidth - menuBoxParams.width) / 2)); // init x + half screen width - half panel width
+    menuBoxParams['y'] = (this.params.screenY + ((this.params.screenHeight - menuBoxParams.height + this.params.yOffsetSpacer) / 2)); // init y + half screen height - half panel height + offsetSpacer
 
-    menuParams['xBtnSpacer'] = menuParams.width * menuParams.xButtonSpacerRatio;
-    menuParams['yBtnSpacer'] = menuParams.height * menuParams.yButtonSpacerRatio;
+    // Spacer between the boundary of the menu box and it's internal components
+    menuBoxParams['xInnerSpacer'] = menuBoxParams.width * menuBoxParams.xInnerOffsetRatio;
+    menuBoxParams['yInnerSpacer'] = menuBoxParams.height * menuBoxParams.yInnerOffsetRatio; 
 
-    menuParams['btnWidth'] = ((menuParams.width // full box width
-        - (2 * menuParams.xInnerSpacer) // left + right boundary spacer
-        - ((menuParams.numXButtons - 1) * menuParams.xBtnSpacer)) // x-spacer between every button
-        / menuParams.numXButtons); // get per-button width
-    menuParams['btnHeight'] = ((menuParams.height // adjusted height
-        - (2 * menuParams.yInnerSpacer) // top + bottom boundary spacer
-        - ((menuParams.numYButtons - 1) * menuParams.yBtnSpacer)) // y-spacer between every button
-        / menuParams.numYButtons); // get per-button height
+    // x & y spacers between each button
+    menuBoxParams['xBtnSpacer'] = menuBoxParams.width * menuBoxParams.xButtonSpacerRatio;
+    menuBoxParams['yBtnSpacer'] = menuBoxParams.height * menuBoxParams.yButtonSpacerRatio;
+
+    // Calculated button width/height based on the menu box sizing and spacers
+    menuBoxParams['btnWidth'] = ((menuBoxParams.width // full box width
+        - (2 * menuBoxParams.xInnerSpacer) // left + right boundary spacer
+        - ((menuBoxParams.numXButtons - 1) * menuBoxParams.xBtnSpacer)) // x-spacer between every button
+        / menuBoxParams.numXButtons); // get per-button width
+    menuBoxParams['btnHeight'] = ((menuBoxParams.height // adjusted height
+        - (2 * menuBoxParams.yInnerSpacer) // top + bottom boundary spacer
+        - ((menuBoxParams.numYButtons - 1) * menuBoxParams.yBtnSpacer)) // y-spacer between every button
+        / menuBoxParams.numYButtons); // get per-button height
     
-    menuParams['textWidth'] = menuParams.btnWidth * menuParams.textWidthRatio;
-    menuParams['textHeight'] = menuParams.btnHeight * menuParams.textHeightRatio;
+    // Adjusted menu button text width/size based on button sizing
+    menuBoxParams['textWidth'] = menuBoxParams.btnWidth * menuBoxParams.textWidthRatio;
+    menuBoxParams['textHeight'] = menuBoxParams.btnHeight * menuBoxParams.textHeightRatio;
     
     /* 
      * Objects inside the menu (aka buttons)
      */
     this.objects = {};
     
+    // The title text at the top of the screen
     this.objects['title'] = {
         width: this.params.titleWidth,
         height: this.params.titleHeight,
@@ -113,35 +158,38 @@ Home.prototype.buildParameters = function() {
         y: (this.params.screenY + this.params.yTitleSpacer)
     }
 
+    // The various menu box buttons
     this.objects['play'] = {
-        x: (menuParams.x + menuParams.xInnerSpacer),
-        y: (menuParams.y + menuParams.yInnerSpacer)
+        x: (menuBoxParams.x + menuBoxParams.xInnerSpacer),
+        y: (menuBoxParams.y + menuBoxParams.yInnerSpacer)
     };
     this.objects['leaderboard'] = {
         x: (this.objects.play.x),
-        y: (this.objects.play.y + (menuParams.btnHeight + menuParams.yBtnSpacer))
+        y: (this.objects.play.y + (menuBoxParams.btnHeight + menuBoxParams.yBtnSpacer))
     };
     this.objects['settings'] = {
         x: (this.objects.leaderboard.x),
-        y: (this.objects.leaderboard.y + (menuParams.btnHeight + menuParams.yBtnSpacer))
+        y: (this.objects.leaderboard.y + (menuBoxParams.btnHeight + menuBoxParams.yBtnSpacer))
     };
 
+    // Centers all of the button text
     this.objects['textObjs'] = {};
     Object.entries(this.objects).forEach(([key, val]) => {
         this.objects.textObjs[key] = {
-            x: val.x + (Math.abs(menuParams.btnWidth / 2) 
-                        - (menuParams.textWidth / 2)),
-            y: val.y + (Math.abs(menuParams.btnHeight / 2) 
-                        - (menuParams.textHeight / 2))
+            x: val.x + (Math.abs(menuBoxParams.btnWidth / 2) 
+                        - (menuBoxParams.textWidth / 2)),
+            y: val.y + (Math.abs(menuBoxParams.btnHeight / 2) 
+                        - (menuBoxParams.textHeight / 2))
         }
     });
 };
 
 
-
-
+/**
+ * Adds all of the scene's objects to the screen using the initialized parameters
+ */
 Home.prototype.buildScene = function() {
-    // Background
+    // Backdrop color
     k.add([
         k.rect(this.params.screenWidth, this.params.screenHeight),
         k.pos(this.params.screenX, this.params.screenY),
@@ -149,6 +197,7 @@ Home.prototype.buildScene = function() {
         this.params.backdropOpacity,
     ]);
     
+    // Background image
     k.add([
         k.sprite('home_background', { width: this.params.backgroundWidth, 
                                 height: this.params.backgroundHeight}),
@@ -162,178 +211,70 @@ Home.prototype.buildScene = function() {
         k.pos(this.objects.title.x, this.objects.title.y),
     ]);
 
-    // Menu rect
+    // Menu Box
     k.add([
-        k.rect(this.params.menu.width, this.params.menu.height),
-        k.pos(this.params.menu.x, this.params.menu.y),
-        this.params.menu.backgroundColor,
-        this.params.menu.backgroundOpacity,
+        k.rect(this.params.menuBox.width, this.params.menuBox.height),
+        k.pos(this.params.menuBox.x, this.params.menuBox.y),
+        this.params.menuBox.backgroundColor,
+        this.params.menuBox.backgroundOpacity,
     ]);
         
 
     // Play Button
     const playBtn = k.add([
-        k.rect(this.params.menu.btnWidth, this.params.menu.btnHeight),
+        k.rect(this.params.menuBox.btnWidth, this.params.menuBox.btnHeight),
         k.pos(this.objects.play.x, this.objects.play.y),
-        this.params.menu.buttonColor,
-        this.params.menu.buttonOpacity,
+        this.params.menuBox.buttonColor,
+        this.params.menuBox.buttonOpacity,
         k.area(),
     ]);
-    playBtn.clicks(this.actions.play);
 
     k.add([
-        k.text('Play', { size: this.params.menu.textHeight, width: this.params.menu.textWidth }),
+        k.text('Play', { size: this.params.menuBox.textHeight, width: this.params.menuBox.textWidth }),
         k.pos(this.objects.textObjs.play.x, this.objects.textObjs.play.y),
-        this.params.menu.textColor,
-        this.params.menu.textOpacity,
+        this.params.menuBox.textColor,
+        this.params.menuBox.textOpacity,
     ]);
             
 
     // Leaderboard
     const leaderboardBtn = k.add([
-        k.rect(this.params.menu.btnWidth, this.params.menu.btnHeight),
+        k.rect(this.params.menuBox.btnWidth, this.params.menuBox.btnHeight),
         k.pos(this.objects.leaderboard.x, this.objects.leaderboard.y),
-        this.params.menu.buttonColor,
-        this.params.menu.buttonOpacity,
+        this.params.menuBox.buttonColor,
+        this.params.menuBox.buttonOpacity,
         k.area(),
     ]);
-    leaderboardBtn.clicks(this.actions.leaderboard);
 
     k.add([
-        k.text("Leaderboard", { size: this.params.menu.textHeight, width: this.params.menu.textWidth }),
+        k.text("Leaderboard", { size: this.params.menuBox.textHeight, width: this.params.menuBox.textWidth }),
         k.pos(this.objects.textObjs.leaderboard.x, this.objects.textObjs.leaderboard.y),
-        this.params.menu.textColor,
-        this.params.menu.textOpacity,
+        this.params.menuBox.textColor,
+        this.params.menuBox.textOpacity,
     ]);
+
 
     // Settings
     const settings_btn = k.add([
-        k.rect(this.params.menu.btnWidth, this.params.menu.btnHeight),
+        k.rect(this.params.menuBox.btnWidth, this.params.menuBox.btnHeight),
         k.pos(this.objects.settings.x, this.objects.settings.y),
-        this.params.menu.buttonColor,
-        this.params.menu.buttonOpacity,
-        area(),
+        this.params.menuBox.buttonColor,
+        this.params.menuBox.buttonOpacity,
+        k.area(),
     ]);
-    settings_btn.clicks(this.actions.settings);
 
     k.add([
-        k.text("Settings", { size: this.params.menu.textHeight, width: this.params.menu.textWidth }),
+        k.text("Settings", { size: this.params.menuBox.textHeight, width: this.params.menuBox.textWidth }),
         k.pos(this.objects.textObjs.settings.x, this.objects.textObjs.settings.y),
-        this.params.menu.textColor,
-        this.params.menu.textOpacity,
+        this.params.menuBox.textColor,
+        this.params.menuBox.textOpacity,
     ]);
+
+    // Connect buttons to control functions
+    playBtn.clicks(this.actions.play);
+    leaderboardBtn.clicks(this.actions.leaderboard);
+    settings_btn.clicks(this.actions.settings);
 };
 
 
 export default Home;
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Home.prototype.buildScene = function() {
-//     // Background
-//     k.add([
-//         k.rect(this.params.screenWidth, this.params.screenHeight),
-//         this.params.backdropColor,
-//         this.params.backdropOpacity,
-//     ]);
-    
-//     k.add([
-//         k.sprite('home_background', { width: this.params.backgroundWidth, 
-//                                 height: this.params.backgroundHeight}),
-//         k.pos(k.width() / 2, k.height() / 2),
-//         k.origin('center'),
-//     ]);
-    
-//     // Title
-//     let title_height = 75;
-//     let title_width = 640;
-//     let title_x = (k.width() / 2) - (title_width / 2);
-//     let title_y = 25;
-//     k.add([
-//         k.text('Captain Client', { size: title_height, width: title_width }),
-//         k.pos(title_x, title_y),
-//         k.scale(1),
-//     ]);
-
-//     // Menu //
-//     let menu_btn_width = 300;
-//     let menu_btn_height = 50;
-//     let menu_btn_x = (k.width() / 2) - (menu_btn_width / 2);
-//     let menu_text_height = 44;
-
-//     let init_btn_y = 750;
-//     let menu_backdrop_spacer = 20;
-//     let num_buttons = 3;
-
-//     let menu_rect = k.rect(menu_btn_width + menu_backdrop_spacer, 
-//                         (num_buttons * menu_btn_height) + menu_btn_height + menu_backdrop_spacer);
-//     k.add([
-//         menu_rect,
-//         k.pos(menu_btn_x - (menu_backdrop_spacer / 2), init_btn_y - (menu_backdrop_spacer / 2)),
-//         k.color(52, 149, 235),
-//         k.opacity(0.5)
-//     ]);
-        
-//     // Play Button
-//     const playBtn = k.add([
-//         k.rect(menu_btn_width, menu_btn_height),
-//         k.pos(menu_btn_x, init_btn_y),
-//         k.area(),
-//         'button',
-//     ]);
-//     playBtn.clicks(() => {
-//         this.actions.play();
-//     });
-
-//     k.add([
-//         k.text('Play', { size: menu_text_height, width: menu_btn_width }),
-//         k.pos(menu_btn_x, init_btn_y),
-//         k.color(0, 0, 0),
-//     ]);
-            
-//     // Leaderboard
-//     let leaderboard_btn_y = init_btn_y + (1.5 * menu_btn_height);
-//     const leaderboardBtn = k.add([
-//         k.rect(menu_btn_width, menu_btn_height),
-//         k.pos(menu_btn_x, leaderboard_btn_y),
-//         k.area(),
-//         'button',
-//     ]);
-//     leaderboardBtn.clicks(() => {
-//         this.actions.leaderboard();
-//     });
-
-//     k.add([
-//         k.text("Leaderboard", { size: menu_text_height, width: menu_btn_width }),
-//         k.pos(menu_btn_x, leaderboard_btn_y),
-//         k.color(0, 0, 0),
-//     ]);
-
-//     // Settings
-//     let settings_btn_y = leaderboard_btn_y + (1.5 * menu_btn_height);
-//     const settings_btn = k.add([
-//         k.rect(menu_btn_width, menu_btn_height),
-//         k.pos(menu_btn_x, settings_btn_y),
-//         area(),
-//         'button',
-//     ]);
-//     settings_btn.clicks(() => {
-//         this.actions.settings();
-//     });
-//     k.add([
-//         k.text("Settings", { size: menu_text_height, width: menu_btn_width }),
-//         k.pos(menu_btn_x, settings_btn_y),
-//         k.color(0, 0, 0),
-//     ]);
-// };
-        
