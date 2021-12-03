@@ -21,7 +21,7 @@ export const componentDefs = {
                 }
             },
             img: "assets/images/components/iphone.png",
-            description: "I'm an iPhone"
+            description: "I'm an iPhone \nThe starting point of the customer's request\nPlease complete the transfer of 20 requests to the HTML at this level"
         },
         ALEXA: {
             tags: ["CLIENT"],
@@ -43,7 +43,7 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/alexa.png",
-            description: "I'm Alexa!"
+            description: "I'm Alexa \n The starting point of the customer's request\nPlease complete the transfer of 20 requests to the hosted image at this level"
         },
         LAPTOP: {
             tags: ["CLIENT"],
@@ -65,7 +65,7 @@ export const componentDefs = {
                 }
             },
             img: "assets/images/components/laptop.png",
-            description: "I'm a laptop"
+            description: "I'm a laptop \n The starting point of the customer's request\nPlease complete the transfer of 20 requests to the hosted image at this level"
         },
         DESKTOP: {
             tags: ["CLIENT"],
@@ -87,7 +87,7 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/desktop.png",
-            description: "I'm a desktop"
+            description: "I'm a desktop \n The starting point of the customer's request\nPlease complete the transfer of 20 requests to the hosted image at this level"
         },
         CLOUD_COMPUTE: {
             tags: ["CLIENT"],
@@ -109,7 +109,7 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/cloud_compute.png",
-            description: "I'm a cloud-computing software"
+            description: "I'm a cloud-computing software \n The starting point of the customer's request\nPlease complete the transfer of 20 requests to the hosted image at this level"
         }
     },
     
@@ -137,7 +137,9 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/gateway.png",
-            description: "I'm a gateway"
+            description: "I'm a Gateway \n\
+                            A Gateway is a hardware device that acts as a 'gate' between two networks. \n\
+                            It may be a router, firewall, server, or another device that enables traffic to flow in and out of the network."
         },
         HUB: {
             tags: ["EDGE"],
@@ -161,7 +163,10 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/hub.png",
-            description: "I'm a hub"
+            description: "I'm a hub \n\
+                            A network hub is a device that allows multiple computers to communicate with each other over a network. \n\
+                            It has several Ethernet ports that are used to connect two or more network devices together. \n\
+                            Each computer or device connected to the hub can communicate with any other device connected to one of the hub's Ethernet ports."
         },
         SWITCH: {
             tags: ["EDGE"],
@@ -185,7 +190,12 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/switch.png",
-            description: "I'm a switch"
+            description: "I'm a switch \n\
+                            A switch is used to network multiple computers together.\n\
+                            Switches are more advanced than hubs and less capable than routers. \n\
+                            Unlike hubs, switches can limit the traffic to and from each port so that each device connected to the switch has a sufficient amount of bandwidth. \n\
+                            For this reason, you can think of a switch as a 'smart hub.'\n\
+                            However, switches don't provide the firewall and logging capabilities that routers do."
         },
         MODEM: {
             tags: ["EDGE"],
@@ -209,7 +219,9 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/modem.png",
-            description: "I'm a modem"
+            description: "I'm a modem\n\
+                            A Modem is short for 'Modulator-Demodulator.'\n\
+                            It is a hardware component that allows a computer or another device, such as a router or switch, to connect to the Internet."
         },
         ROUTER: {
             tags: ["EDGE"],
@@ -233,7 +245,10 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/router.png",
-            description: "I'm a router"
+            description: "I'm a router\n\
+                            is a hardware device that routes data from a local area network (LAN) to another network connection. \n\
+                            A router acts like a coin sorting machine, allowing only authorized machines to connect to other computer systems.\n\
+                            Most routers also keep log files about the local network activity."
         },
         LOAD_BALANCER: {
             tags: ["PRE_PROCESSOR"],
@@ -257,7 +272,9 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/load_balancer.png",
-            description: "I'm a load balancer"
+            description: "I'm a load balancer\n\
+                            A load balancer is a piece of hardware that acts like a reverse proxy to distribute network and application traffic across different servers. \n\
+                            It is used to improve the concurrent user capacity and overall reliability of applications."
         },
         CACHE: {
             tags: ["PRE_PROCESSOR"],
@@ -281,7 +298,9 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/cache.png",
-            description: "I'm a cache"
+            description: "I'm a cache\n\
+                            A cache is a hardware or software component that stores data so that future requests for that data can be served faster\n\
+                            The data stored in a cache might be the result of an earlier computation or a copy of data stored elsewhere"
         },
         SERVER: {
             tags: ["PROCESSOR"],
@@ -305,7 +324,9 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/server.png",
-            description: "I'm a web server"
+            description: "I'm a web server \n\
+                            A server is a piece of computer hardware or software that provides functionality for other programs or devices, called 'clients'.\n\
+                            A client process may run on the same device or may connect over a network to a server on a different device"
         },
         DATABASE: {
             tags: ["PROCESSOR"],
@@ -329,7 +350,10 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/database.png",
-            description: "I'm a database"
+            description: "I'm a database \n\
+                            An online database is a database accessible from a local network or the Internet\n\
+                            As opposed to one that is stored locally on an individual computer or its attached storage.\n\
+                            Online databases are hosted on websites, made available as software as a service products accessible via a web browser."
         }
     },
 
@@ -341,7 +365,9 @@ export const componentDefs = {
             maxInputs: 1, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
             img: "assets/images/endpoints/html.png",
-            description: "I'm an HTML page"
+            description: "I'm an HTML page\n\
+                            The Hyper Text Markup Language.\n\
+                            HTML is the standard markup language for documents designed to be displayed in a web browser."
         },
         IMAGE: {
             tags: ["ENDPOINT"],
@@ -349,7 +375,9 @@ export const componentDefs = {
             maxInputs: 1, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
             img: "assets/images/endpoints/image.png",
-            description: "I'm an image"
+            description: "I'm an image Hoster\n\
+                            Hosts on a network include clients and servers--that send or receive data, services or applications.\n\
+                            Hosts typically do not include intermediary network devices like switches and routers, which are instead often categorized as nodes."
         },
         VIDEO: {
             tags: ["ENDPOINT"],
@@ -357,7 +385,9 @@ export const componentDefs = {
             maxInputs: 1, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
             img: "assets/images/endpoints/video.png",
-            description: "I'm a video"
+            description: "I'm a video hoster \n\
+                            An online video platform, provided by a video hosting service, enables users to upload, convert, store and play back video content on the Internet.\n\
+                            Often via a structured, large-scale system that may generate revenue"
         }
     }
 };
