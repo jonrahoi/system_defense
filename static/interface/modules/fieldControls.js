@@ -30,18 +30,15 @@ function errorMessage(message) {
     const recHeight = k.height() / 3.5;
 
     let rec = k.add([
-        // k.rect(600, 200),
         k.rect(recWidth, recHeight),
         k.layer("error"),
         k.outline(2),
         k.color(176, 182, 221),
-        // k.pos(500, 300),
         k.pos(recWidth * 1.75, recHeight * 1.75),
         k.origin("center"),
     ]);
 
     let error = k.add([
-        // k.text(message, { size: k.height() * 0.04 }),
         k.text(message, { size: recHeight * 0.13, width: recWidth * 0.9 }),
         k.layer("error"),
         k.pos(recWidth * 1.75, recHeight * 1.6),
