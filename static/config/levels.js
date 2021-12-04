@@ -4,39 +4,39 @@ const levelDefs = {
         budget: 100, // Initial budget
         clients: [ // Initial placed clients
             {
-                name: "IPHONE",
+                name: 'IPHONE',
                 quantity: 1
             }
         ],
         processors: [ // Initial placed processors
             {
-                name: "SWITCH", 
+                name: 'SWITCH', 
                 quantity: 1
             }
         ],
         endpoints: [ // Initial placed endpoints
             {
-                name: "HTML",
+                name: 'HTML',
                 quantity: 1
             }
         ],
         availableComponents: [ // Stage 1 newly available additional processors
             {
-                name: "SERVER", 
+                name: 'SERVER', 
                 quantity: 1
             },
             {
-                name: "DATABASE", 
+                name: 'DATABASE', 
                 quantity: 1
             }
         ],
         stages: {
             1: {
-                networkType: "WIFI", // Stage 1 network type
+                networkType: 'WIFI', // Stage 1 network type
                 goals: [ // Stage 1 goals
                     {
-                        mission: "HTML", // goal is to have requets reach the HTML endpoint
-                        quantity: 10 // number of requets needed to meet the goal
+                        mission: 'HTML', // goal is to have requets reach the HTML endpoint
+                        quantity: 20 // number of requets needed to meet the goal
                     }   
                 ],
                 description: "I'm level 1, Stage 1. Make 20 requests to the HTML page"
@@ -44,16 +44,16 @@ const levelDefs = {
             2: {
                 coinReward: 50, // Coin reward for reaching Stage 2
                 timeBonus: 25, // Time bonus for reaching Stage 2
-                networkType: "WIFI", // Stage 2 network type
+                networkType: 'WIFI', // Stage 2 network type
                 goals: [ // Stage 2 goals
                     {
-                        mission: "HTML", // goal is to have requets reach the HTML endpoint
+                        mission: 'HTML', // goal is to have requets reach the HTML endpoint
                         quantity: 30 // number of requets needed to meet the goal
                     }   
                 ],
                 addedClients: [ // Stage 2 newly added clients
                     {
-                        name: "IPHONE",
+                        name: 'IPHONE',
                         quantity: 1
                     }
                 ],
@@ -61,7 +61,7 @@ const levelDefs = {
                 addedEndpoints: [], // Stage 2 newly added endpoints
                 additionalComponents: [ // Stage 2 newly available additional processors
                     {
-                        name: "SERVER", 
+                        name: 'SERVER', 
                         quantity: 1
                     }
                 ],
@@ -74,38 +74,38 @@ const levelDefs = {
         budget: 150,
         clients: [
             {
-                name: "LAPTOP",
+                name: 'LAPTOP',
                 quantity: 1
             }
         ],
         processors: [
             {
-                name: "GATEWAY", 
+                name: 'GATEWAY', 
                 quantity: 1
             }
         ],
         endpoints: [
             {
-                name: "IMAGE",
+                name: 'IMAGE',
                 quantity: 1
             }
         ],
         availableComponents: [
             {
-                name: "SERVER", 
+                name: 'SERVER', 
                 quantity: 1
             },
             {
-                name: "DATABASE", 
+                name: 'DATABASE', 
                 quantity: 1
             }
         ],
         stages: {
             1: {
-                networkType: "WIFI",
+                networkType: 'WIFI',
                 goals: [
                     {
-                        mission: "IMAGE", // goal is to have requets reach the HTML endpoint
+                        mission: 'IMAGE', // goal is to have requets reach the HTML endpoint
                         quantity: 20 // number of requets needed to meet the goal
                     }   
                 ],
@@ -114,16 +114,16 @@ const levelDefs = {
             2: {
                 coinReward: 60,
                 timeBonus: 45,
-                networkType: "WIFI",
+                networkType: 'WIFI',
                 goals: [
                     {
-                        mission: "IMAGE", // goal is to have requets reach the image endpoint
+                        mission: 'IMAGE', // goal is to have requets reach the image endpoint
                         quantity: 30 // number of requets needed to meet the goal
                     }   
                 ],
                 addedClients: [
                     {
-                        name: "IPHONE",
+                        name: 'IPHONE',
                         quantity: 1
                     }
                 ],
@@ -131,7 +131,7 @@ const levelDefs = {
                 addedEndpoints: [],
                 additionalComponents: [
                     {
-                        name: "SERVER", 
+                        name: 'SERVER', 
                         quantity: 1
                     }
                 ],
@@ -144,42 +144,42 @@ const levelDefs = {
         budget: 200,
         clients: [
             {
-                name: "IPHONE",
+                name: 'IPHONE',
                 quantity: 1
             }
         ],
         processors: [
             {
-                name: "SWITCH", 
+                name: 'SWITCH', 
                 quantity: 1
             }
         ],
         endpoints: [
             {
-                name: "VIDEO",
+                name: 'VIDEO',
                 quantity: 1
             }
         ],
         availableComponents: [
             {
-                name: "SERVER", 
+                name: 'SERVER', 
                 quantity: 2
             },
             {
-                name: "CACHE", 
+                name: 'CACHE', 
                 quantity: 1
             },
             {
-                name: "LOAD_BALANCER", 
+                name: 'LOAD_BALANCER', 
                 quantity: 1
             }
         ],
         stages: {
             1: {
-                networkType: "WIFI",
+                networkType: 'WIFI',
                 goals: [
                     {
-                        mission: "VIDEO", // goal is to have requets reach the hosted video
+                        mission: 'VIDEO', // goal is to have requets reach the hosted video
                         quantity: 20 // number of requets needed to meet the goal
                     }   
                 ],
@@ -188,10 +188,10 @@ const levelDefs = {
             2: {
                 coinReward: 60,
                 timeBonus: 45,
-                networkType: "WIFI",
+                networkType: 'WIFI',
                 goals: [
                     {
-                        mission: "VIDEO", // goal is to have requets reach the hosted video
+                        mission: 'VIDEO', // goal is to have requets reach the hosted video
                         quantity: 30 // number of requets needed to meet the goal
                     }   
                 ],
@@ -200,11 +200,11 @@ const levelDefs = {
                 addedEndpoints: [],
                 additionalComponents: [
                     {
-                        name: "ROUTER", 
+                        name: 'ROUTER', 
                         quantity: 1
                     },
                     {
-                        name: "MODEM", 
+                        name: 'MODEM', 
                         quantity: 1
                     }
                 ],
@@ -213,10 +213,10 @@ const levelDefs = {
             3: {
                 coinReward: 60,
                 timeBonus: 50,
-                networkType: "WIFI",
+                networkType: 'WIFI',
                 goals: [
                     {
-                        mission: "VIDEO", // goal is to have requets reach the hosted video
+                        mission: 'VIDEO', // goal is to have requets reach the hosted video
                         quantity: 50 // number of requets needed to meet the goal
                     }   
                 ],
@@ -225,11 +225,11 @@ const levelDefs = {
                 addedEndpoints: [],
                 additionalComponents: [
                     {
-                        name: "SERVER", 
+                        name: 'SERVER', 
                         quantity: 2
                     },
                     { 
-                        name: "CACHE",
+                        name: 'CACHE',
                         quantity: 1
                     },
                 ],

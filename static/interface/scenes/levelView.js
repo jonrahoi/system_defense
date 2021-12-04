@@ -23,7 +23,7 @@ import TimerControls from '../../utilities/timer.js';
 import { dragControls, drag } from '../kaboom/components/drag.js';
 import { selectControls, connectControls, select } from '../kaboom/components/select.js';
 
-
+import { Popup, PopupButtons } from '../modules/popup.js';
 
 export function LevelView() {
     this.newComponents = {};
@@ -103,6 +103,7 @@ LevelView.prototype.init = function() {
         this.selectionBar.addComponents(this.newComponents.additionalComponents); 
         FieldControls.initStage(this.newComponents.clients, this.newComponents.processors, 
                                     this.newComponents.endpoints, this.playField);
+        this.popup.build();
     };
 };
 
@@ -113,14 +114,67 @@ LevelView.prototype.buildScene = function() {
     this.playField.build();
     this.selectionBar.build();
     
-    this.buildStage();
     this.registerEvents();
+    this.buildStage();
 };
 
 // Meant to represent updating animations. However these could be dealt with through Kaboom
 // UPDATE ALL REQUESTS HERE? (@see State.requestStates)
 LevelView.prototype.update = function(timestamp, speedup) {
-    console.log(`Animation timestep: ${timestamp} @ ${speedup}x`);
+    // console.log(`Animation timestep: ${timestamp} @ ${speedup}x`);
+    console.log(`Interface - recieved request states:`, State.requestStates);
+
+    /*
+     * NOTE: assumes 1 timestep-latecy for all components/connections (not realistic)
+     *
+     * 0) ClientA <--> ComponentA <--> ComponentB <--> EndpointA 
+     *      (setup)
+     * 
+     * 1) ClientA(R1, R2) <--> ComponentA <--> ComponentB <--> EndpointA 
+     *      R1 & R2 spawn at the client (emit 'SPAWN' status)
+     * 
+     * 2) ClientA(R3, R4) <-(R1, R2)-> ComponentA <--> ComponentB <--> EndpointA 
+     *      R1 & R2 move to 'TRANSIT' state on the connection
+     *      R3 & R4 sqawn at the client (emit 'SPAWN' status)
+     * 
+     * 3) ClientA(R5, R6) <-(R3, R4)-> (R1, R2)ComponentA <--> ComponentB <--> EndpointA 
+     *      R1 & R2 move to 'BLOCKED' state at ComponentA
+     *      R3 & R4 move to 'TRANSIT' state on the connection
+     *      R5 & R6 sqawn at the client (emit 'SPAWN' status)
+     * 
+     * 4) ClientA(R7, R8) <-(R5, R6)-> (R3, R4)ComponentA(R1, R2) <--> ComponentB <--> EndpointA 
+     *      R1 & R2 move to 'PROCESSING' state in ComponentA
+     *      R3 & R4 move to 'BLOCKED' state at ComponentA
+     *      R5 & R6 move to 'TRANSIT' state on the connection
+     *      R7 & R8 sqawn at the client (emit 'SPAWN' status)
+     * 
+     * 4) ClientA(R9, R10) <-(R7, R8)-> (R5, R6)ComponentA(R3, R4) <-(R1, R2)-> ComponentB <--> EndpointA 
+     *      R1 & R2 move to 'TRANSIT' state on the connection
+     *      R3 & R4 move to'PROCESSING' state in ComponentA
+     *      R5 & R6 move to 'BLOCKED' state at ComponentA
+     *      R7 & R8 move to'TRANSIT' state on the connection
+     *      R9 & R10 sqawn at the client (emit 'SPAWN' status)
+     *
+     * 
+     * ...) ClientA(R17, R18) <-(R15, R16)-> (R13, R14)ComponentA(R11, R12) <-(R9, R10)-> (R7, R8)ComponentB(R5, R6) <-(R3, R4)-> (R1, R2)EndpointA 
+     *      R1 & R2 become `PROCESSING` at the EndpointA (never blocked at endpoint)
+     *      R3 & R4 move to 'TRANSIT' state on the connection
+     *      R5 & R6 move to 'PROCESSING' state at ComponentB
+     *      R7 & R8 move to'BLOCKED' state on the ComponentB
+     *      R9 & R10 move to 'TRANSIT' state on the connection
+     *      R11 & R12 move to 'PROCESSING' state at ComponentA
+     *      R13 & R14 move to 'BLOCKED' state at ComponentA
+     *      R15 & R16 move to'TRANSIT' state on the connection
+     *      R17 & R18 sqawn at the client (emit 'SPAWN' status)
+     * 
+     *********
+     * R1 now becomes a response (it's `isResponse` flag will be TRUE). 
+     * It will now travel the opposite direction (maybe change shape?). It will follow
+     * the same cycle of:
+     * TRANSIT --> BLOCKED --> PROCESSING (will always take 1 timestep) --> TRANSIT ... --> COMPLETED
+     * 
+     * REPEAT!
+     */
 };
 
 // Load a level object into this view
@@ -138,12 +192,13 @@ LevelView.prototype.load = function(levelLogic) {
 LevelView.prototype.initStage = function(newStageSpecs, newLevel=false) {
     let clients, processors, endpoints, additionalComponents;
     if (newLevel) {
+        this.popup = new Popup(null, null, null, null, State.stageDescription, [PopupButtons.OK], `Level ${State.levelNumber}!`);
         this.newComponents['clients'] = newStageSpecs.clients;
         this.newComponents['processors'] = newStageSpecs.processors;
         this.newComponents['endpoints'] = newStageSpecs.endpoints;
         this.newComponents['additionalComponents'] = newStageSpecs.availableComponents;
     } else {
-        // alert here?
+        this.popup = new Popup(null, null, null, null, State.stageDescription, [PopupButtons.OK], `Stage ${State.stageNumber}!`);
         console.log("STAGE CLEARED!");
         TimerControls.append(newStageSpecs.timeBonus);
         
@@ -152,6 +207,7 @@ LevelView.prototype.initStage = function(newStageSpecs, newLevel=false) {
         this.newComponents['endpoints'] = newStageSpecs.addedEndpoints;
         this.newComponents['additionalComponents'] = newStageSpecs.additionalComponents;
 
+        this.popup.build();
         this.buildStage();
     }
 };
@@ -171,8 +227,10 @@ LevelView.prototype.registerEvents = function() {
         if (k.isMouseMoved() && dragControls.current()) {
             let currDrag = dragControls.current();
             k.cursor("move");
-            let offset = this.playField.confineComponentSpace(pos.x, pos.y, currDrag.width, currDrag.height);
-            currDrag.updatePos(k.vec2(...offset));
+            // let offset = this.playField.confineComponentSpace(pos.x, pos.y, currDrag.width, currDrag.height);
+            // currDrag.updatePos(k.vec2(...offset));
+            currDrag.moveComponent(pos);
+            // currDrag.updatePos(pos);
         }
     });
     
@@ -189,7 +247,9 @@ LevelView.prototype.registerEvents = function() {
             }
             selectControls.release();
         }
-        dragControls.release();
+        if (dragControls.isDragging()) {
+            dragControls.release();
+        }
     });
 
     // When left button is clicked/pressed --> component selected
@@ -204,6 +264,12 @@ LevelView.prototype.registerEvents = function() {
                 dragControls.acquire(c, pos);
                 return;
             }
+        }
+        let connections = k.get('_connection');
+        // console.log('looking at connections...')
+        for (const c of connections) {
+            c.clicked(pos);
+            return;
         }
     });
 

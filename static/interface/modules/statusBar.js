@@ -65,7 +65,8 @@ StatusBar.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
             { name: 'coins', type: 'text', widthRatio: 3, heightRatio: 0.95 }, 
             { name: 'expenses', type: 'text', widthRatio: 2, heightRatio: 0.95 },
             { name: 'throughput', type: 'text', widthRatio: 2, heightRatio: 0.95 }, 
-            { name: 'latency', type: 'text', widthRatio: 2, heightRatio: 0.95 }
+            { name: 'latency', type: 'text', widthRatio: 2, heightRatio: 0.95 },
+            { name: 'rating', type: 'text', widthRatio: 2, heightRatio: 0.95 }
         ],
         
         middleItems: [
@@ -97,7 +98,7 @@ StatusBar.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
     this.params['btnXSpacer'] = this.params.iconWidth * this.params.btnXSpacerRatio;
     this.params['btnYSpacer'] = ((this.params.height- (2 * this.params.yInnerSpacer)) / 2) - (this.params.iconHeight / 2);
 
-    // Apply text ratios to all text objects
+    // Apply icon ratios to all objects
     for (let item of this.params.leftItems.concat(this.params.middleItems, this.params.rightItems)) {
         item['width'] = item.widthRatio * this.params.iconWidth;
         item['height'] = item.heightRatio * this.params.iconHeight;
@@ -262,11 +263,11 @@ StatusBar.prototype.updateState = function() {
     this.throughputText.text = State.throughput;
     this.latencyText.text = State.latency;
     this.requestsText.text = State.numCompletedReqs + '/' + State.goalCount;
+    this.ratingText.text = Number((State.throughput / State.latency).toFixed(1));
 };
 
 // Updates time text. Called on every timestep from Timer
 StatusBar.prototype.updateTime = function(timestamp, speedup) {
-    console.log(`STATUS BAR timestep: ${timestamp} @ ${speedup}x`);
     this.timerText.text = prettifyTime(timestamp);
 };
 

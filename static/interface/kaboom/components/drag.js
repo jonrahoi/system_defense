@@ -17,10 +17,13 @@ export const dragControls = {
 
 export function drag() {
     return {
-        require: [ "pos", "area", ],
+        require: [ "pos", "area" ],
         updatePos(pos) {
             isDragging = true;
             this.pos = pos.sub(dragStartPos);
+            // this.pos = pos;
+            // this.boundingBox().move(pos.x, pos.y);
+            // this.pos = this.boundaryBox().confine(this.boundingBox())
         },
     };
 };

@@ -29,6 +29,7 @@ export const assetDirectory = {
     'coins': 'assets/icons/coins.png',
     'expenses': 'assets/icons/expenses.png',
     'latency': 'assets/icons/latency.png',
+    'rating': 'assets/icons/rating.png',
     'requests': 'assets/icons/requests.png',
     'timer': 'assets/icons/timer.png',
     'throughput': 'assets/icons/throughput.png',
@@ -41,6 +42,7 @@ export const assetDirectory = {
 
     // Miscellaneous
     'back': 'assets/icons/back.png',
+    'close': 'assets/icons/close.png',
 
     // UI images
     'captain_circled': 'assets/images/ui/captain_circled.png',

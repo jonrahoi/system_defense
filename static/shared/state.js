@@ -43,6 +43,7 @@ export var State = {
 
 /** RESERVED FOR GAME LOGIC **/
 export const StateMachine = {
+    // functions to modify state from within `GameLogic`
     incrementCoins: (amount) => { State.coins += (amount || 1); State.stateChange(); },
     incrementExpenses: (amount) => { State.expenses += (amount || 1); State.stateChange(); },
     incrementBandwidth: (specs, amount) => { State.bandwidth += (amount || 1); State.stateChange(); },
@@ -54,12 +55,15 @@ export const StateMachine = {
     gameWon: () => { State.gameWon = true; State.stateChange(); },
     gameLost: () => { State.gameLost = true; State.stateChange(); },
 
+    processInterval: (reqStates) => {
+        State.score += 1;
+        State.coins -= State.expenses;
+        StateMachine.setRequestStates(reqStates);
+        // State.stateChange();
+    },
 
     levelChange: function(levelNumber, newSpecs) {
-        // State.stagePassed = false;
-        // State.levelPassed = false;
         State.coins = newSpecs.budget;
-        // State.goalCount = newSpecs.goalCount;
         State.levelNumber = levelNumber;
         State.prevScore = State.score;
         State.stageNumber = 1;
@@ -90,11 +94,10 @@ export const StateMachine = {
         State.stateChange();
     },
 
-    // functions to modify state from within `GameLogic`
-    placedComponent: function(component) {
+    placedComponent: function(component, initial=false) {
         if (component.isClient) {
             State.placedClientIDs.push(component.id);
-            State.throughput += (component.transmitRate + component.receiveRate);
+            State.throughput += (component.transmitRate);
         } else if (component.isEndpoint) {
             State.placedEndpointIDs.push(component.id);
         } else {
@@ -102,8 +105,11 @@ export const StateMachine = {
             State.throughput += component.throughput;
             State.latency += component.latency;
         }
+        State.expenses += (component.usageCost || 0);
         State.bandwidth = Math.round(State.throughput / State.latency);
-        State.stateChange();
+        if (!initial) {
+            State.stateChange();
+        }
     },
     
     removedComponent: function(component) {
@@ -111,7 +117,7 @@ export const StateMachine = {
         if (component.isClient) {
             index = State.placedClientIDs.indexOf(component.id);
             arr = State.placedClientIDs;
-            State.throughput -= (component.transmitRate + component.receiveRate);
+            State.throughput -= (component.transmitRate);
         } else if (component.isEndpoint) {
             index = State.placedEndpointIDs.indexOf(component.id);
             arr = State.placedEndpointIDs;
@@ -124,6 +130,7 @@ export const StateMachine = {
         if (index > -1) {
             arr.splice(index, 1);
         }
+        State.expenses -= component.usageCost;
         State.bandwidth = Math.round(State.throughput / State.latency);
         State.stateChange();
     },
@@ -241,6 +248,7 @@ export const StateMachine = {
                 writable: false
             }
         });
+        State.stateChange();
     }
 };
 

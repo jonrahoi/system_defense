@@ -151,14 +151,12 @@ const Timer = {
                 Timer._listeners[RegistrationTypes.TIMEOUT].dispatch(Timer._time, Timer._speedup);
                 return;
             }
-            // if (Timer._time == 95) {
-            //     Timer.stop();
-            // }
+            
+            Timer._listeners[RegistrationTypes.SPEEDUP_INTERVAL].dispatch(Timer._time, Timer._speedup);
+
             if (Timer._time % Timer._speedup == 0) {
                 Timer._listeners[RegistrationTypes.BASE_INTERVAL].dispatch(Timer._time, Timer._speedup);
             }
-            
-            Timer._listeners[RegistrationTypes.SPEEDUP_INTERVAL].dispatch(Timer._time, Timer._speedup);
         };
         return callback;
     })()

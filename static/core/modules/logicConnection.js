@@ -15,6 +15,14 @@ export default class LogicConnection{
         this.load = []
     }
 
+    setLatency(latency) {
+        this.latency = latency || 0;
+    }
+
+    setOptions(options) {
+        this.options = options || {};
+    }
+
     processTimestep(){
         let req;
         let i = this.load.length;

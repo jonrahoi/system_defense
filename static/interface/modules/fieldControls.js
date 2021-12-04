@@ -43,7 +43,7 @@ const FieldControls = {
             select()
         ];
 
-        const appendComponents = (currPos, spacers, existingIDs, newComponents) => { 
+        const appendComponents = (currPos, spacers, existingIDs, newComponents, boundaryBox) => { 
             // First adjust all existing endpoint's positions
             let existingComponent, interfaceComponents;
             for (const componentID of existingIDs) {
@@ -51,14 +51,13 @@ const FieldControls = {
                 // Safety check
                 if (interfaceComponents.length === 1) {
                     existingComponent = interfaceComponents[0];
-                    existingComponent.pos = k.vec2(...currPos);
-                    currPos[0] += spacers[0];
-                    currPos[1] += spacers[1];
+                    existingComponent.pos = currPos;
+                    currPos.add(spacers);
                 }
             }
     
             // Then add the new stage's endpoints
-            let newID, tags, kaboomParams;
+            let newID, tags, kaboomParams, interfaceComponent;
             for (const component of newComponents) {
                 tags = FieldControls.logicControls.componentSpecs(component.name).tags;
                 if (!tags.includes('CLIENT')) {
@@ -68,13 +67,16 @@ const FieldControls = {
                 for (let i = 0; i < component.quantity; i++) {
                     newID = generateUUID();
                     tags.push(newID, component.name);
-                    kaboomParams = [k.sprite(component.name, size), k.pos(k.vec2(...currPos)), 
-                        InterfaceComponent(component.name, newID, tags)];
+                    interfaceComponent = InterfaceComponent(component.name, newID, tags, currPos, size.width, size.height);
+                    interfaceComponent.setBoundaryBox(boundaryBox);
+                    kaboomParams = [k.sprite(component.name, size), k.pos(currPos), 
+                        interfaceComponent
+                        // InterfaceComponent(component.name, newID, tags)
+                        ];
 
                     k.add(baseParams.concat(kaboomParams, tags));
                     addedComponents[newID] = component.name;
-                    currPos[0] += spacers[0];
-                    currPos[1] += spacers[1];
+                    currPos.add(spacers);
                 }
             }
         };
@@ -90,13 +92,10 @@ const FieldControls = {
 
         if (numAddedClients) {
             let clientSpace = playField.clientSpace.rect;
-            let clientXSpacer = 0;
-            let clientYSpacer = clientSpace.height / (totalNumClients + 1);
-            let initClientX = clientSpace.leftBoundary + (clientSpace.width / 2);
-            let initClientY = clientSpace.topBoundary + clientYSpacer;
-            appendComponents([initClientX, initClientY], 
-                            [clientXSpacer, clientYSpacer],
-                            State.placedClientIDs, addedClients);
+            let clientSpacer = k.vec2(0, clientSpace.height / (totalNumClients + 1));
+            let initClientPos = clientSpace.E;
+            appendComponents(initClientPos, clientSpacer,
+                            State.placedClientIDs, addedClients, clientSpace);
         }
 
         if (numAddedProcessors) {
@@ -104,12 +103,12 @@ const FieldControls = {
             let componentSpace = playField.componentSpace.rect;
             let processorXSpacer = componentSpace.width / (numAddedProcessors + 1);
             let processorYSpacer = 0;
-            let initProcessorX = componentSpace.leftBoundary + processorXSpacer;
-            let initProcessorY = componentSpace.topBoundary + (componentSpace.height / 2);
+
+            let processorSpacer = componentSpace.A.add(k.vec2(processorXSpacer, (componentSpace.height / 2)));
+            let initProcessorPos = componentSpace.E;
     
-            appendComponents([initProcessorX, initProcessorY], 
-                            [processorXSpacer, processorYSpacer],
-                            [], addedProcessors);
+            appendComponents(initProcessorPos, processorSpacer,
+                            [], addedProcessors, componentSpace);
         }
 
         if (numAddedEndPoints) {
@@ -117,12 +116,11 @@ const FieldControls = {
             let endpointSpace = playField.endpointSpace.rect;
             let endpointXSpacer = 0;
             let endpointYSpacer = endpointSpace.height / (numAddedEndPoints + 1);
-            let initEndpointX = endpointSpace.leftBoundary + (endpointSpace.width / 2);
-            let initEndpointY = endpointSpace.topBoundary + endpointYSpacer;
 
-            appendComponents([initEndpointX, initEndpointY], 
-                            [endpointXSpacer, endpointYSpacer],
-                            State.placedEndpointIDs, addedEndpoints);
+            let endpointSpacer = endpointSpace.A.add((endpointSpace.width / 2), endpointYSpacer);
+            let initEndpointPos = endpointSpace.E;
+            appendComponents(initEndpointPos, endpointSpacer,
+                            State.placedEndpointIDs, addedEndpoints, endpointSpace);
         }
 
         // Store new data in Game Logic
@@ -144,7 +142,6 @@ const FieldControls = {
             console.log(logicResponse.info);
             return;
         }
-
         let size = ScaledComponentImage();
         let tags = FieldControls.logicControls.componentSpecs(componentName).tags;
         let params = [
@@ -160,7 +157,7 @@ const FieldControls = {
             'draggable',
             drag(),
             select(),
-            InterfaceComponent(componentName, newID, tags)
+            InterfaceComponent(componentName, newID, tags, pos, size.width, size.height)
         ];
         
         return k.add(params);
@@ -187,29 +184,37 @@ const FieldControls = {
             return;
         }
 
-        let ang = srcComponent.pos.angle(destComponent.pos);
+        let ang = srcComponent.pos.angle(destComponent.pos) + 90;
         let height = srcComponent.pos.dist(destComponent.pos);
+        let centerX = Math.min(srcComponent.pos.x, destComponent.pos.x) 
+                        + (Math.abs(srcComponent.pos.x - destComponent.pos.x) / 2);
+        let centerY = Math.min(srcComponent.pos.y, destComponent.pos.y) 
+                        + (Math.abs(srcComponent.pos.y - destComponent.pos.y) / 2);
 
         // FIXME: area() & rotate() don't work together, so can't click a connection 
         let baseParams = [
             k.rect(ConnectionDisplayParams.width, height),
-            k.pos(srcComponent.pos),
+            k.pos(k.vec2(centerX, centerY)),
             k.color(...ConnectionDisplayParams.backgroundColor),
             k.opacity(ConnectionDisplayParams.opacity),
-            k.origin('top'),
+            k.origin('center'),
             k.rotate(ang),
             // k.area()
         ];
 
-        let tags = [srcID, destID, 'connection'];
-        let properties = [InterfaceConnection(srcComponent, destComponent)];
+        let tags = [srcID, destID, '_connection'];
+        let interConnection = new InterfaceConnection(srcComponent, destComponent);
 
-        let rectDef = baseParams.concat(tags, properties);
-        let r = k.add(rectDef);
+        let rectDef = baseParams.concat(tags);
+        rectDef.push(interConnection);
+        let connection = k.add(rectDef);
+
+        srcComponent.connect(connection);
+        destComponent.connect(connection);
         
         k.readd(srcComponent);
         k.readd(destComponent);
-        return r;
+        return connection;
     },
 
     removeComponent: function(component) {

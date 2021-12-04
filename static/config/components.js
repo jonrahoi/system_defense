@@ -2,7 +2,7 @@ export const componentDefs = {
     /*************************** CLIENTS *******************************/
     clients: {
         IPHONE: {
-            tags: ["CLIENT"],
+            tags: ['CLIENT'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -20,11 +20,11 @@ export const componentDefs = {
                     receiveRate: 3, // can receive 3 requests/sec 
                 }
             },
-            img: "assets/images/components/iphone.png",
+            img: 'assets/images/components/iphone.png',
             description: "I'm an iPhone"
         },
         ALEXA: {
-            tags: ["CLIENT"],
+            tags: ['CLIENT'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -42,11 +42,11 @@ export const componentDefs = {
                     receiveRate: 2, // can receive 2 requests/sec 
                 },
             },
-            img: "assets/images/components/alexa.png",
+            img: 'assets/images/components/alexa.png',
             description: "I'm Alexa!"
         },
         LAPTOP: {
-            tags: ["CLIENT"],
+            tags: ['CLIENT'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -64,11 +64,11 @@ export const componentDefs = {
                     receiveRate: 4, // can receive 4 requests/sec 
                 }
             },
-            img: "assets/images/components/laptop.png",
+            img: 'assets/images/components/laptop.png',
             description: "I'm a laptop"
         },
         DESKTOP: {
-            tags: ["CLIENT"],
+            tags: ['CLIENT'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -86,11 +86,11 @@ export const componentDefs = {
                     receiveRate: 6, // can receive 6 requests/sec 
                 },
             },
-            img: "assets/images/components/desktop.png",
+            img: 'assets/images/components/desktop.png',
             description: "I'm a desktop"
         },
         CLOUD_COMPUTE: {
-            tags: ["CLIENT"],
+            tags: ['CLIENT'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -108,15 +108,15 @@ export const componentDefs = {
                     receiveRate: 12, // can receive 12 requests/sec 
                 },
             },
-            img: "assets/images/components/cloud_compute.png",
-            description: "I'm a cloud-computing software"
+            img: 'assets/images/components/cloud_compute.png',
+            description: "I'm a cloud-computing instance"
         }
     },
     
     /**************************** PROCESSORS *******************************/
     processors: {
         GATEWAY: {
-            tags: ["EDGE"],
+            tags: ['EDGE'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -125,7 +125,7 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connections
                     maxOutputs: 3, // can have 3 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
-                    throughput: 3 // can process 3 requests per "latency interval"
+                    throughput: 3 // can process 3 requests per 'latency interval'
                 },
                 2: {
                     cost: 50, // cost to upgrade
@@ -133,14 +133,14 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connections
                     maxOutputs: 4, // can have 4 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
-                    throughput: 4 // can process 4 requests per "latency interval"
+                    throughput: 4 // can process 4 requests per 'latency interval'
                 },
             },
-            img: "assets/images/components/gateway.png",
+            img: 'assets/images/components/gateway.png',
             description: "I'm a gateway"
         },
         HUB: {
-            tags: ["EDGE"],
+            tags: ['EDGE'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -149,7 +149,7 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connections
                     maxOutputs: 2, // can have 2 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
-                    throughput: 3 // can process 3 requests per "latency interval"
+                    throughput: 3 // can process 3 requests per 'latency interval'
                 },
                 2: {
                     cost: 50, // cost to upgrade
@@ -157,14 +157,14 @@ export const componentDefs = {
                     maxInputs: 3, // can have 3 incoming connections
                     maxOutputs: 3, // can have 3 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
-                    throughput: 4 // can process 4 requests per "latency interval"
+                    throughput: 4 // can process 4 requests per 'latency interval'
                 },
             },
-            img: "assets/images/components/hub.png",
+            img: 'assets/images/components/hub.png',
             description: "I'm a hub"
         },
         SWITCH: {
-            tags: ["EDGE"],
+            tags: ['EDGE'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -173,7 +173,7 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connections
                     maxOutputs: 2, // can have 2 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
-                    throughput: 4 // can process 4 requests per "latency interval"
+                    throughput: 4 // can process 4 requests per 'latency interval'
                 },
                 2: {
                     cost: 50, // cost to upgrade
@@ -181,14 +181,14 @@ export const componentDefs = {
                     maxInputs: 3, // can have 3 incoming connections
                     maxOutputs: 3, // can have 3 outgoing connections
                     latency: 1, // takes 1 second to process a single request
-                    throughput: 5 // can process 5 requests per "latency interval"
+                    throughput: 5 // can process 5 requests per 'latency interval'
                 },
             },
-            img: "assets/images/components/switch.png",
+            img: 'assets/images/components/switch.png',
             description: "I'm a switch"
         },
         MODEM: {
-            tags: ["EDGE"],
+            tags: ['EDGE'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -197,7 +197,7 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connections
                     maxOutputs: 4, // can have 4 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
-                    throughput: 5 // can process 5 requests per "latency interval"
+                    throughput: 5 // can process 5 requests per 'latency interval'
                 },
                 2: {
                     cost: 100, // cost to upgrade
@@ -205,14 +205,14 @@ export const componentDefs = {
                     maxInputs: 3, // can have 3 incoming connections
                     maxOutputs: 4, // can have 4 outgoing connections
                     latency: 1, // takes 1 second to process a single request
-                    throughput: 7 // can process 7 requests per "latency interval"
+                    throughput: 7 // can process 7 requests per 'latency interval'
                 },
             },
-            img: "assets/images/components/modem.png",
+            img: 'assets/images/components/modem.png',
             description: "I'm a modem"
         },
         ROUTER: {
-            tags: ["EDGE"],
+            tags: ['EDGE'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -221,7 +221,7 @@ export const componentDefs = {
                     maxInputs: 3, // can have 3 incoming connections
                     maxOutputs: 4, // can have 4 outgoing connections
                     latency: 2, // takes 1.5 seconds to process a single request
-                    throughput: 5 // can process 5 requests per "latency interval"
+                    throughput: 5 // can process 5 requests per 'latency interval'
                 },
                 2: {
                     cost: 80, // cost to upgrade
@@ -229,14 +229,14 @@ export const componentDefs = {
                     maxInputs: 3, // can have 3 incoming connections
                     maxOutputs: 4, // can have 4 outgoing connections
                     latency: 1, // takes 1 second to process a single request
-                    throughput: 6 // can process 6 requests per "latency interval"
+                    throughput: 6 // can process 6 requests per 'latency interval'
                 },
             },
-            img: "assets/images/components/router.png",
+            img: 'assets/images/components/router.png',
             description: "I'm a router"
         },
         LOAD_BALANCER: {
-            tags: ["PRE_PROCESSOR"],
+            tags: ['PRE_PROCESSOR'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -245,7 +245,7 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connections
                     maxOutputs: 3, // can have 3 outgoing connections
                     latency: 1, // takes 1 seconds to process a single request
-                    throughput: 6 // can process 6 requests per "latency interval"
+                    throughput: 6 // can process 6 requests per 'latency interval'
                 },
                 2: {
                     cost: 70, // cost to upgrade
@@ -253,14 +253,14 @@ export const componentDefs = {
                     maxInputs: 4, // can have 4 incoming connections
                     maxOutputs: 4, // can have 4 outgoing connections
                     latency: 1, // takes 0.5 seconds to process a single request
-                    throughput: 10 // can process 10 requests per "latency interval"
+                    throughput: 10 // can process 10 requests per 'latency interval'
                 },
             },
-            img: "assets/images/components/load_balancer.png",
+            img: 'assets/images/components/load_balancer.png',
             description: "I'm a load balancer"
         },
         CACHE: {
-            tags: ["PRE_PROCESSOR"],
+            tags: ['PRE_PROCESSOR'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -269,7 +269,7 @@ export const componentDefs = {
                     maxInputs: 1, // can have 1 incoming connection
                     maxOutputs: 1, // can have 1 outgoing connection
                     latency: 1, // takes 1 second to process a single request
-                    throughput: 8 // can process 8 requests per "latency interval"
+                    throughput: 8 // can process 8 requests per 'latency interval'
                 },
                 2: {
                     cost: 90, // cost to upgrade
@@ -277,14 +277,14 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connections
                     maxOutputs: 2, // can have 2 outgoing connections
                     latency: 1, // takes 0.5 seconds to process a single request
-                    throughput: 15 // can process 15 requests per "latency interval"
+                    throughput: 15 // can process 15 requests per 'latency interval'
                 },
             },
-            img: "assets/images/components/cache.png",
+            img: 'assets/images/components/cache.png',
             description: "I'm a cache"
         },
         SERVER: {
-            tags: ["PROCESSOR"],
+            tags: ['PROCESSOR'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -293,7 +293,7 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connection
                     maxOutputs: 2, // can have 2 outgoing connection
                     latency: 2, // takes 2 seconds to process a single request
-                    throughput: 5 // can process 5 requests per "latency interval"
+                    throughput: 5 // can process 5 requests per 'latency interval'
                 },
                 2: {
                     cost: 70, // cost to upgrade
@@ -301,14 +301,14 @@ export const componentDefs = {
                     maxInputs: 3, // can have 3 incoming connections
                     maxOutputs: 3, // can have 3 outgoing connections
                     latency: 1, // takes 1.5 seconds to process a single request
-                    throughput: 8 // can process 8 requests per "latency interval"
+                    throughput: 8 // can process 8 requests per 'latency interval'
                 },
             },
-            img: "assets/images/components/server.png",
+            img: 'assets/images/components/server.png',
             description: "I'm a web server"
         },
         DATABASE: {
-            tags: ["PROCESSOR"],
+            tags: ['PROCESSOR'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -317,7 +317,7 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connection
                     maxOutputs: 2, // can have 2 outgoing connection
                     latency: 2, // takes 2 seconds to process a single request
-                    throughput: 5 // can process 5 requests per "latency interval"
+                    throughput: 5 // can process 5 requests per 'latency interval'
                 },
                 2: {
                     cost: 80, // cost to upgrade
@@ -325,10 +325,10 @@ export const componentDefs = {
                     maxInputs: 3, // can have 3 incoming connections
                     maxOutputs: 3, // can have 3 outgoing connections
                     latency: 1, // takes 1.5 seconds to process a single request
-                    throughput: 8 // can process 8 requests per "latency interval"
+                    throughput: 8 // can process 8 requests per 'latency interval'
                 },
             },
-            img: "assets/images/components/database.png",
+            img: 'assets/images/components/database.png',
             description: "I'm a database"
         }
     },
@@ -336,27 +336,27 @@ export const componentDefs = {
     /***************************** ENDPOINTS *******************************/    
     endpoints: {
         HTML: {
-            tags: ["ENDPOINT"],
+            tags: ['ENDPOINT'],
             transmission: 'return',
             maxInputs: 1, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
-            img: "assets/images/endpoints/html.png",
+            img: 'assets/images/endpoints/html.png',
             description: "I'm an HTML page"
         },
         IMAGE: {
-            tags: ["ENDPOINT"],
+            tags: ['ENDPOINT'],
             transmission: 'return',
             maxInputs: 1, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
-            img: "assets/images/endpoints/image.png",
+            img: 'assets/images/endpoints/image.png',
             description: "I'm an image"
         },
         VIDEO: {
-            tags: ["ENDPOINT"],
+            tags: ['ENDPOINT'],
             transmission: 'return',
             maxInputs: 1, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
-            img: "assets/images/endpoints/video.png",
+            img: 'assets/images/endpoints/video.png',
             description: "I'm a video"
         }
     }

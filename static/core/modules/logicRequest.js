@@ -1,4 +1,19 @@
 
+/*
+ * TODO: Need to remember path from src --> dest.
+ * - After reaching destination, the request will follow the EXACT SAME path it
+ *      took to get to that destination.
+ * - Returning requests don't have to go through processing time
+ * - Returning requests have own queue in each processor that takes priority
+ * - Want to have individual connection types/latencies
+ * 
+ * - Every request has a TOTAL LIFESPAN
+ * - Keep track of requests
+ * 
+ * - Send Eli notes for levelView.update() and logicRequest.RequestStateMachine
+ * - Add SPAWN state & isResponse attribute
+ * - Seperate spawn and transmit into two steps from client
+ */
 
 import generateUUID from '../../utilities/uuid.js';
 
@@ -9,6 +24,8 @@ export var LogicRequest = (source, destID) => {
     var req = {
         id: generateUUID(),
         age: 0,
+        traveledPath: [],
+        isResponse: false,
 
         currComponent: source,
         nextComponent: undefined,
@@ -29,12 +46,18 @@ export var LogicRequest = (source, destID) => {
             this.completed = true;
         },
 
+        setResponse: function() {
+            this.isResponse = true;
+        },
+
         // Called by a component when it's accepted THIS request into its queue
         pendingProcessing: function(component) {
             this.currComponent = component;
             this.nextComponent = null;
             this.prevConnection = this.currConnection;
             this.currConnection = null;
+
+            this.traveledPath.push(component);
 
             this._stateChange();
             this.blocked = true;
@@ -50,7 +73,7 @@ export var LogicRequest = (source, destID) => {
         transmit: function(connection) { 
             this.prevConnection = this.currConnection;
             this.currConnection = connection;
-            this.currComponent = null;
+            // this.currComponent = null;
 
             this.nextComponent = connection.des;
 
@@ -106,25 +129,35 @@ export default LogicRequest;
 const RequestStateFactory = (stateName, req) => {
     var state;
     switch(stateName) {
+        case 'SPAWNED':
+            state = {
+                name: 'SPAWNED',
+                currID: req.currComponent.id
+            };
+            break;
         case 'BLOCKED':
             state = {
                 name: 'BLOCKED',
                 percent: req.currProcessTime / TIMEOUT,
-                currID: req.currComponent.id
+                currID: req.currComponent.id,
+                isResponse: req.isResponse
             };
             break;
         case 'PROCESSING':
             state = {
                 name: 'PROCESSING',
                 percent: req.currProcessTime / req.currComponent.throughput,
-                currID: req.currComponent.id
+                currID: req.currComponent.id,
+                isResponse: req.isResponse
             };
             break;
         case 'INTRANSIT':
             state = {
                 name: 'INTRANSIT',
                 percent: req.currProcessTime / req.currConnection.latency,
-                nextID: req.nextComponent.id
+                currID: req.currComponent.id,
+                nextID: req.nextComponent.id,
+                isResponse: req.isResponse
             };
             break;
         case 'TIMEDOUT':

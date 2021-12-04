@@ -4,7 +4,7 @@
 
 import LogicComponent from './logicComponent.js';
 import LogicConnection from './logicConnection.js';
-import connectionTypes from '../../config/connections.js';
+import { ConnectionConfig } from '../../shared/lookup.js';
 import findNetworkPath from '../../config/transmission.js';
 
 export default class Network{
@@ -74,6 +74,7 @@ export default class Network{
     * @returns 
     */
     verifyConnectionType(src, des, options){
+        // Get connection config definition here. Problem with component tags being a list...
         if ( src.id === des.id ){
             return { 
                 valid: false,
@@ -112,7 +113,7 @@ export default class Network{
         if (target !== -1){
             let srcComponent = this.components[srcId];
             let desComponent = this.components[desId];
-
+            
             srcComponent.removeOutput();
             desComponent.removeInput();
             
@@ -212,7 +213,12 @@ export default class Network{
     * @returns 
     */
     networkRemovedComponent(component) {
-        let componentObject = this.getComponent(component);
+        let componentObject;
+        if (component instanceof LogicComponent) {
+            componentObject = component;
+        } else if (typeof component === 'string') {
+            componentObject = this.getComponent(component);;
+        } 
         
         if (!componentObject) { 
             return { 

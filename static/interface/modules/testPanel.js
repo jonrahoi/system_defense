@@ -59,8 +59,10 @@ TestLevelChange.prototype.init = function(x, y, width, height, stageFuncs, lvlFu
     this.params['xBtnSpacer'] = this.params.width * this.params.xButtonSpacerRatio;
     this.params['yBtnSpacer'] = this.params.height * this.params.yButtonSpacerRatio;
 
-    this.params['btnWidth'] = ((this.params.width - (2 * this.params.xInnerSpacer) - this.params.xBtnSpacer) / 2);
-    this.params['btnHeight'] = ((this.params.height - (2 * this.params.yInnerSpacer) - this.params.yBtnSpacer) / 2);
+    this.params['btnWidth'] = ((this.params.width - (2 * this.params.xInnerSpacer) 
+                                    - this.params.xBtnSpacer) / 2);
+    this.params['btnHeight'] = ((this.params.height - (2 * this.params.yInnerSpacer) 
+                                    - this.params.yBtnSpacer) / 2);
 
     this.params['textWidth'] = this.params.btnWidth * this.params.textWidthRatio;
     this.params['textHeight'] = this.params.btnHeight * this.params.textHeightRatio;

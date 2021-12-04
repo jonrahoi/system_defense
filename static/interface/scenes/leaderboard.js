@@ -100,7 +100,7 @@ Leaderboard.prototype.buildScene = function() {
 
     // Title
     k.add([
-        k.text('Leaderboard', { size: this.objects.title.height, width: this.objects.title.width }),
+        k.text('Instructions', { size: this.objects.title.height, width: this.objects.title.width }),
         k.pos(this.objects.title.x, this.objects.title.y),
     ]);
 
