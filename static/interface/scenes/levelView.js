@@ -19,11 +19,10 @@ import TestLevelChange from '../modules/testPanel.js';
 import State from '../../shared/state.js';
 import FieldControls from '../modules/fieldControls.js';
 import TimerControls from '../../utilities/timer.js';
+import InterfaceRequest from '../kaboom/components/interfaceRequest.js';
 
 import { dragControls, drag } from '../kaboom/components/drag.js';
 import { selectControls, connectControls, select } from '../kaboom/components/select.js';
-
-
 
 export function LevelView() {
     this.newComponents = {};
@@ -121,6 +120,76 @@ LevelView.prototype.buildScene = function() {
 // UPDATE ALL REQUESTS HERE? (@see State.requestStates)
 LevelView.prototype.update = function(timestamp, speedup) {
     console.log(`Animation timestep: ${timestamp} @ ${speedup}x`);
+
+    for (let i = 0; i < State.requestStates.length; i++) {       
+        //console.log("Obj: " + JSON.stringify(State.requestStates[i]));
+        let selectables = k.get('selectable');
+        var newRequest = new InterfaceRequest(State.requestStates[i].id, selectables[0], selectables[1],
+                                                State.requestStates[i].name);
+        
+        var stateType = newRequest.state;
+
+        if (stateType == 'KILLED') {
+            const text = k.add([
+                k.text(JSON.stringify(stateType)),
+                k.pos(45, 215),
+                k.area(),
+                {
+                    size: 10,
+                    font: "sink",
+                    width: 500,
+                    color: k.rgb(0, 0, 0)
+                },
+                k.move(k.dir(90), 100),
+                k.cleanup(1)
+            ])
+        }
+        if (stateType == 'INTRANSIT') {
+            const text = k.add([
+                k.text(JSON.stringify(stateType)),
+                k.pos(45, 150),
+                k.area(),
+                {
+                    size: 10,
+                    font: "sink",
+                    width: 500,
+                    color: k.rgb(0, 255, 0)
+                },
+                k.move(k.dir(-90), 75),
+                k.cleanup(1)
+            ])
+        }
+        if (stateType == 'BLOCKED') {
+            const text = k.add([
+                k.text(JSON.stringify(stateType)),
+                k.pos(45, 215),
+                k.area(),
+                {
+                    size: 10,
+                    font: "sink",
+                    width: 500,
+                    color: k.rgb(255, 0, 0)
+                },
+                k.move(k.dir(90), 75),
+                k.cleanup(1)
+            ])
+        }
+        if (stateType == 'COMPLETED') {
+            const text = k.add([
+                k.text(JSON.stringify(stateType)),
+                k.pos(45, 150),
+                k.area(),
+                {
+                    size: 10,
+                    font: "sink",
+                    width: 500,
+                    color: k.rgb(0, 0, 255)
+                },
+                k.move(k.dir(-90), 100),
+                k.cleanup(1)
+            ])
+        }
+    }
 };
 
 // Load a level object into this view

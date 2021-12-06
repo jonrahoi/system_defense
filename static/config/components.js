@@ -9,7 +9,7 @@ export const componentDefs = {
                     cost: 0, // base level client is free (given at level start)
                     maxInputs: 1, // can have 1 incoming connection
                     maxOutputs: 1, // can have 1 outgoing connection
-                    transmitRate: 2, // can transmit 2 requests/sec
+                    transmitRate: 1, // can transmit 2 requests/sec
                     receiveRate: 2, // can receive 2 requests/sec 
                 },
                 2: {
