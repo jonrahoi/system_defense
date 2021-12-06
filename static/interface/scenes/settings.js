@@ -1,7 +1,8 @@
 
 
-import k from '../kaboom/index.js';
+import k from '../kaboom/kaboom.js';
 import { SceneControls } from '../interface.js';
+import { getColor, setColor } from '../../config/settings.js';
 
 // ALL ICONS HAVE SAME SIZE (512p x 512p)
 const iconWidth = 512;
@@ -11,7 +12,7 @@ export function Settings() {
     this.init();
 
     // necessary to preserve `this` reference (check out arrow functions if unfamiliar)
-    this.scene = () => { this.buildScene(); };
+    this.scene = (color) => { this.buildScene(color); };
 };
 
 Settings.prototype.init = function() {
@@ -24,7 +25,7 @@ Settings.prototype.init = function() {
         width: k.width(), // total screen width
         height: k.height(), // total screen height
 
-        backdropColor: k.color(180, 200, 250), // backdrop color (same as home scene)
+        backdropColor: getColor(), // backdrop color (same as home scene)
         backdropOpacity: k.opacity(1), // opacity of backdrop
 
         xInnerOffsetRatio: 0.01, // distance from left/right-most objects to banner left/right boundary
@@ -33,6 +34,10 @@ Settings.prototype.init = function() {
         // Based on Home Scene dimensions
         titleWidthRatio: 0.35, // ratio compared to the screen width
         titleHeightRatio: 0.07, // ratio compared to the screen height
+        yTitleOffsetRatio: 0.5, // ratio of y-spacing from screen top based on title height
+
+        subTitleWidthRatio: 0.25, // ratio compared to the screen width
+        subTitleHeightRatio: 0.05, // ratio compared to the screen height
         yTitleOffsetRatio: 0.5, // ratio of y-spacing from screen top based on title height
 
         controlIconScale: 0.45, // used to resize the control icons (home, volume, settings...)
@@ -78,6 +83,13 @@ Settings.prototype.init = function() {
         y: (this.params.screenY + this.params.yTitleSpacer)
     }
 
+    this.objects['bgColor'] = {
+      width: this.params.width * this.params.subTitleWidthRatio,
+      height: this.params.height * this.params.subTitleHeightRatio,
+      x: ((this.params.width / 2) - (this.params.titleWidth / 2)),
+      y: (this.params.screenY + this.params.yTitleSpacer + 100)
+    }
+
     this.objects['back'] = { 
         x: ((this.params.width + this.params.screenX) // right-most edge
                     - this.params.xInnerSpacer // offset
@@ -87,29 +99,97 @@ Settings.prototype.init = function() {
 };
 
 
-Settings.prototype.buildScene = function() {
+Settings.prototype.buildScene = function(color) {
     // Backdrop color
     k.add([
         k.rect(this.params.width, this.params.height),
         k.pos(this.params.screenX, this.params.screenY),
-        this.params.backdropColor,
+        k.color(color),
         this.params.backdropOpacity,
     ]);
 
     // Title
     k.add([
         k.text('Settings', { size: this.objects.title.height, width: this.objects.title.width }),
-        k.pos(this.objects.title.x, this.objects.title.y),
+        k.pos(this.objects.title.x - 200, this.objects.title.y),
     ]);
 
+    // bgColor Title
+    k.add([
+      k.text('Background Color ', { size: this.objects.bgColor.height - 10}),
+      k.pos(this.objects.bgColor.x - 200, this.objects.bgColor.y),
+    ]);
+
+    k.add([
+      k.text('(Effective after back)', { size: this.objects.bgColor.height-25}),
+      k.pos(this.objects.bgColor.x - 200, this.objects.bgColor.y + 50),
+    ]);
+    
+    // current color
+    k.add([
+      k.text('Current:', { size: this.objects.bgColor.height - 10}),
+      k.pos(this.objects.bgColor.x + 50, this.objects.bgColor.y + 100),
+      k.color(0,0,100),
+    ]);
+
+    let [curRed, curGreen, curBlue] = getColor()
+    let showColor = k.add([
+      "colorBlock",
+      k.color(curRed, curGreen, curBlue),
+      k.uvquad(30, 30),
+      k.pos(this.objects.bgColor.x + this.objects.bgColor.width - 100, this.objects.bgColor.y + 100)
+    ])
+
+    // select color
+    k.add([
+      k.text('Select:', { size: this.objects.bgColor.height - 10, width: this.objects.bgColor.width }),
+      k.pos(this.objects.bgColor.x + 50, this.objects.bgColor.y + 200),
+      k.color(0,0,100),
+    ]);    
+
+    // color option
+    let whiteBtn = k.add([
+      "colorBtn",
+      k.color(255,255,255),
+      k.uvquad(30, 30),
+      //k.outline(2, k.color(0,255,0)),
+      k.area(),
+      k.pos(this.objects.bgColor.x+this.objects.bgColor.width - 150, this.objects.bgColor.y + 200)      
+    ])
+
+    let blueBtn = k.add([
+      "colorBtn",
+      k.color(180, 200,250),
+      k.uvquad(30, 30),
+      k.area(),
+      k.pos(this.objects.bgColor.x+this.objects.bgColor.width - 100, this.objects.bgColor.y + 200)
+    ])
+
+    let greenBtn = k.add([
+      "colorBtn",
+      k.color(0,255,0),
+      k.uvquad(30, 30),
+      k.area(),
+      k.pos(this.objects.bgColor.x+this.objects.bgColor.width - 50, this.objects.bgColor.y + 200)
+    ])
+
+    k.clicks("colorBtn", (btn)=>{
+        setColor([btn.color.r, btn.color.g, btn.color.b])
+        k.destroyAll("colorBlock")
+        showColor = k.add([
+          "colorBlock",
+          k.color(btn.color.r, btn.color.g, btn.color.b),
+          k.uvquad(30, 30),
+          k.pos(this.objects.bgColor.x+this.objects.bgColor.width - 100, this.objects.bgColor.y + 100)
+        ])
+    })
 
     // Back button
     const backBtn = k.add([
-        k.sprite('back', { width: this.params.controlIcons.width,
-                            height: this.params.controlIcons.height }),
-        k.pos(this.objects.back.x, this.objects.back.y),
-        this.params.controlIconOpacity,
-        k.area(),
+      k.text('Back', { size: this.objects.title.height}),
+      k.pos(this.objects.title.x + 500, this.objects.title.y + 600),
+      k.color(0,0,100),
+      k.area(),
     ]);
     backBtn.clicks(SceneControls.goHome);
 };
