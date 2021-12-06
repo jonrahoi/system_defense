@@ -24,6 +24,60 @@ import { ScaledComponentImage } from '../kaboom/graphicUtils.js';
 
 k.loadSprite("capn", '../../assets/icons/browser/captain_192.png')
 
+function errorMessage(message) {
+    k.layers([
+        "error",
+    ], "game")
+
+    const recWidth = k.width() / 3.5;
+    const recHeight = k.height() / 3.5;
+
+    let rec = k.add([
+        k.rect(recWidth, recHeight),
+        k.layer("error"),
+        k.outline(2),
+        k.color(176, 182, 221),
+        k.pos(recWidth * 1.75, recHeight * 1.75),
+        k.origin("center"),
+    ]);
+
+    let error = k.add([
+        k.text(message, { size: recHeight * 0.13, width: recWidth * 0.9 }),
+        k.layer("error"),
+        k.pos(recWidth * 1.75, recHeight * 1.6),
+        k.origin("center"),
+    ])
+
+    const btnPos = k.vec2(k.width() / 2, k.height() / 1.7);
+
+    let btn = k.add([
+        k.rect(recWidth / 5.9, recHeight / 4.7),
+        k.layer("error"),
+        k.outline(2),
+        k.color(207, 226, 243),
+        k.pos(btnPos),
+        k.origin("center"),
+        k.area({ cursor: "pointer", }),
+    ]);
+
+    let back = k.add([
+        k.text("Back", {
+            size: recHeight * 0.1
+        }),
+        k.layer("error"),
+        k.pos(btnPos),
+        k.origin("center"),
+    ]);
+
+    btn.clicks(() => {
+        k.destroy(rec);
+        k.destroy(error);
+        k.destroy(btn);
+        k.destroy(back);
+    });
+}
+
+
 const FieldControls = {
     // This stores the current level logic object (found in `shared/level.js`)
     // It's the key communication object between Interface --> Game Logic
@@ -136,6 +190,7 @@ const FieldControls = {
         // Safety check. Need logicControls to communicate with Game Logic
         if (FieldControls.logicControls === null) {
             console.debug('Attempted to add component but no game logic controller present.');
+            errorMessage("Attempted to add component but no game logic controller present.");
             return;
         }
 
@@ -144,6 +199,7 @@ const FieldControls = {
 
         if (!logicResponse.valid) {
             console.log(logicResponse.info);
+            errorMessage(logicResponse.info);
             return;
         }
 
@@ -173,10 +229,12 @@ const FieldControls = {
         // Safety check. Need logicControls to communicate with Game Logic
         if (FieldControls.logicControls === null) {
             console.debug('Attempted to connect components but no game logic controller present.');
+            errorMessage("Attempted to connect components but no game logic controller present.");
             return;
         }
         if (!srcComponent || !destComponent) {
-            console.debug('Attempted to connect components but either src or dest was missing');
+            console.debug('Attempted to connect components but either src or dest was missing.');
+            errorMessage("Attempted to connect components but either src or dest was missing.");
             return;
         }
 
@@ -186,6 +244,7 @@ const FieldControls = {
         
         if (!logicResponse.valid) {
             console.log(logicResponse.info);
+            errorMessage(logicResponse.info);
             return;
         }
 
@@ -219,10 +278,12 @@ const FieldControls = {
         // Safety check. Need logicControls to communicate with Game Logic
         if (FieldControls.logicControls === null) {
             console.debug('Attempted to remove component but no game logic controller present.');
+            errorMessage("Attempted to remove component but no game logic controller present.");
             return;
         }
         if (!component) {
             console.debug('Attempted to remove component but it was missing');
+            errorMessage("Attempted to remove component but it was missing");
             return;
         }
 
@@ -232,6 +293,7 @@ const FieldControls = {
 
         if (!logicResponse.valid) {
             console.log(logicResponse.info);
+            errorMessage("Attempted to remove component but it was missing");
             return false;
         }
         
@@ -248,10 +310,12 @@ const FieldControls = {
         // Safety check. Need logicControls to communicate with Game Logic
         if (FieldControls.logicControls === null) {
             console.debug('Attempted to disconnect components but no game logic controller present.');
+            errorMessage("Attempted to disconnect components but no game logic controller present.");
             return;
         }
         if (!srcComponent || !destComponent) {
             console.debug('Attempted to disconnect components but either src or dest was missing');
+            errorMessage("Attempted to disconnect components but either src or dest was missing");
             return;
         }
 
@@ -261,6 +325,7 @@ const FieldControls = {
 
         if (!logicResponse.valid) {
             console.log(logicResponse.info);
+            errorMessage(logicResponse.info);
             return false;
         }
 
@@ -308,15 +373,7 @@ const FieldControls = {
             drawReq = k.add(badReqDef);
             console.log("bad req drawed");         
         }         
-        /*
-        k.loop(1, () => { 
-            drawReq.hurt(1);
-        })
-    
-        drawReq.on("death", () => {
-            drawReq.destroy(request);
-        })
-        */
+
     },
 
     moveRequest: function(request) {
