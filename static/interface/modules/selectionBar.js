@@ -297,6 +297,11 @@ SelectionBar.prototype.buildObject = function() {
             rec.scale = 0
             comment.text = ""
         })
+
+        componentBtn.clicks(() => {
+            rec.scale = 0
+            comment.text = ""
+        })
     };
 };
 
