@@ -1,120 +1,285 @@
 /*
- * Game index.js
- *
- * Simple implementation of a GameLogic object. Does not include methods like
- * `resetGame`, `loseGame`, `winGame`. It also does not do any verification
- * of user's actions on the Game level
- * 
- * Currently can receive timesteps and pass control functions in a level
- * object to the interface
- */
+* Game index.js
+*
+* Simple implementation of a GameLogic object. Does not include methods like
+* `resetGame`, `loseGame`, `winGame`. It also does not do any verification
+* of user's actions on the Game level
+* 
+* Currently can receive timesteps and pass control functions in a level
+* object to the interface
+*/
 
-import Network from "./modules/network.js";
-import LogicComponent from './modules/logicComponent.js';
-
-// Controller for the global `State` object
-import { StateMachine, State } from "../shared/state.js";
-
-// for interface <--> game communication
 import Level from "../shared/level.js";
+import Network from "./modules/network.js";
+import LogicConnection from './modules/logicConnection.js';
+import getTransmitFunction from '../config/transmission.js';
+import { ComponentConfig, LevelConfig, GameConfig } from "../shared/lookup.js";
+import { StateMachine, State } from "../shared/state.js";
+import { LogicClient, LogicProcessor, LogicEndpoint } from './modules/logicMembers.js';
 
-// to get available components and request goal
-import { findComponent, componentEntries, findLevel } from "../shared/lookup.js";
 
-
-const REL_PATH_TO_ROOT = '../';
-
-const REFUND_RATE = 0.75; // when deleted a component, only get 75% money back
+const REFUND_RATE = GameConfig.get('refundRate'); // when deleted a component, only get % money back
 
 export function GameLogic() {
     StateMachine.reset(); // reset the game state if previously in progress
     this.network = new Network(); // storage module
-
-    // will probably need other instantiated properties...
 };
 
 GameLogic.prototype.getLevel = function(levelNumber) {
-    var levelSpecs = findLevel(levelNumber);
-    this.availableClients = levelSpecs['initClients']
-    this.availableProcessors = levelSpecs['initProcessors']
-    StateMachine.levelChange(levelNumber, levelSpecs);
+    let levelSpecs = LevelConfig.get(levelNumber);
+    if (!Object.keys(levelSpecs).length) {
+        console.log("GAME WON!");
+        return;
+    }
+    
+    let initStageSpecs = this.getStage(1, levelNumber);
+    if (!initStageSpecs) {
+        console.log("No stage 1 data for level", levelNumber);
+        return;
+    }
 
-    const funcs = {
-        componentSpecs: this.componentSpecs.bind(this),
+    let { stages, ...baseSpecs } = levelSpecs;
+    let cumulativeSpecs = Object.assign(baseSpecs, initStageSpecs);
+    StateMachine.levelChange(levelNumber, cumulativeSpecs);
+    
+    // Remove all existing components (& connections)
+    this.network.clearComponents();
+    
+    const controlFuncs = {
+        componentSpecs: componentSpecs,
+        initStage: this.initStage.bind(this),
         addComponent: this.addComponent.bind(this),
         removeComponent: this.removeComponent.bind(this),
         addConnection: this.addConnection.bind(this),
         removeConnection: this.removeConnection.bind(this),
         processInterval: this.processInterval.bind(this)
     };
-
-    return Level(levelNumber, levelSpecs, funcs);
-};
-
-const isClient = (componentName) => {
-    let allComponents = componentEntries();
-    return allComponents['clients'].hasOwnProperty(componentName);
-}
-
-GameLogic.prototype.componentSpecs = (componentName) => {
-    componentName = componentName.toUpperCase();
-    let specs = findComponent(componentName, REL_PATH_TO_ROOT);
-    specs['isClient'] = isClient(componentName);
-    return specs;
-};
-
-GameLogic.prototype.addComponent = function(componentName, componentID, initial=false) {
-
-    let specs = this.componentSpecs(componentName);
     
-    // Unnecessary when initial but OK
-    if (State.coins < specs.cost) {
+    return Level(levelNumber, cumulativeSpecs, controlFuncs);
+};
+
+
+GameLogic.prototype.getStage = function(stageNumber, levelNumber) {
+    levelNumber = levelNumber || State.levelNumber;
+    let stageSpecs = LevelConfig.get(levelNumber, stageNumber);
+    
+    if (Object.keys(stageSpecs).length) { 
+        this.currentGoals = stageSpecs.goals.reduce((acc, x) => { acc[x.mission] = x.quantity; return acc; }, {});
+        let goalCount = Object.values(stageSpecs.goals).reduce((acc, x) => acc = acc + x.quantity, 0);
+
+        stageSpecs['goalCount'] = goalCount;
+        StateMachine.stageChange(stageNumber, stageSpecs);
+        
+        return stageSpecs;
+    }
+    // No more stages for this level
+};
+
+// Expect object of componentIDs --> componentNames
+GameLogic.prototype.initStage = function(components) {
+    let expenses = 0;
+    let newComponent;
+    for (const [id, name] of Object.entries(components)) {
+        newComponent = this._addComponent(name, id);
+
+        this.network.networkAddComponent(newComponent);
+        StateMachine.placedComponent(newComponent);
+        expenses += newComponent.usageCost;
+    }
+    
+    // Setup current State
+    StateMachine.incrementExpenses(-expenses);
+    
+    // Reset all components and connections
+    this.network._getConnections().forEach(x => x.softReset());
+
+    let currentComponents = this.network._getComponents();
+    currentComponents.forEach(x => x.softReset());
+    
+    // Assign goals and missions to the initial components
+    this._assignGoals(currentComponents);
+};
+
+// Private method to assign the stage's goals (and subsequent missions) to all components
+GameLogic.prototype._assignGoals = function(currentComponents) {
+    // Assign goals and missions...
+    let component, currName;
+    let goalNames = Object.keys(this.currentGoals);
+    currentComponents = currentComponents || this.network._getComponents();
+
+    for (let i = 0; i < goalNames.length; i++) {
+        currName = goalNames[i];
+        component = currentComponents.find(x => { return !x.goal && x.name === currName; });
+        if (component) {
+            component.setGoal(this.currentGoals[currName]);
+            this.currentGoals[component.id] = { 
+                name: currName, 
+                quantity: this.currentGoals[currName], 
+                completed: false
+            };
+            delete this.currentGoals[currName];
+        }
+    }
+
+    let missions = Object.keys(this.currentGoals);
+    for (let c of currentComponents) {
+        if (c.isClient) { c.setMissions(missions); } // assume only clients can create missions
+    }
+};
+
+
+// Meant as private method to allow initial values to be placed without safety checks
+GameLogic.prototype._addComponent = function(componentName, componentID) {
+    let specs = componentSpecs(componentName);
+    let transmitFunc = getTransmitFunction([specs.transmission], this.network.adjList).bind(this);
+    if (specs.isClient) {
+        var newComponent = new LogicClient(componentID, componentName, specs, transmitFunc);
+    }
+    else if (specs.isEndpoint) {
+        var newComponent = new LogicEndpoint(componentID, componentName, specs, transmitFunc);
+    }
+    else {
+        var newComponent = new LogicProcessor(componentID, componentName, specs, transmitFunc);
+    }
+    this._assignGoals(this.network._getComponents());
+    return newComponent;
+};
+
+
+GameLogic.prototype.addComponent = function(componentName, componentID) {
+    let specs = componentSpecs(componentName);
+    
+    // Maybe do some sort of check to make sure the user's expenses aren't too high?
+    let newComponent = this._addComponent(componentName, componentID);
+    let networkResponse = this.network.networkAddComponent(newComponent);
+    
+    if (networkResponse.valid) {
+        StateMachine.incrementExpenses(-specs.usageCost);
+        StateMachine.placedComponent(newComponent);
+    }
+    return networkResponse;
+};
+
+
+GameLogic.prototype.upgradeComponent = function(componentID) {
+    let component = this.network.getComponent(componentID);
+    if (State.coins < component.cost) {
         return {
             valid: false,
             info: 'Insufficient funds'
         };
     }
     
-    var newComponent = new LogicComponent(componentID, componentName, specs);
-    StateMachine.placedComponent(newComponent);
-    if (!initial) {
-        StateMachine.incrementCoins(-specs.cost);
+    let prevExpense = component.usageCost;
+    component.upgrade();
+    StateMachine.incrementExpenses(component.usageCost - prevExpense);
+    
+    return { 
+        valid: true,
+        info: 'Successfully upgraded to level ' + component.level
     }
-
-    return this.network.networkAddComponent(newComponent);
 };
+
 
 GameLogic.prototype.removeComponent = function(componentID) {
-
     let component = this.network.getComponent(componentID);
-
-    StateMachine.removedComponent(component);
     
-    let refund = Math.ceil(component.cost * REFUND_RATE);
-    StateMachine.incrementCoins(refund);
-
-    return this.network.networkRemovedComponent(componentID);
+    // Get refund for upgrade cost?
+    if (component.level > 1) {
+        let refund = Math.ceil(component.cost * REFUND_RATE);
+        StateMachine.incrementCoins(refund);
+    }
+    
+    let networkResponse = this.network.networkRemovedComponent(componentID);
+    
+    if (networkResponse.valid) {
+        StateMachine.removedComponent(component);
+        StateMachine.incrementExpenses(-component.usageCost);
+    }
+    return networkResponse;
 };
+
 
 GameLogic.prototype.addConnection = function(src_id, dest_id) {
     // verify connection at the game level
     let srcComponent = this.network.getComponent(src_id);
     let destComponent = this.network.getComponent(dest_id);
-
-    return this.network.networkAddConnection(src_id, dest_id);
+    
+    let latency = 2; // TEMPORARY HARD CODE - will need to pull from a config file...
+    let connection = new LogicConnection(srcComponent, destComponent, latency);
+    
+    let networkResponse = this.network.networkAddConnection(connection);
+    
+    if (networkResponse.valid) {
+        StateMachine.addedConnection(connection);
+    }
+    return networkResponse;
 };
+
 
 GameLogic.prototype.removeConnection = function(src_id, dest_id) {
-    return this.network.disconnect(src_id, dest_id);
+    let networkResponse = this.network.disconnect(src_id, dest_id);
+    
+    if (networkResponse.valid) {
+        StateMachine.removedConnection(src_id, dest_id);
+    }
+    return networkResponse;
 };
+
 
 GameLogic.prototype.processInterval = function(timestamp, speedup) {
-    console.log('Game Logic timestep ', timestamp);
-
-    // Testing communication from Timer --> Logic --> Interface
-    StateMachine.incrementScore();
-
-    // This will be the "brain" for determing game development
+    
+    StateMachine.incrementScore(); // Not sure if score should increment every sec...
+    StateMachine.incrementCoins(-State.expenses);
+    
+    let aliveRequests = [];
+    // Loop over all components to process their requests and collect them
+    let components = this.network._getComponents();
+    let requests, c;
+    for (let i = 0; i < components.length; i++) {
+        c = components[i];
+        requests = c.processTimestep();
+        
+        if (c.goalMet) {
+            this.currentGoals[c.id].completed = true;
+            if (Object.values(this.currentGoals).every(e => e.completed)) {
+                StateMachine.stageCompleted();
+                return []; // break as soon as all goals have been completed
+            }
+        }
+        aliveRequests.push(...requests);
+    }
+    
+    // Loop over all connections to process their requests and collect them
+    let connections = this.network._getConnections();
+    for (let i = 0; i < connections.length; i++) {
+        requests = connections[i].processTimestep();
+        aliveRequests.push(...requests);
+    }
+    
+    // Loop over all collected requests to update their states
+    let reqStates = []
+    let state, req;
+    for (let i = 0; i < aliveRequests.length; i++) {
+        req = aliveRequests[i];
+        state = req.processTimestep();
+        reqStates.push(state);
+    }
+    
+    // An object of request IDs --> request states
+    console.log(reqStates);
+    StateMachine.setRequestStates(reqStates);
+    return reqStates;
 };
+
+
+
+const componentSpecs = (componentName) => {
+    let specs = ComponentConfig.get(componentName);
+    specs['isClient'] = specs.tags.includes('CLIENT');
+    specs['isEndpoint'] = specs.tags.includes('ENDPOINT');
+    return Object.assign({}, specs);
+};
+
 
 export default GameLogic;
