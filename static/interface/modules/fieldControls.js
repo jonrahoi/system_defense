@@ -10,7 +10,6 @@
 
 import k from '../kaboom/kaboom.js';
 
-
 import InterfaceComponent from '../kaboom/components/interfaceComponent.js';
 import InterfaceConnection from '../kaboom/components/interfaceConnection.js';
 import InterfaceRequest from '../kaboom/components/interfaceRequest.js';
