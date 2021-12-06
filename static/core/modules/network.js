@@ -5,17 +5,11 @@
 import LogicComponent from './logicComponent.js';
 import LogicConnection from './logicConnection.js';
 import connectionTypes from '../../config/connections.js';
-import findNetworkPath from '../../config/transmission.js';
 
 export default class Network{
     constructor(){
         this.components = {}; 
         this.connections = [];
-        this.adjList = new Map(); // Maps IDs -> { ID: Connection }
-
-        this.transmitFunc = (src, dest) => findNetworkPath(this.adjList, src, dest);
-        this._getComponents = () => Object.values(this.components);
-        this._getConnections = () => this.connections;
     }
 
     getComponent(component) {
@@ -55,13 +49,11 @@ export default class Network{
         this.connections = []
         for (let index in this.components){
             this.components[index].connections = []
-            this.adjList.delete(index);
         }
     }
 
     clearComponents(){
         this.connections = []
-        this.adjList = new Map();
         for (let index in this.components){
             delete this.components[index]
         }
@@ -87,15 +79,26 @@ export default class Network{
             }
         }
 
-        let srcType = src.type
-        let desType = des.type
+        let srcTypes = src.tags
+        let desTypes = des.tags
 
         // Use connectionTypes here
-        return { valid: true };
+          for(let srcType of srcTypes){
+            for (let desType of desTypes){
+              if (connectionTypes[srcType].indexOf(desType) !== -1){
+                return {valid:true}
+              }
+            }
+          }
+
+          return { 
+            valid: false,
+            info: " these two types cann't be connected "
+        };
     }
 
     /**
-    * 解连
+    * disconnection 
     * @param {Number} srcId 
     * @param {Number} desId 
     */
@@ -130,7 +133,6 @@ export default class Network{
     networkAddComponent(component){
         if (!this.hasComponent(component)) {
             this.components[component.id] = component;
-            this.adjList.set(component.id, {});
         } else {
             return {
                 valid: false,
@@ -147,18 +149,11 @@ export default class Network{
     * @param {Component} src 
     * @param {Component} des 
     * @param {Object} options 
-    * @returns 新建立的Connection
+    * @returns new Connection
     */
-    networkAddConnection(connection){
-        if (!connection) { 
-            return {
-                valid: false,
-                info: "Source or destination component doesn't exist or is of wrong type"
-            }
-        }
-        let srcComponent = connection.src;
-        let destComponent = connection.des;
-        let options = connection.options;
+    networkAddConnection(src, des, options){
+        let srcComponent = this.getComponent(src);
+        let destComponent = this.getComponent(des);
 
         if (!srcComponent || !destComponent) { 
             return {
@@ -185,6 +180,7 @@ export default class Network{
             };
         }
 
+        var connection = new LogicConnection(srcComponent, destComponent, options);
         if (this.hasConnection(connection)) { 
             return {
                 valid: false,
@@ -196,10 +192,6 @@ export default class Network{
         destComponent.addInput();
 
         this.connections.push(connection);
-        
-        this.adjList.get(srcComponent.id)[destComponent.id] = connection;
-        // this.adjList.get(destComponent.id)[srcComponent.id] = options.latency;
-
         return { 
             valid: true,
             info: `Added connection from ${srcComponent.id} to ${destComponent.id} in network`
@@ -232,15 +224,7 @@ export default class Network{
             }
         }.bind(this));
 
-        for (let c of this.adjList.values()) {
-            if (c.hasOwnProperty(componentId)) {
-                delete c[componentId];
-            }
-        }
-        this.adjList.delete(componentId);
-
         delete this.components[componentId];
-        
         return { 
             valid: true,
             info: `Removing component ${componentId} from network`
@@ -281,10 +265,6 @@ export default class Network{
             });
             component.connections = filtered;
         });
-
-        delete this.adjList.get(src.id)[des.id];
-        // delete this.adjList.get(des.id)[src.id];
-
         return true;
     }
 }

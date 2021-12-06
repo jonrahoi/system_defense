@@ -8,15 +8,15 @@
  * of the component IDs. (ie. viewComponent (id=1234) <==> logicComponent (id=1234))
  */
 
-import k from '../kaboom.js';
+import k from '../index.js';
 
 /**
  * Custom Kaboom component
  */
-export default function InterfaceComponent(name, id, tags) {
+export default function InterfaceComponent(name, id, client) {
     var id = id;
     var name = name;
-    var tags = tags;
+    var client = client;
 
     return {
         uuid() { // renamed to not override built-in id (uuid = Universally Unique Identifier  )
@@ -26,13 +26,7 @@ export default function InterfaceComponent(name, id, tags) {
             return name; 
         },
         client() {
-            return tags.includes('CLIENT');
-        },
-        endpoint() {
-            return tags.includes('ENDPOINT');
-        },
-        processor() {
-            return !this.client() && !this.endpoint();
+            return client;
         },
         equals(other) { 
             if (other instanceof InterfaceComponent) {

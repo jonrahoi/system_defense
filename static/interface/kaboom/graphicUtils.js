@@ -9,52 +9,31 @@
  */
 
 
-import k from './kaboom.js';
+import k from './index.js';
 
+const DEFAULT_POS = [0, 0];
+const DEFAULT_SIZE = { width: 75, height: 75 };
+const DEFAULT_COLOR = [255, 255, 255];
+const DEFAULT_OUTLINE_WIDTH = 4;
+const DEFAULT_OUTLINE_COLOR = k.BLACK;
 
 // Do we want this constant? Would be best to scale them...
 const COMPONENT_IMG_WIDTH = 75;
 const COMPONENT_IMG_HEIGHT = 75;
 
-// ALL ICONS HAVE SAME SIZE (512p x 512p)
-const ICON_WIDTH = 512;
-const ICON_HEIGHT = 512;
-
-// Constant image size
-const BACKGROUND_IMG_WIDTH = 1200;
-const BACKGROUND_IMG_HEIGHT = 650;
-
 
 // Scale an image according to a bounding box 
-export const ScaledComponentImage = (boundingWidth, boundingHeight) => {
-    if (!boundingWidth || !boundingHeight) { 
-        return { width: COMPONENT_IMG_WIDTH, height: COMPONENT_IMG_HEIGHT }; 
-    }
-    return Scaled(COMPONENT_IMG_WIDTH, COMPONENT_IMG_HEIGHT, boundingWidth, boundingHeight);
-};
-
-export const ScaledIcon = (boundingWidth, boundingHeight) => {
-    if (!boundingWidth || !boundingHeight) { 
-        return { width: ICON_WIDTH, height: ICON_HEIGHT }; 
-    }
-    return Scaled(ICON_WIDTH, ICON_HEIGHT, boundingWidth, boundingHeight);
-};
-
-export const ScaledBackground = (boundingWidth, boundingHeight) => {
-    if (!boundingWidth || !boundingHeight) { 
-        return { width: BACKGROUND_IMG_WIDTH, height: BACKGROUND_IMG_HEIGHT }; 
-    }
-
-    return Scaled(BACKGROUND_IMG_WIDTH, BACKGROUND_IMG_HEIGHT, boundingWidth, boundingHeight);
-};
-
-export const Scaled = (imgWidth, imgHeight, boundingWidth, boundingHeight) => {
-    var ratio = Math.min((boundingWidth / imgWidth), (boundingHeight / imgHeight));
-    return { width: (imgWidth * ratio), height: (imgHeight * ratio) };
+export const scaleComponentImage = (w, h) => {
+    w = w || COMPONENT_IMG_WIDTH;
+    h = h || COMPONENT_IMG_HEIGHT;
+    w = Math.min(w, COMPONENT_IMG_WIDTH),
+    h = Math.min(h, COMPONENT_IMG_HEIGHT);
+    var ratio = Math.min((COMPONENT_IMG_WIDTH / w), (COMPONENT_IMG_HEIGHT / h));
+    return { width: (w * ratio), height: (h * ratio) };
 };
 
 
-// Center object on an anchor. NOTE: DOESN'T ALWAYS WORK...
+// Center object on an anchor. NOTE: DOESN'T ALWAYS WORK
 /**
  * Expected parameters:
  * objSize: { width, height }
@@ -63,7 +42,7 @@ export const Scaled = (imgWidth, imgHeight, boundingWidth, boundingHeight) => {
  * align: { 'top', 'middle', 'mid', 'bottom', 'bot' }
  * origin: { 'topleft', 'left', 'botleft', 'top', 'center', 'bot', 'topright', 'right', 'botright' }
  */ 
-export var Centered = function(objSize, anchorPos, anchorSize, align='bottom', origin='topleft') {
+export var centered = function(objSize, anchorPos, anchorSize, align='bottom', origin='topleft') {
 
     let xOffset, yOffset, centerX, centerY;
     

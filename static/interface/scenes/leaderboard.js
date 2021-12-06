@@ -1,6 +1,6 @@
 
 
-import k from '../kaboom/kaboom.js';
+import k from '../kaboom/index.js';
 import { SceneControls } from '../interface.js';
 
 // ALL ICONS HAVE SAME SIZE (512p x 512p)

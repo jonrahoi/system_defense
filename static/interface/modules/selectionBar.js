@@ -6,11 +6,11 @@
  * drag off of the bar. Have to click to add to screen)
  */
 
-import k from '../kaboom/kaboom.js';
+import k from '../kaboom/index.js';
 
-import { ScaledComponentImage } from '../kaboom/graphicUtils.js';
+import { centered, scaleComponentImage } from '../kaboom/graphicUtils.js';
 import FieldController from './fieldControls.js';
-import { ComponentConfig } from '../../shared/lookup.js'
+
 
 const UNAVAILABLE_OPACITY = 0.5;
 const COMPONENT_SPAWN_POS = [k.width() / 2, k.height() / 2];
@@ -21,6 +21,7 @@ export default function SelectionBar(screenX, screenY, screenWidth, screenHeight
     // Expose function anonymously to ensure correct context
     this.build = () => { this.buildObject(); };
 };
+
 
 
 /**
@@ -41,7 +42,7 @@ SelectionBar.prototype.init = function(screenX, screenY, screenWidth, screenHeig
 
         // ratio of spacing from the left-most boundary of the componentIconBox to the left-most edge 
         // of the SelectionBar relative to SelectionBar's width
-        xOffsetRatio: 0.03, 
+        xOffsetRatio: 0.0, 
         // ratio of spacing from the top of the componentIconBox to the top of the SelectionBar 
         // relative to SelectionBar's height
         yOffsetRatio: 0.1, 
@@ -51,7 +52,7 @@ SelectionBar.prototype.init = function(screenX, screenY, screenWidth, screenHeig
         xInnerOffsetRatio: 0.05,
         // ratio of spacing from the top/bottom of the componentIconBox to the top/bottom 
         // of the SelectionBar relative to SelectionBar's height
-        yInnerOffsetRatio: 0.2,
+        yInnerOffsetRatio: 0.05,
 
         componentIconBox: {
             iconOpacity: 0.9, // universal opacity of the menu icons
@@ -59,7 +60,7 @@ SelectionBar.prototype.init = function(screenX, screenY, screenWidth, screenHeig
             xInnerOffsetRatio: 0, // ratio of distance from left/right-most objects to menu left/right boundary
             yInnerOffsetRatio: 0, // ratio of distance from top/bottom of objects to menu top/bottom
 
-            xIconSpacerRatio: 0.11, // ratio of x-spacing ratio based on button width
+            xIconSpacerRatio: 0.1, // ratio of x-spacing ratio based on button width
             yIconSpacerRatio: 0.1, // ratio of y-spacing ratio based on button height
 
             iconOutlineWidth: 0,
@@ -68,8 +69,8 @@ SelectionBar.prototype.init = function(screenX, screenY, screenWidth, screenHeig
             textColor: [0, 0, 0], // universal color of the components' text
             textOpacity: 0.9, // universal opacity of the components' text
 
-            textWidthRatio: 3, // ratio of text width based on button width
-            textHeightRatio: 0.3 // ratio of text height based on button height
+            textWidthRatio: 2, // ratio of text width based on button width
+            textHeightRatio: 0.2 // ratio of text height based on button height
         }
     };
 
@@ -85,7 +86,7 @@ SelectionBar.prototype.init = function(screenX, screenY, screenWidth, screenHeig
     iconBoxParams['height'] = this.params.height - (2 * this.params.yInnerSpacer);
 
     iconBoxParams['x'] = this.params.x + ((this.params.width - iconBoxParams.width) / 2 + this.params.xOffsetSpacer);
-    iconBoxParams['y'] = this.params.y + ((screenHeight - (iconBoxParams.height + this.params.yOffsetSpacer)) / 2);
+    iconBoxParams['y'] = this.params.y + ((screenHeight - iconBoxParams.height + this.params.yOffsetSpacer) / 2);
 
     // Spacer between the boundary of the menu box and it's internal components
     iconBoxParams['xInnerSpacer'] = iconBoxParams.width * iconBoxParams.xInnerOffsetRatio;
@@ -102,18 +103,9 @@ SelectionBar.prototype.init = function(screenX, screenY, screenWidth, screenHeig
         return dim;
     })();
 
+
     this.objects = {};
 };
-
-
-SelectionBar.prototype.clear = function() {
-    k.destroyAll('_selectionComponent');
-    k.destroyAll('_selectionText');
-    for (var member in this.objects) {
-        delete this.objects[member];
-    }
-    this.objects = {};
-}
 
 /*
  * Expected to receive object directly from levels config file.
@@ -129,18 +121,9 @@ SelectionBar.prototype.clear = function() {
  *    }
  * ]
  */
-SelectionBar.prototype.addComponents = function(availableComponents) {
+SelectionBar.prototype.setComponents = function(availableProcessors) {
 
-    let i = availableComponents.length;
-    while (i--) {
-        let addedComponent = availableComponents[i];
-        if (this.objects.hasOwnProperty(addedComponent.name)) {
-            this.objects[addedComponent.name].quantity += addedComponent.quantity;
-            availableComponents.splice(i, 1);
-        }
-    }
-
-    let numComponents = availableComponents.length + Object.keys(this.objects).length;
+    let numProcessors = availableProcessors.length;
     let iconBoxParams = this.params.componentIconBox;
 
     iconBoxParams['xIconSpacer'] = iconBoxParams.width * iconBoxParams.xIconSpacerRatio;
@@ -148,56 +131,40 @@ SelectionBar.prototype.addComponents = function(availableComponents) {
 
     iconBoxParams['iconWidth'] = ((iconBoxParams.width
         - (2 * iconBoxParams.xInnerSpacer)
-        - ((numComponents - 1) * iconBoxParams.xIconSpacer))
-        / numComponents);
+        - ((numProcessors - 1) * iconBoxParams.xIconSpacer))
+        / numProcessors);
     
     iconBoxParams['iconHeight'] = iconBoxParams.height - (2 * iconBoxParams.yInnerSpacer);
 
-    let scaledIconDims = ScaledComponentImage(iconBoxParams.iconWidth, iconBoxParams.iconHeight);
-        
+    let scaledIconDims = scaleComponentImage(iconBoxParams.iconWidth, iconBoxParams.iconHeight);
+
     iconBoxParams['scaledIconWidth'] = scaledIconDims.width;
     iconBoxParams['scaledIconHeight'] = scaledIconDims.height;
 
     iconBoxParams['textWidth'] = iconBoxParams.scaledIconWidth * iconBoxParams.textWidthRatio;
     iconBoxParams['textHeight'] = iconBoxParams.scaledIconHeight * iconBoxParams.textHeightRatio;
 
-    let currX = iconBoxParams.x + (iconBoxParams.xIconSpacer / 2);
+    
+    // Clear old values
+    this.objects = {};
+
+    let currX = iconBoxParams.x;
     let currY = iconBoxParams.y;
-    let textCenter;
 
-    // First loop over any existing components to adjust their icons
-    let currComponents = Object.values(this.objects);
-    currComponents.sort((a,b) => (a.index > b.index) ? 1 : ((b.index > a.index) ? -1 : 0))
-    for (let component of currComponents) {
-        textCenter = {
-            x: currX + (iconBoxParams.scaledIconWidth / 2),
-            y: currY + (iconBoxParams.scaledIconHeight) + (iconBoxParams.textHeight / 2)
-        }
-        component.x = currX;
-        component.y = currY;
-        component.width = iconBoxParams.scaledIconWidth;
-        component.height = iconBoxParams.scaledIconHeight;
-        component.text.x = textCenter.x;
-        component.text.y = textCenter.y;
-        component.text.width = iconBoxParams.textWidth;
-        component.text.height = iconBoxParams.textHeight;
-
-        currX += iconBoxParams.xIconSpacer;
-    }
-
-    // Now loop over all newly added components
-    let component;
-    let index = currComponents.length;
-    for (let i = 0; i < availableComponents.length; i++) {
-        component = availableComponents[i];
+    for (let i = 0; i < numProcessors; i++) {
+        let processor = availableProcessors[i];
         
-        textCenter = {
-            x: currX + (iconBoxParams.scaledIconWidth / 2),
-            y: currY + (iconBoxParams.scaledIconHeight) + (iconBoxParams.textHeight / 2)
-        }
+        // ComponentDirectory[processor.name] = {};
+        
+        currX += iconBoxParams.xIconSpacer;
+        let textCenter = centered(
+            { width: iconBoxParams.textWidth, height: iconBoxParams.textHeight }, 
+            { x: currX, y: currY }, 
+            { width: iconBoxParams.scaledIconWidth, height: iconBoxParams.scaledIconHeight},
+            'bottom', 'center');
 
-        this.objects[component.name] = {
-            quantity: component.quantity,
+        this.objects[processor.name] = {
+            quantity: processor.quantity,
             x: currX,
             y: currY,
             width: iconBoxParams.scaledIconWidth,
@@ -205,7 +172,6 @@ SelectionBar.prototype.addComponents = function(availableComponents) {
             opacity: iconBoxParams.iconOpacity,
             outlineWidth: iconBoxParams.iconOutlineWidth,
             outlineColor: iconBoxParams.iconOutlineColor,
-            index: index,
             text: {
                 x: textCenter.x,
                 y: textCenter.y,
@@ -216,10 +182,7 @@ SelectionBar.prototype.addComponents = function(availableComponents) {
                 opacity: iconBoxParams.textOpacity
             }
         };
-        index++;
-        currX += iconBoxParams.xIconSpacer;
     }
-    this.buildObject();
 };
 
 
@@ -233,112 +196,26 @@ SelectionBar.prototype.buildObject = function() {
         k.opacity(this.params.backgroundOpacity),
     ]);
 
-    // Place components - unknown amount so must loop
-    let spriteDef, textDef, componentBtn, labelText, label
+    // Place processors - unknown amount so must loop
     for (const [name, attributes] of Object.entries(this.objects)) {
-        
         // First place icon
-        spriteDef = [
-            k.sprite(name, { width: attributes.width, height: attributes.height }),
+        let spriteDef = [
+            k.sprite(name.toLowerCase(), { width: attributes.width, 
+                        height: attributes.height }),
             k.pos(attributes.x, attributes.y),
             k.opacity(attributes.opacity),
-            k.area(),
-            '_selectionComponent'
+            k.area()
         ];
-        let componentBtn = k.add(spriteDef);
-        componentBtn.clicks(() => this.update(name));
-        attributes['iconGraphic'] = componentBtn;
+        let processorBtn = k.add(spriteDef);
+        
+        processorBtn.clicks(() => this.update(name));
+
+        attributes['iconGraphic'] = processorBtn;
 
         // Then place text underneath
-        labelText = attributes.text;
-        textDef = [
+        let labelText = attributes.text;
+        let textDef = [
             k.text(formatLabel(name, attributes.quantity), 
-                    { size: labelText.height, width: labelText.width }),
-            k.pos(labelText.x, labelText.y),
-            k.origin(labelText.origin),
-            k.color(...labelText.color),
-            k.opacity(labelText.opacity),
-            '_selectionText'
-        ];
-
-        label = k.add(textDef);
-        attributes['textGraphic'] = label;
-
-        k.layers([
-            "rec",
-            "comment",
-        ], "game")
-
-        let unit = attributes.width * 0.5;
-        let tooltipWidth = attributes.width * 10;
-        let recParams, commentParams;
-        recParams = [
-            k.rect(unit * name.length, attributes.height * 1),
-            k.layer("rec"),
-            k.pos(attributes.x + 10, attributes.y + 10),
-            k.color(206, 212, 223),
-            k.scale(0),
-            k.outline(attributes.width * 0.07),
-        ];
-        commentParams = [
-            k.text("", { size: attributes.width * 0.33, width: tooltipWidth }),
-            k.layer("comment"),
-            k.pos(attributes.x + 12.5, attributes.y + 12.5),
-        ];
-
-        let rec = k.add(recParams);
-        let comment = k.add(commentParams);
-        componentBtn.hovers(() => {
-            rec.scale = 1
-            comment.text = ComponentConfig.get(name).description
-        }, () => {
-            rec.scale = 0
-            comment.text = ""
-        })
-    };
-};
-
-SelectionBar.prototype.drawComponent = function(componentName, componentParams, newText, makeAvailable=true) {
-
-    if (this.objects.hasOwnProperty(componentName)) {
-        let existing = this.objects[componentName];
-
-        k.destroy(existing.iconGraphic);
-        delete existing.iconGraphic;
-
-        let updatedBtn = k.add([
-            k.sprite(componentName, { width: existing.width, height: existing.height }),
-            k.pos(existing.x, existing.y),
-            k.opacity(existing.opacity),
-            k.area()
-        ]);
-        
-        existing.iconGraphic = updatedBtn;
-        existing.textGraphic.text = newText;
-
-        if (makeAvailable) {
-            updatedBtn.clicks(() => this.update(componentName));
-            existing.textGraphic.opacity = existing.text.opacity;
-        } else {
-            existing.textGraphic.opacity = UNAVAILABLE_OPACITY;
-        }
-        return true;
-    } else {
-        // First place icon
-        let componentBtn = k.add([
-            k.sprite(componentName, { width: componentParams.width, height: componentParams.height }),
-            k.pos(componentParams.x, componentParams.y),
-            k.opacity(componentParams.opacity),
-            k.area()
-        ]);
-        
-        componentBtn.clicks(() => this.update(componentName));
-        componentParams['iconGraphic'] = componentBtn;
-
-        // Then place text underneath
-        let labelText = componentParams.text;
-        let textLabelDef = [
-            k.text(formatLabel(componentName, componentParams.quantity), 
                     { size: labelText.height, width: labelText.width }),
             k.pos(labelText.x, labelText.y),
             k.origin(labelText.origin),
@@ -346,21 +223,21 @@ SelectionBar.prototype.drawComponent = function(componentName, componentParams, 
             k.opacity(labelText.opacity)
         ];
 
-        let componentLabel = k.add(textLabelDef);
-        componentParams['textGraphic'] = componentLabel;
-    }
-}
+        let label = k.add(textDef);
+        attributes['textGraphic'] = label;
+    };
+};
 
-// Called whenever the state of the selection bar changes (ie. component placed on playField)
+
 SelectionBar.prototype.update = function(componentName, amount = -1) { 
 
     if (this.objects.hasOwnProperty(componentName)) {
 
-        let targetParams = this.objects[componentName];
-        let newQuantity = targetParams.quantity + amount;
+        let target = this.objects[componentName];
+        let newQuantity = target.quantity + amount;
 
         // Already out of this component. Can only accept +amounts
-        if (targetParams.quantity < 1) {
+        if (target.quantity < 1) {
             // Have 0 remaining
             if (amount < 0) {
                 // Try decreasing amount
@@ -369,12 +246,30 @@ SelectionBar.prototype.update = function(componentName, amount = -1) {
             } else if (amount > 0) {
                 // Try increasing amount
                 console.debug(componentName, 'is now available.');
-                this.drawComponent(componentName, targetParams, formatLabel(componentName, newQuantity));
+
+                k.destroy(target.iconGraphic);
+                delete target.iconGraphic;
+
+                let spriteDef = [
+                    k.sprite(componentName.toLowerCase(), { width: target.width, 
+                                height: target.height }),
+                    k.pos(target.x, target.y),
+                    k.opacity(target.opacity),
+                    k.area()
+                ];
+                let targetBtn = k.add(spriteDef);
+
+                targetBtn.clicks(() => this.update(componentName));
+
+                target.iconGraphic = targetBtn;
+
+                target.textGraphic.text = formatLabel(componentName, newQuantity);
+                target.textGraphic.opacity = target.text.opacity;
             }
         } else {
             // Have at least 1 remaining of this component
             if (amount < 0) {
-                if (!FieldController.placeComponent(componentName, k.vec2(...COMPONENT_SPAWN_POS))) {
+                if (!FieldController.placeComponent(componentName.toLowerCase(), k.vec2(...COMPONENT_SPAWN_POS), false)) {
                     return false;
                 }
             }
@@ -382,13 +277,26 @@ SelectionBar.prototype.update = function(componentName, amount = -1) {
                 // Trying to decrease to an invalid state (<= 0)
                 console.debug(`No more ${componentName}s available`);
 
-                this.drawComponent(componentName, targetParams, formatLabel(componentName, 0), false);
+                k.destroy(target.iconGraphic);
+
+                let spriteDef = [
+                    k.sprite(componentName.toLowerCase(), { width: target.width, 
+                                height: target.height }),
+                    k.pos(target.x, target.y),
+                    k.opacity(target.opacity),
+                    k.area()
+                ]
+                let targetBtn = k.add(spriteDef);
+                target.iconGraphic = targetBtn;
+
+                target.textGraphic.text = formatLabel(componentName, 0);
+                target.textGraphic.opacity = UNAVAILABLE_OPACITY;
+
             } else {
-                targetParams.textGraphic.text = formatLabel(componentName, newQuantity);
-                targetParams.quantity = newQuantity;
+                target.textGraphic.text = formatLabel(componentName, newQuantity);
             }
         }
-        targetParams.quantity = newQuantity;
+        target.quantity = newQuantity;
         return true;
     }
     return false;

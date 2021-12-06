@@ -7,63 +7,78 @@
  * This may add unnecessary complications...
  */
 
+
 import componentDefs from "../config/components.js";
 import levelDefs from "../config/levels.js";
-import gameConfig from "../config/config.js";
 import assetDirectory from "../assets/assetDirectory.js";
 
-
-export const AssetConfig = {
-    get: (name, rootPath) => (rootPath || '') + lookup(assetDirectory, name),
-    entries: (rootPath) => {
-        var values = {};
-        entries(assetDirectory, 0, values);
-        return Object.fromEntries(Object.entries(values).map(a => { 
-            return [a[0], (rootPath || '') + a[1]]; }));
+// Finding Assets
+export const findAsset = (name, rootPath) => {
+    rootPath = rootPath || '';
+    let res = lookup(assetDirectory, name);
+    return res ? (rootPath + res) : res;
+};
+export const assetEntries = (depth, rootPath) => {
+    rootPath = rootPath || '';
+    var values = {};
+    entries(assetDirectory, (depth || 0), values);
+    for (var key in values) {
+        if (typeof values[key] != 'object') {
+            values[key] = rootPath + values[key];
+        }
     }
+    return values;
 };
 
-export const ComponentConfig = {
-    get: (name) => Object.assign({}, lookup(componentDefs, name)),
-    images: (rootPath) => {
-        var values = {};
-        entries(componentDefs, 1, values);
-        return Object.entries(values).reduce((acc, e) => {
-            if (e[1].hasOwnProperty('img')) { 
-                acc[e[0]] = (rootPath || '') + e[1].img;
+// Finding Components
+export const findComponent = (name, rootPath) => {
+    let res = lookup(componentDefs, name);
+    if (!res) { return undefined; }
+    let copy = Object.assign({}, res);
+    if (rootPath) {
+        if (copy.hasOwnProperty('image')) {
+            copy.image = rootPath + copy.image;
+        }
+        if (copy.hasOwnProperty('icon')) {
+            copy.icon = rootPath + copy.icon;
+        }
+    }
+    return copy;
+};
+export const componentEntries = (depth, rootPath) => {
+    rootPath = rootPath || '';
+    var values = {};
+    entries(componentDefs, (depth || 0), values);
+    if (!values) { return undefined; }
+    let copy = Object.assign({}, values);
+    for (var key in copy) {
+        if (typeof copy[key] != 'object') {
+            copy[key] = rootPath + copy[key];
+        } else {
+            if (copy[key].hasOwnProperty('image')) {
+                copy[key].image = rootPath + copy[key].image;
             }
-            return acc;
-        }, {});
-    },
-    entries: () => {
-        // var values = {};
-        // entries(componentDefs, 0, values);
-        // return values;
-        return Object.assign({}, componentDefs);
+            if (copy[key].hasOwnProperty('icon')) {
+                copy[key].icon = rootPath + copy[key].icon;
+            }
+        }
     }
+    return copy;
 };
 
-export const LevelConfig = {
-    get: (level, stage) => { 
-        if (!stage) { return Object.assign({}, levelDefs[level]); }
-        return Object.assign({}, levelDefs[level].stages[stage]);
-    },
-    entries: () => Object.assign({}, levelDefs)
-};
-
-export const GameConfig = {
-    get: (key) => gameConfig[key],
-    entries: () => Object.assign({}, gameConfig)
+// Finding Levels
+export const findLevel = (number) => lookup(levelDefs, number);
+export const levelEntries = (depth) => {
+    var values = {};
+    entries(levelDefs, (depth || 0), values);
+    return values;
 }
 
+// Base algorithms
 
-
-
-
-
-// Base recursive algorithms
+// Recursive so easiest to have wrappers
 const lookup = (object, target) => {
-    if (object.hasOwnProperty(target)) { return object[target]; }
+    if(object.hasOwnProperty(target)) { return object[target]; }
     
     for (const [key, value] of Object.entries(object)) {
         if(typeof value == "object"){
@@ -75,12 +90,13 @@ const lookup = (object, target) => {
 };
 
 
-const entries = (object, level, acc) => {
+const entries = (object, level, acc={}) => {
     if (level < 0) { return; }
-
+    
+    var temp = level - 1;
     for (const [key, value] of Object.entries(object)) {
         if(level != 0 && typeof value == "object"){
-            entries(value, level - 1, acc);
+            entries(value, temp, acc);
         } else {
             acc[key] = value;
         }

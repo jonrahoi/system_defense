@@ -3,7 +3,7 @@
  */
 
 
-import k from '../kaboom/kaboom.js';
+import k from '../kaboom/index.js';
 
 export function GameOver(win=false) {
     this.init(win);

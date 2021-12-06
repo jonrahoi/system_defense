@@ -28,7 +28,6 @@ const MAX_SPEEDUP = 3; // multiplier of DFLT_INTERVAL
 const RegistrationTypes = Object.freeze({
     BASE_INTERVAL: 'BASE',
     SPEEDUP_INTERVAL: 'SPEEDUP',
-    TIME_ADJUSTEMENT: 'ADJUSTEMENT',
     TIMEOUT: 'TIMEOUT'
 });
 
@@ -57,7 +56,7 @@ const Timer = {
     },
 
     start: function() {
-        if (Timer.running) { return; }
+        console.log("STARTING TIMER");
         Timer.paused = false;
         Timer.running = true;
         Timer._timerFunc = setInterval(Timer._intervalCallback, Timer._currentInterval);
@@ -90,7 +89,11 @@ const Timer = {
         Timer.stop();
         Timer._time = Timer._duration;
 
-        Timer._listeners[RegistrationTypes.TIME_ADJUSTEMENT].dispatch(Timer._time, Timer._speedup)
+        // Unsure about this. Emit a callback to all those registered as
+        // BASE_INTERVAL or SPEEDUP_INTERVAL. 
+        // Meant to notify that time has been explicitly updated
+        Timer._listeners[RegistrationTypes.BASE_INTERVAL].dispatch(Timer._time, Timer._speedup)
+        Timer._listeners[RegistrationTypes.SPEEDUP_INTERVAL].dispatch(Timer._time, Timer._speedup)
     },
 
     reset: function() {
@@ -105,19 +108,12 @@ const Timer = {
         Timer._listeners = Object.assign({}, ...Object.values(RegistrationTypes).map(x => ({ [x]: new Broadcast() })));
     },
 
-    append: function(time) {
-        Timer.stop();
-        Timer._time += Math.max(0, time);
-
-        Timer._listeners[RegistrationTypes.TIME_ADJUSTEMENT].dispatch(Timer._time, Timer._speedup)
-    },
-
     speedUp: function() {
         clearInterval(Timer._timerFunc);
         delete Timer._timerFunc;
         Timer._speedup = ((Timer._speedup % MAX_SPEEDUP) + 1);
         Timer._currentInterval = Math.ceil(Timer._defaultInterval / Timer._speedup);
-        Timer._timerFunc = setInterval(Timer._intervalCallback, Timer._currentInterval);
+        Timer.start();
     },
 
     remaining: () => { return Timer._time; },
@@ -151,9 +147,7 @@ const Timer = {
                 Timer._listeners[RegistrationTypes.TIMEOUT].dispatch(Timer._time, Timer._speedup);
                 return;
             }
-            // if (Timer._time == 95) {
-            //     Timer.stop();
-            // }
+            
             if (Timer._time % Timer._speedup == 0) {
                 Timer._listeners[RegistrationTypes.BASE_INTERVAL].dispatch(Timer._time, Timer._speedup);
             }
@@ -169,7 +163,6 @@ export const TimerControls = {
     play: Timer.start,
     pause: Timer.pause,
     restart: Timer.restart,
-    append: Timer.append,
     reset: Timer.reset,
     restore: Timer.restore,
     running: Timer.running,
