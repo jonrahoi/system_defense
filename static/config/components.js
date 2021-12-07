@@ -116,7 +116,7 @@ export const componentDefs = {
     /**************************** PROCESSORS *******************************/
     processors: {
         GATEWAY: {
-            tags: ["EDGE"],
+            tags: ["EDGE", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -140,7 +140,7 @@ export const componentDefs = {
             description: "I'm a gateway"
         },
         HUB: {
-            tags: ["EDGE"],
+            tags: ["EDGE", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -164,7 +164,7 @@ export const componentDefs = {
             description: "I'm a hub"
         },
         SWITCH: {
-            tags: ["EDGE"],
+            tags: ["EDGE", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -188,7 +188,7 @@ export const componentDefs = {
             description: "I'm a switch"
         },
         MODEM: {
-            tags: ["EDGE"],
+            tags: ["EDGE", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -212,7 +212,7 @@ export const componentDefs = {
             description: "I'm a modem"
         },
         ROUTER: {
-            tags: ["EDGE"],
+            tags: ["EDGE", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -236,7 +236,7 @@ export const componentDefs = {
             description: "I'm a router"
         },
         LOAD_BALANCER: {
-            tags: ["PRE_PROCESSOR"],
+            tags: ["PRE_PROCESSOR", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -260,7 +260,7 @@ export const componentDefs = {
             description: "I'm a load balancer"
         },
         CACHE: {
-            tags: ["PRE_PROCESSOR"],
+            tags: ["PRE_PROCESSOR", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -284,7 +284,7 @@ export const componentDefs = {
             description: "I'm a cache"
         },
         SERVER: {
-            tags: ["PROCESSOR"],
+            tags: ["PROCESSOR", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -308,7 +308,7 @@ export const componentDefs = {
             description: "I'm a web server"
         },
         DATABASE: {
-            tags: ["PROCESSOR"],
+            tags: ["PROCESSOR", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
