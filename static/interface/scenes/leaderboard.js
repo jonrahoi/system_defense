@@ -30,15 +30,15 @@ Leaderboard.prototype.init = function() {
         'CLOUD_COMPUTE': 'I\'m a cloud-computing software  Cost: (L1)$0 (L2)$120\n\Tips: The starting point of the customer\'s request.',
       },
       'Processors': {
-        'GATEWAY': 'A Gateway is a hardware device that acts as a \'gate\' between two networks. It may be a \n\ router, firewall, server, or another device that enables traffic to flow in and out of the network.',
-        'HUB': 'A hub is a device that allows multiple computers to communicate with each other over a network. It has several Ethernet ports that are used to \n\ connect two or more network devices together.',
-        'SWITCH': 'A switch is used to network multiple computers together. Switches are more advanced than hubs and less capable than routers. Unlike hubs,\n\ switches can limit the traffic to and from each port so that each device connected to the switch has a sufficient amount of bandwidth.',
+        'GATEWAY': 'A Gateway is a hardware device that acts as a \'gate\' between two networks.',
+        'HUB': 'A hub is a device that allows multiple computers to communicate with each other over a network.',
+        'SWITCH': 'A switch is used to network multiple computers together. Unlike hubs, switches can limit the traffic to and from each port.',
         'MODEM': 'Modem is a hardware component that allows a computer or another device, such as a router or switch, to connect to the Internet.',
-        'ROUTER': 'Router is a hardware device that routes data from a local area network (LAN) to another network connection. A router acts like a coin sorting machine, allowing only authorized machines to connect to other computer systems.',
-        'LOAD_BALANCER': 'A load balancer is a piece of hardware that acts like a reverse proxy to distribute network and application traffic across different servers.\n\It is used to improve the concurrent user capacity and overall reliability of applications.',
-        'CACHE': 'A cache is a hardware or software component that stores data so that future requests for that data can be served faster. The data stored in a cache might be the result of an\n\ earlier computation or a copy of data stored elsewhere.',
-        'SERVER': 'This device may connect over a network to a server on a different device. A server is a piece of computer hardware or software that provides functionality for other programs\n\ or devices, called \'clients\'. ',
-        'DATABASE': 'Organized collection of structured data. Online databases are hosted on websites. made available as software as a service products accessible via a web browser.'
+        'ROUTER': 'Router is a hardware device that routes data from a local area network (LAN) to another network connection.',
+        'LOAD_BALANCER': 'A load balancer is a piece of hardware that acts like a reverse proxy to distribute network and application traffic across different servers.',
+        'CACHE': 'A cache is a hardware or software component that stores data so that future requests for that data can be served faster.',
+        'SERVER': 'This device may connect over a network to a server on a different device. A server is a piece of computer hardware or software.',
+        'DATABASE': 'Organized collection of structured data. Online databases are hosted on websites. '
       }
     }
 
