@@ -8,7 +8,7 @@
  */
 
 
-import k from '../index.js';
+import k from '../kaboom.js';
 
 /**
  * Custom Kaboom component
@@ -26,7 +26,6 @@ export function InterfaceConnection(srcObj, destObj) {
     // stores reference to Kaboom component
     var src = srcObj; 
     var dest = destObj;
-    
 
     return {
         src() {

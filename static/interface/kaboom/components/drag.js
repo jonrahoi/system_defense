@@ -2,25 +2,25 @@
  * Custom Kaboom component to enable dragging of a graphical object
  */
 
-import k from '../index.js';
+import k from '../kaboom.js';
 
-var dragging = false;
-var currDragging = null;
-var dragStart = null;
+var isDragging = false;
+var currDraggingComponent = null;
+var dragStartPos = null;
 
 export const dragControls = {
-    release: () => { currDragging = null; dragging = false; k.cursor('default'); },
-    dragging: () =>  dragging,
-    current: () => currDragging,
-    acquire: (context, pos) => { dragStart = pos.sub(context.pos); currDragging = context; }
+    release: () => { currDraggingComponent = null; isDragging = false; k.cursor('default'); },
+    isDragging: () =>  isDragging,
+    current: () => currDraggingComponent,
+    acquire: (context, pos) => { dragStartPos = pos.sub(context.pos); currDraggingComponent = context; }
 }
 
 export function drag() {
     return {
         require: [ "pos", "area", ],
         updatePos(pos) {
-            dragging = true; 
-            this.pos = pos.sub(dragStart);
+            isDragging = true;
+            this.pos = pos.sub(dragStartPos);
         },
     };
 };

@@ -6,7 +6,9 @@
  * aspect ratio can not be changed easily (if at all)
  */
 
-import k from "../kaboom/index.js";
+import k from "../kaboom/kaboom.js";
+import { SceneControls } from '../interface.js';
+import { ScaledIcon } from '../kaboom/graphicUtils.js';
 
 /*
     * ------------------------------ BANNER -----------------------------------
@@ -15,21 +17,11 @@ import k from "../kaboom/index.js";
     * LEVEL X SCORE X COINS X              COMPLETE/GOAL TIME PLAY|PAUSE|RESTART
 */
 
-// ALL ICONS HAVE SAME SIZE (512p x 512p)
-const iconWidth = 512;
-const iconHeight = 512;
-
-const heightRatio = 0.08; // the height of the banner based on the given screenHeight
-
-// Special case due to shape of icon
-const usfCSIcon = {
-    widthScale: 2.2,
-    heightScale: 2.2
-};
-
-export function Banner(screenX, screenY, screenWidth, screenHeight, bannerActions) {
-    this.actions = bannerActions;
+export function Banner(screenX, screenY, screenWidth, screenHeight) {
     this.init(screenX, screenY, screenWidth, screenHeight);
+
+    // Expose function anonymously to ensure correct context
+    this.build = () => { this.buildObject(); };
 }
 
 /**
@@ -45,118 +37,146 @@ Banner.prototype.init = function(screenX, screenY, screenWidth, screenHeight) {
         width: screenWidth, // width of the banner (expand to fill screen width)
         height: screenHeight, // height of the banner (expand to fill screen height)
 
-        backgroundColor: k.color(29, 64, 105), // solid color to fill banner
-        backgroundOpacity: k.opacity(1), // opacity of the background color
+        backgroundColor: [29, 64, 105], // solid color to fill banner
+        backgroundOpacity: 1, // opacity of the background color
 
-        xInnerOffsetRatio: 0.01, // distance from left/right-most objects to banner left/right boundary
-        yInnerOffsetRatio: 0.02, // distance from top/bottom of objects to banner top/bottom
+        xInnerOffsetRatio: 0.02, // distance from left/right-most objects to banner left/right boundary
+        yInnerOffsetRatio: 0, // distance from top/bottom of objects to banner top/bottom
 
-        controlIconScale: 0.45, // used to resize the control icons (home, volume, settings...)
+        iconXSpacerRatio: 0.25, // spacing ratio based on scaled icon width
+        btnXSpacerRatio: 0.25, // spacing ratio based on scaled icon height
 
-        displayIconXSpacerRatio: 0.25, // spacing ratio based on scaled icon width
-        constrolIconXSpacerRatio: 0.35, // spacing ratio based on scaled icon height
+        titleWidthRatio: 5, // ratio of the title's width to screen width
+        titleHeightRatio: 1.5, // ratio of the title's height to screen height
+        titleOpacity: 0.6, // universal opacity of text
 
-        titleWidthRatio: 5.8, // ratio of the title's width to a display-only icon's width
-        titleHeightRatio: 0.66, // ratio of the title's height to a display-only icon's height
+        iconOpacity: 0.7, // opacity of display-only icons
+        btnOpacity: 0.9, // opacity of control-enabled icons
 
-        displayIconOpacity: k.opacity(0.7), // opacity of display-only icons
-        controlIconOpacity: k.opacity(0.9), // opacity of control-enabled icons
-        textOpacity: 0.6 // universal opacity of text
+
+        leftItems: [
+            { name: 'usf', type: 'icon', widthRatio: 1.8, heightRatio: 1.8 }, 
+            { name: 'usfCS', type: 'icon', widthRatio: 1.8, heightRatio: 1.8 }
+        ], 
+        middleItems: [
+            { name: 'title', type: 'text', widthRatio: 7, heightRatio: 0.75 }, 
+            { name: 'transparent_captain', type: 'icon', widthRatio: 1, heightRatio: 1 }
+        ],
+        rightItems: [
+            { name: 'home', type: 'btn', widthRatio: 0.65, heightRatio: 0.65 }, 
+            { name: 'mute', type: 'btn', widthRatio: 0.65, heightRatio: 0.65 }, 
+            { name: 'settings', type: 'btn', widthRatio: 0.65, heightRatio: 0.65 }]
     };
-
-    // Scaling factor for each icon (except the usfCSIcon)
-    this.params['iconRatio'] = Math.min((this.params.width / iconWidth), 
-                                        (this.params.height / iconHeight));
 
     // Calculated spacing for the banner's inner boundaries
     this.params['xInnerSpacer'] = this.params.xInnerOffsetRatio * this.params.width;
     this.params['yInnerSpacer'] = this.params.yInnerOffsetRatio * this.params.height;
 
+    let iconSize = ScaledIcon(this.params.width - (2 * this.params.xInnerSpacer), (this.params.height - (2 * this.params.yInnerSpacer)));
+    this.params['baseItemWidth'] = iconSize.width;
+    this.params['baseItemHeight'] = iconSize.height;
 
-    // Scaled icon sizes and spacing for the display-only icons
-    this.params['displayIcons'] = { // icons that are simply for display (ie. no actions associated)
-        width: iconWidth * this.params.iconRatio, // scaled width based on above ratio
-        height: iconHeight * this.params.iconRatio // scaled height based on above ratio
-    };
-    this.params['displayIcons'].xSpacer = this.params.displayIcons.width * this.params.displayIconXSpacerRatio;
-    this.params['displayIcons'].ySpacer = (this.params.height / 2) - (this.params.displayIcons.height / 2);
+    this.params['xIconSpacer'] = this.params.baseItemWidth * this.params.iconXSpacerRatio;
+    this.params['yIconSpacer'] = (this.params.height / 2) - (this.params.baseItemHeight / 2);
 
-    // Scaled icon sizes and spacing for the control-enabled icons
-    this.params['controlIcons'] = { // icons with actions (home, volume, settings)
-        width: iconWidth * this.params.iconRatio * this.params.controlIconScale, // scaled width based on above ratio
-        height: iconHeight * this.params.iconRatio * this.params.controlIconScale // scaled height based on above ratio
-    };
-    this.params['controlIcons'].xSpacer = this.params.controlIcons.width * this.params.constrolIconXSpacerRatio;
-    this.params['controlIcons'].ySpacer = (this.params.height / 2) - (this.params.controlIcons.height / 2);
+    this.params['xBtnSpacer'] = this.params.baseItemWidth * this.params.btnXSpacerRatio;
+    this.params['yBtnSpacer'] = (this.params.height / 2) - (this.params.baseItemHeight / 2);
 
     // Sets the size of the title text box
-    this.params['titleText'] = {
-        width: this.params.displayIcons.width * this.params.titleWidthRatio,
-        height: this.params.displayIcons.height * this.params.titleHeightRatio
+    this.params['titleWidth'] = this.params.width * this.params.titleWidthRatio;
+    this.params['titleHeight'] = this.params.height * this.params.titleHeightRatio;
+
+    // Apply text ratios to all items
+    for (let item of this.params.leftItems.concat(this.params.middleItems, this.params.rightItems)) {
+        item['width'] = item.widthRatio * this.params.baseItemWidth;
+        item['height'] = item.heightRatio * this.params.baseItemHeight;
     }
-
-    // Add offset to bottom of banner to provide spacing
-    this.params['height'] += this.params.yInnerSpacer;
-
 
     /* 
      * Objects inside the banner (aka icons)
      */
-    this.objects = {
-        
-        usf: { 
-            x: (this.params.x + this.params.xInnerSpacer), // left-most edge
-            y: (this.params.y + this.params.displayIcons.ySpacer + this.params.yInnerSpacer) 
-        },
-        
-        usfCS: { // SPECIAL CASE
-            width: this.params.displayIcons.width * usfCSIcon.widthScale,
-            height: this.params.displayIcons.height * usfCSIcon.heightScale,
-            x: ((this.params.x + this.params.xInnerSpacer) // left-most edge
-                        + this.params.displayIcons.width // usf icon
-                        + this.params.displayIcons.xSpacer), // this icon spacer
-            y: (this.params.y + this.params.yInnerSpacer 
-                        + ((this.params.height / 2) - ((this.params.displayIcons.height * usfCSIcon.heightScale) / 2))) 
-        },
+    this.objects = {};
 
-        titleText: {
-            width: this.params.titleText.width, 
-            height: this.params.titleText.height, 
-            x: ((this.params.width / 2) // banner midpoint
-                        - (this.params.titleText.width / 2)), // width of title + captain "block"
-            y: (this.params.y + this.params.yInnerSpacer)
-        },
+    // Function to calculate the width of a group of items
+    const findWidth = (() => {
+        return (acc, x) => {
+            acc += x.width;
+            if (acc !== 0) {
+                if (x.type === 'text' || x.type === 'icon') {
+                    acc += this.params.xIconSpacer;
+                }
+            }
+            return acc;
+        };
+    })();
 
-        captain: { 
-            x: ((this.params.width / 2) // banner midpoint
-                        + (this.params.titleText.width / 2) + this.params.displayIcons.xSpacer), // width of title + captain "block"
-            y: (this.params.y + this.params.displayIcons.ySpacer + this.params.yInnerSpacer) 
-        },        
+    // Find the total width occupied by the middle and right items
+    let middleWidth = this.params.middleItems.reduce(findWidth, 0);
+    let rightWidth = this.params.rightItems.reduce(findWidth, 0);
+    
+    // Function to assign positions and predefined params to graphic object 
+    const buildItem = (() => {
+        return (item, prevX, prevY) => {
+            let iconName = `${item.name}Icon`;
+            let textName = `${item.name}Text`;
+            if (item.type === 'btn') {
+                prevX += this.params.xBtnSpacer;
+                this.objects[iconName] = {
+                    x: prevX,
+                    y: prevY
+                };
+                Object.assign(this.objects[iconName], item);
+                return prevX + item.width;
+            } else if (item.type === 'text') {
+                prevX += this.params.xIconSpacer;
+                this.objects[textName] = {
+                    x: prevX,
+                    y: (prevY
+                        + ((this.params.baseItemHeight / 2)
+                        - (item.height / 2)))
+                }
+                Object.assign(this.objects[textName], item);
+                return (prevX + item.width);
+            } else if (item.type === 'icon') {
+                prevX += this.params.xIconSpacer;
+                this.objects[iconName] = {
+                    x: prevX,
+                    y: prevY
+                }
+                Object.assign(this.objects[iconName], item);
+                return (prevX + item.width);
+            }
+        };
+    })();
 
-        settings: { 
-            x: ((this.params.width + this.params.x) // right-most edge
-                        - this.params.xInnerSpacer // offset
-                        - (this.params.controlIcons.width + this.params.controlIcons.xSpacer)), // this icon + spacer
-            y: (this.params.y + this.params.controlIcons.ySpacer + this.params.yInnerSpacer) 
-        },
-        
-        mute: { 
-            x: ((this.params.width + this.params.x) // right-most edge
-                        - this.params.xInnerSpacer // offset
-                        - (this.params.controlIcons.width + this.params.controlIcons.xSpacer) // settings icon + spacer
-                        - (this.params.controlIcons.width + this.params.controlIcons.xSpacer)), // this icon + spacer
-            y: (this.params.y + this.params.controlIcons.ySpacer + this.params.yInnerSpacer) 
-        },
-
-        home: { 
-            x: ((this.params.width + this.params.x) // right-most edge
-                        - this.params.xInnerSpacer // offset
-                        - (this.params.controlIcons.width + this.params.controlIcons.xSpacer) // settings icon + spacer
-                        - (this.params.controlIcons.width + this.params.controlIcons.xSpacer) // mute icon + spacer
-                        - (this.params.controlIcons.width + this.params.controlIcons.xSpacer)), // this icon and spacer
-            y: (this.params.y + this.params.controlIcons.ySpacer + this.params.yInnerSpacer) 
+    // Loop over leftItems
+    let prevY = this.params.y + this.params.yInnerSpacer + (this.params.baseItemHeight / 2);
+    let prevX = this.params.x + this.params.xInnerSpacer;
+    for (let item of this.params.leftItems) {
+        prevX = buildItem(item, prevX, prevY);
+    }
+    
+    // Loop over middleItems
+    prevX = (this.params.x + (this.params.width / 2)); // mid point of bar
+    let titleItem = this.params.middleItems.find(x => x.name === 'title');
+    if (titleItem) {
+        // prevX -= (titleItem.width / 2); // half of title width
+        prevX = buildItem(titleItem, prevX, prevY) - (titleItem.width / 2) + (2 * this.params.xIconSpacer);
+    } else {
+        prevX -= (middleWidth / 2);
+    }
+    for (let item of this.params.middleItems) {
+        if (item.name !== 'title') {
+            prevX = buildItem(item, prevX, prevY);
         }
-    };
+    }
+
+    // Loop over rightItems
+    prevX = (this.params.x + this.params.width) // far right edge
+        - (this.params.xInnerSpacer + rightWidth); // left-most point of group
+    for (let item of this.params.rightItems) {
+        prevX = buildItem(item, prevX, prevY);
+    }
 
     // Function to share dimensions of this banner
     this.dimensions = (() => {
@@ -174,7 +194,7 @@ Banner.prototype.init = function(screenX, screenY, screenWidth, screenHeight) {
 /**
  * Adds all of the graphic objects to the screen using the initialized parameters
  */
-Banner.prototype.build = function() {
+Banner.prototype.buildObject = function() {
     // Banner bar
     k.add([
         k.rect(this.params.width, this.params.height),
@@ -183,68 +203,46 @@ Banner.prototype.build = function() {
         this.params.opacity,
     ]);
 
-    // USF icon
-    k.add([
-        k.sprite('usf', { width: this.params.displayIcons.width, 
-                            height: this.params.displayIcons.height }),
-        k.pos(this.objects.usf.x, this.objects.usf.y),
-        this.params.displayIconOpacity,
-    ]);
+    // Loop over all defined graphic objects and add them to the scene
+    let itemName, spriteParams, text;
+    for (const [name, params] of Object.entries(this.objects)) {
+        // Add icon
+        itemName = name.slice(0, -4); // remove tag of 'Icon' or 'Text'
+        if (name.includes('Icon')) {
+            spriteParams = [
+                k.sprite(itemName, { width: params.width, 
+                                    height: params.height }),
+                k.pos(params.x, params.y),
+                k.origin('center')];
 
-    // USFCS icon
-    k.add([ // SPECIAL CASE
-        k.sprite('usfCS', { width: this.objects.usfCS.width, 
-                            height: this.objects.usfCS.height }),
-        k.pos(this.objects.usfCS.x, this.objects.usfCS.y),
-        this.params.displayIconOpacity,
-    ]);
+            if (params.type == 'btn') {
+                spriteParams.push(k.area()); // necessary for clicks
+                this[`${itemName}Btn`] = k.add(spriteParams);
+            } else {
+                k.add(spriteParams);
+            }
+        } 
 
-    // Captain icon
-    k.add([
-        k.sprite('transparent_captain', { width: this.params.displayIcons.width, 
-                                height: this.params.displayIcons.height }),
-        k.pos(this.objects.captain.x, this.objects.captain.y),
-        this.params.displayIconOpacity,
-    ]);
-
-    // Title
-    k.add([
-        k.text('Captain Client', { size: this.objects.titleText.height }),
-        k.pos(this.objects.titleText.x, this.objects.titleText.y),
-        this.params.titleOpacity,
-    ]);
-
-    // Home icon
-    const homeBtn = k.add([
-        k.sprite('home', { width: this.params.controlIcons.width, 
-                            height: this.params.controlIcons.height }),
-        k.pos(this.objects.home.x, this.objects.home.y),
-        this.params.controlIconOpacity,
-        k.area(),
-    ]);
-
-    // Mute icon
-    const muteBtn = k.add([
-        k.sprite('mute', { width: this.params.controlIcons.width, 
-                            height: this.params.controlIcons.height }),
-        k.pos(this.objects.mute.x, this.objects.mute.y),
-        this.params.controlIconOpacity,
-        k.area(),
-    ]);
-
-    // Settings icon
-    const settingsBtn = k.add([
-        k.sprite('settings', { width: this.params.controlIcons.width, 
-                                height: this.params.controlIcons.height }),
-        k.pos(this.objects.settings.x, this.objects.settings.y),
-        this.params.controlIconOpacity,
-        k.area(),
-    ]);
+        // Add text
+        else if (name.includes('Text')) {
+            // Special cases
+            if (itemName == 'title') {
+                text = 'Captain Client';
+            } else {
+                text = name;
+            }
+            this[name] = k.add([
+                k.text(text, { size: params.height, width: params.width }),
+                k.pos(params.x, params.y),
+                k.origin('center')
+            ]);
+        }
+    }
 
     // Connect buttons to control functions
-    homeBtn.clicks(this.actions.goHome);
-    muteBtn.clicks(() => console.log("MUTE CLICKED"));
-    settingsBtn.clicks(this.actions.settings);
+    this.homeBtn.clicks(SceneControls.goHome);
+    this.muteBtn.clicks(() => console.log("MUTE CLICKED"));
+    this.settingsBtn.clicks(SceneControls.goSettings);
 };
 
 export default Banner;

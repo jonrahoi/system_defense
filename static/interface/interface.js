@@ -9,114 +9,177 @@
 * for directing information at the top-most level
 */
 
-import k from './kaboom/index.js';
+
+import k from './kaboom/kaboom.js';
 import GameLogic from '../core/core.js';
-
-import { assetEntries } from '../shared/lookup.js';
-
+import State from '../../shared/state.js';
+import { AssetConfig, ComponentConfig, GameConfig } from '../shared/lookup.js'
 import TimerControls from '../utilities/timer.js';
 
-import { LoadHomeScene, LoadGameOver, LoadLeaderboardScene, 
-            LoadLevelScene, LoadSettingsScene } from './scenes/sceneManager.js';
+import LevelView from './scenes/levelView.js';
+import GameOver from './scenes/gameOver.js';
+import Leaderboard from './scenes/leaderboard.js';
+import Settings from './scenes/settings.js';
+import Home from './scenes/home.js';
+
 
 const TESTING = true;
-const REL_PATH_TO_ROOT = '../';
+const sceneTracker = {};
 
+export default function Interface() { };
 
-export default function Interface() { 
-    this.sceneControls = {
-        goHome: () => { TimerControls.reset(); this.loadHomeScreen() },
-        play: this.startGame.bind(this),
-        leaderboard: this.viewLeaderboard.bind(this),
-        settings: this.viewSettings.bind(this)   
-    }
-};
 
 // Load all necessary Kaboom components and other setup
 Interface.prototype.init = function() {
-    k.load(new Promise((resolve, reject) => {
-        this.loadAllSprites();
 
-        // Load custom shaders
-        k.loadShader("green_tint",
-            `vec4 vert(vec3 pos, vec2 uv, vec4 color) {
-                return def_vert();
-            }`,
-            `vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
-                return def_frag() * vec4(0, 1, 0, 1);
-            }`, false);
+    const REL_PATH_TO_ROOT = '../';
+
+    k.load(new Promise((resolve, reject) => {
         
-        k.loadShader("red_tint",
-            `vec4 vert(vec3 pos, vec2 uv, vec4 color) {
-                return def_vert();
-            }`,
-            `vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
-                return def_frag() * vec4(0.75, 0, 0.4, 0.9);
-            }`, false);
+        // Load all ui icons, background images, etc.
+        for (const [name, loc] of Object.entries(AssetConfig.entries(REL_PATH_TO_ROOT))) {
+            k.loadSprite(name, loc);
+        }
+    
+        // Load all component images
+        for (const [name, loc] of Object.entries(ComponentConfig.images(REL_PATH_TO_ROOT))) {
+            k.loadSprite(name, loc);
+        }
+
+        // Load all custom shaders
+        for (const [name, def] of Object.entries(GameConfig.get('shaders'))) {
+            k.loadShader(name, ...def, false);
+        }
 
         resolve('ok');
     }));
-    
-    this.loadHomeScreen();
-};
 
-// Load all sprites that will be used throughout the game
-Interface.prototype.loadAllSprites = function() {
-    // Load all ui icons, background images, etc.
-    for (const [name, loc] of Object.entries(assetEntries(2, REL_PATH_TO_ROOT))) {
-        k.loadSprite(name, loc);
-    }
-};
-
-Interface.prototype.loadHomeScreen = function() {
-    const home = LoadHomeScene(this.sceneControls);
-    k.scene('home', home.scene);
-    k.go('home');
-};
-
-
-Interface.prototype.startGame = function() {
-    console.log('LOADING GAME...');
-    
-    TimerControls.register(this.gameOver, this, TimerControls.RegistrationTypes.TIMEOUT);
-    // Build game logic object and get first level (object)
+    // Build game logic object
     this.gameLogic = new GameLogic();
-    this.levelChange(1);
+
+    // Load all game scenes
+    this.loadScenes();
+
+    // Connect all event signals
+    this.registerEvents();
+
+    // Go to the home screen
+    SceneControls.goHome();
 };
 
-Interface.prototype.viewLeaderboard = function() {
-    let leaderboard = LoadLeaderboardScene();
-    return;
+
+Interface.prototype.loadScenes = function() {
+    // Build and store Home scene
+    let home = new Home(() => { this.goLevel(1); });
+    sceneTracker['home'] = home;
+    k.scene('home', home.scene);
+
+    // Build and store Leaderboard scene
+    let leaderboard = new Leaderboard();
+    sceneTracker['leaderboard'] = leaderboard;
+    k.scene('leaderboard', leaderboard.scene.bind(this));
+
+    // Build and store Settings scene
+    let settings = new Settings();
+    sceneTracker['settings'] = settings;
+    k.scene('settings', settings.scene);
+
+    // Build and store Level scene
+    let level = new LevelView();
+    sceneTracker['level'] = level;
+    k.scene('level', level.scene);
+
+    // Build and store GameOver scene
+    let gameover = new GameOver();
+    sceneTracker['gameover'] = gameover;
+    k.scene('gameover', gameover.scene.bind(this));
 };
 
-Interface.prototype.viewSettings = function() {
-    let settings = LoadSettingsScene();
-    return;
-}
 
-Interface.prototype.levelChange = function(levelNum) {
-    this.currentLvlLogic = this.gameLogic.getLevel(levelNum);
-    const currentLvlScene = LoadLevelScene(this.currentLvlLogic, this.sceneControls);
-    
+Interface.prototype.registerEvents = function() {
+    // Connect the level scene to the timer
+    TimerControls.register(sceneTracker.level.update, sceneTracker.level); // default interval type
+
+    // Connect game logic's timestep callback function to the timer (Game Logic's callback)
+    TimerControls.register(this.gameLogic.processInterval, this.gameLogic, 
+        TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
+
+    // Connect gameover to timer (using a wrapper function to indiciate game lost)
+    var timeExpired = () => SceneControls.goGameover(false);
+    TimerControls.register(timeExpired, SceneControls, TimerControls.RegistrationTypes.TIMEOUT);
+
+    // Connect gameover to coins/budget
+    var bankrupt = () => { if (State.coins <= 0) { SceneControls.goGameover(false); } };
+    State.register(bankrupt, SceneControls);
+
+    // Connect the level scene to the game state
+    var stagePassed = () => { if (State.stagePassed) { this.handleStageClear(); }};
+    State.register(stagePassed, this);
+
     if (TESTING) {
-        let totalLevels = 5; // HARD CODED (just for testing)
-        const lvlUp = () => { if (this.currentLvlLogic.number < totalLevels) { this.levelChange(this.currentLvlLogic.number+1); } };
-        const lvlDown = () => { if (this.currentLvlLogic.number > 1) { this.levelChange(this.currentLvlLogic.number-1); } };
-        currentLvlScene.test(lvlUp, lvlDown);
+        let totalLevels = 6; // HARD CODED (just for testing)
+        const stageFuncs = {
+            up: () => this.handleStageClear(),
+            down: () => sceneTracker.level.showPopup()
+        };
+        const lvlFuncs = {
+            up: () => { if (State.levelNumber < totalLevels) { this.goLevel(State.levelNumber+1); } },
+            down: () => { if (State.levelNumber > 1) { this.goLevel(State.levelNumber-1); } }
+        };
+        sceneTracker.level.test(stageFuncs, lvlFuncs);
+        k.scene('level', sceneTracker.level.scene);
         console.log('Initiated level testing...');
     }
-    
-    let sceneName = `level_${levelNum}`;
-    k.scene(sceneName, currentLvlScene.scene);
-    k.go(sceneName);
-    
-    console.log('CHANGED SCENE: ', sceneName);
 };
 
+// Function to load and "go to" a level
+Interface.prototype.goLevel = function(levelNum) {
+    TimerControls.pause() // Ensure timer is stopped first
+    console.log("LEVEL CLEARED!");
 
-Interface.prototype.gameOver = function() {
-    let alert = LoadGameOver();
-    k.scene('gameover', alert.build);
-    k.go('gameover');
-    console.log('GAME OVER!');
+    // Request a new level object from game logic
+    levelNum = levelNum || State.levelNumber + 1;
+    this.currentLvlLogic = this.gameLogic.getLevel(levelNum);
+
+    if (!this.currentLvlLogic) {
+        // GAME WON
+        SceneControls.goGameover(true);
+        return;
+    }
+    
+    // Load current level into Level scene object
+    sceneTracker.level.load(this.currentLvlLogic);
+    // sceneTracker.level.initStage(nextStageSpecs);
+
+    // Setup timer for this level
+    let timeLimit = this.currentLvlLogic.levelSpecs.timeLimit;
+    TimerControls.init(timeLimit);
+
+    // Go to the level scene
+    k.go('level');
+};
+
+// Handler function called when a stage has been completed
+Interface.prototype.handleStageClear = function() {
+    let nextStageSpecs = this.gameLogic.getStage(State.stageNumber + 1);
+
+    if (nextStageSpecs) {
+        // Move to next stage
+        sceneTracker.level.initStage(nextStageSpecs);
+    } else {
+        // Completed stage, time for a new level :)
+        this.goLevel(State.levelNumber + 1);
+    }
+};
+
+// Set of controls to move between scenes. Independent of THIS instance
+export const SceneControls = {
+    goHome: () => { TimerControls.reset(); k.go('home'); },
+    goLeaderboard: () => k.go('leaderboard'),
+    goSettings: () => k.go('settings'),
+    goGameover: (win) => {
+        TimerControls.restore(); // completely wipe the timer
+        sceneTracker.gameover.init(win);
+        k.go('gameover');
+    }
 };

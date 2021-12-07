@@ -5,60 +5,51 @@
  */
 
 
-import k from '../index.js';
+import k from '../kaboom.js';
 
-const DFLT_SELECT_SHADER = 'green_tint';
-const CONNECTING_SELECT_SHADER = 'red_tint';
+import { GameConfig } from '../../../shared/lookup.js';
 
-var currSelected = null;
 
-var srcSelected = null;
-var destSelected = null;
+var currSelectedComponent = null;
 
-var count = 0;
+var srcSelectedComponent = null;
+var destSelectedComponent = null;
 
+// Controls for when a component is selected 
 export const selectControls = {
     release: () => { 
-        if (currSelected) {
-            currSelected.unselected();
+        if (currSelectedComponent) {
+            currSelectedComponent.unselected();
         } 
-        currSelected = null; },
-    current: () => currSelected,
+        currSelectedComponent = null; },
+    current: () => currSelectedComponent,
     acquire: (context) => {
         selectControls.release();
-        context.selected(DFLT_SELECT_SHADER);
-        currSelected = context; }
+        context.selected(GameConfig.get('selectShader'));
+        currSelectedComponent = context; }
 };
 
+// Controls for when a component is selected with the INTENT of connecting
 export const connectControls = {
     release: () => { 
-        if (srcSelected) { srcSelected.unselected(); } 
-        if (destSelected) { destSelected.unselected(); } 
-        destSelected = null; 
-        srcSelected = null; 
+        if (srcSelectedComponent) { srcSelectedComponent.unselected(); } 
+        if (destSelectedComponent) { destSelectedComponent.unselected(); } 
+        destSelectedComponent = null; 
+        srcSelectedComponent = null; 
     },
-    isValid: () => { return destSelected && srcSelected; },
-    current: () => { return { src: srcSelected, dest: destSelected }; },
+    isValid: () => { return destSelectedComponent && srcSelectedComponent; },
+    current: () => { return { src: srcSelectedComponent, dest: destSelectedComponent }; },
     acquire: (context) => {
-        if (srcSelected) { srcSelected.unselected(); } 
-        context.selected(CONNECTING_SELECT_SHADER);
-        srcSelected = destSelected; 
-        destSelected = context; }
+        if (srcSelectedComponent) { srcSelectedComponent.unselected(); } 
+        context.selected(GameConfig.get('connectingShader'));
+        srcSelectedComponent = destSelectedComponent; 
+        destSelectedComponent = context; }
 };
 
 export function select() { 
     return {
         require: [ 'pos', 'area' ],
-        selected(type)  { 
-            switch(type) {
-                case CONNECTING_SELECT_SHADER:
-                    this.use(k.shader(CONNECTING_SELECT_SHADER)); 
-                break;
-                default:
-                    this.use(k.shader(DFLT_SELECT_SHADER));
-                    // this.use(k.color(...DFLT_SELECT_COLOR)); 
-            }
-        },
+        selected(shaderName)  { this.use(k.shader(shaderName)); },
         unselected() { this.unuse('shader'); },
     };
 }

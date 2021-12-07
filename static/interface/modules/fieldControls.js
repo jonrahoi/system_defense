@@ -8,57 +8,49 @@
  * within Interface and Game Logic
  */
 
+import k from '../kaboom/kaboom.js';
 
-import k from '../kaboom/index.js';
-
-import { addSprite, addRect } from '../kaboom/spriteHandler.js';
-import { dragControls, drag } from '../kaboom/components/drag.js';
-import { selectControls, select } from '../kaboom/components/select.js';
-import { ConnectionDisplayParams } from '../kaboom/components/interfaceConnection.js';
 import InterfaceComponent from '../kaboom/components/interfaceComponent.js';
 import InterfaceConnection from '../kaboom/components/interfaceConnection.js';
-import { scaleComponentImage } from '../kaboom/spriteHandler.js';
+import InterfaceRequest from '../kaboom/components/interfaceRequest.js';
+import State from '../../shared/state.js';
+import generateUUID from '../../utilities/uuid.js';
 
-// Factory function to generate UUIDs
-const generateID = () => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-};
+import { drag } from '../kaboom/components/drag.js';
+import { select } from '../kaboom/components/select.js';
+import { ConnectionDisplayParams } from '../kaboom/components/interfaceConnection.js';
+import { ScaledComponentImage } from '../kaboom/graphicUtils.js';
+
+k.loadSprite("capn", '../../assets/icons/browser/captain_192.png')
 
 function errorMessage(message) {
     k.layers([
         "error",
     ], "game")
 
-    const recWidth = k.width() / 1.2;
+    const recWidth = k.width() / 3.5;
     const recHeight = k.height() / 3.5;
 
     let rec = k.add([
-        // k.rect(600, 200),
         k.rect(recWidth, recHeight),
         k.layer("error"),
         k.outline(2),
         k.color(176, 182, 221),
-        // k.pos(500, 300),
-        k.pos(k.width() / 2, k.height() / 2),
+        k.pos(recWidth * 1.75, recHeight * 1.75),
         k.origin("center"),
     ]);
 
     let error = k.add([
-        k.text(message, {
-            size: k.height() * 0.05
-        }),
+        k.text(message, { size: recHeight * 0.13, width: recWidth * 0.9 }),
         k.layer("error"),
-        k.pos(k.width() / 2, k.height() / 2.1),
+        k.pos(recWidth * 1.75, recHeight * 1.6),
         k.origin("center"),
     ])
 
-    const btnPos = k.vec2(k.width() / 2, k.height() / 1.75);
+    const btnPos = k.vec2(k.width() / 2, k.height() / 1.7);
 
     let btn = k.add([
-        k.rect(recWidth / 6.3, recHeight / 4.3),
+        k.rect(recWidth / 5.9, recHeight / 4.7),
         k.layer("error"),
         k.outline(2),
         k.color(207, 226, 243),
@@ -69,7 +61,7 @@ function errorMessage(message) {
 
     let back = k.add([
         k.text("Back", {
-            size: k.height() * 0.04
+            size: recHeight * 0.1
         }),
         k.layer("error"),
         k.pos(btnPos),
@@ -77,92 +69,177 @@ function errorMessage(message) {
     ]);
 
     btn.clicks(() => {
-        // k.add([
-        //     k.text("destroy clicked"),
-        // ]);
         k.destroy(rec);
         k.destroy(error);
         k.destroy(btn);
         k.destroy(back);
     });
-
 }
 
-const FieldController = {
+
+const FieldControls = {
     // This stores the current level logic object (found in `shared/level.js`)
     // It's the key communication object between Interface --> Game Logic
     logicControls: null,
 
-    loadLogic: (levelLogic) => FieldController.logicControls = levelLogic,
+    loadLogic: (levelLogic) => FieldControls.logicControls = levelLogic,
 
-    placeComponent: function(componentName, pos, isClient=false, initial=false) {
+    initStage: (addedClients, addedProcessors, addedEndpoints, playField) => {
+        // Minimal safety checks... assumed to be OK because no user intervention here
+
+        let addedComponents = {};
+        let size = ScaledComponentImage();
+
+        let baseParams = [
+            k.area(),
+            k.origin('center'),
+            '_component', // used as a group identifier
+            'selectable',
+            select()
+        ];
+
+        const appendComponents = (currPos, spacers, existingIDs, newComponents) => { 
+            // First adjust all existing endpoint's positions
+            let existingComponent, interfaceComponents;
+            for (const componentID of existingIDs) {
+                interfaceComponents = k.get(componentID);
+                // Safety check
+                if (interfaceComponents.length === 1) {
+                    existingComponent = interfaceComponents[0];
+                    existingComponent.pos = k.vec2(...currPos);
+                    currPos[0] += spacers[0];
+                    currPos[1] += spacers[1];
+                }
+            }
+    
+            // Then add the new stage's endpoints
+            let newID, tags, kaboomParams;
+            for (const component of newComponents) {
+                tags = FieldControls.logicControls.componentSpecs(component.name).tags;
+                if (!tags.includes('CLIENT')) {
+                    tags.push('draggable');
+                    tags.push(drag());
+                }
+                for (let i = 0; i < component.quantity; i++) {
+                    newID = generateUUID();
+                    tags.push(newID, component.name);
+                    kaboomParams = [k.sprite(component.name, size), k.pos(k.vec2(...currPos)), 
+                        InterfaceComponent(component.name, newID, tags)];
+
+                    k.add(baseParams.concat(kaboomParams, tags));
+                    addedComponents[newID] = component.name;
+                    currPos[0] += spacers[0];
+                    currPos[1] += spacers[1];
+                }
+            }
+        };
+
+        let reducer = (acc,curr) => acc = acc + curr["quantity"];
+        let numAddedClients = Object.values(addedClients).reduce(reducer, 0);
+        let numAddedProcessors = Object.values(addedProcessors).reduce(reducer, 0);
+        let numAddedEndPoints = Object.values(addedEndpoints).reduce(reducer, 0);
+
+        let totalNumClients = numAddedClients + State.placedClientIDs.length;
+        let totalNumProcessors = numAddedProcessors + State.placedProcessorIDs.length;
+        let totalNumEndpoints = numAddedEndPoints + State.placedEndpointIDs.length;
+
+        if (numAddedClients) {
+            let clientSpace = playField.clientSpace.rect;
+            let clientXSpacer = 0;
+            let clientYSpacer = clientSpace.height / (totalNumClients + 1);
+            let initClientX = clientSpace.leftBoundary + (clientSpace.width / 2);
+            let initClientY = clientSpace.topBoundary + clientYSpacer;
+            appendComponents([initClientX, initClientY], 
+                            [clientXSpacer, clientYSpacer],
+                            State.placedClientIDs, addedClients);
+        }
+
+        if (numAddedProcessors) {
+            // Spread processors out in a line on the field
+            let componentSpace = playField.componentSpace.rect;
+            let processorXSpacer = componentSpace.width / (numAddedProcessors + 1);
+            let processorYSpacer = 0;
+            let initProcessorX = componentSpace.leftBoundary + processorXSpacer;
+            let initProcessorY = componentSpace.topBoundary + (componentSpace.height / 2);
+    
+            appendComponents([initProcessorX, initProcessorY], 
+                            [processorXSpacer, processorYSpacer],
+                            [], addedProcessors);
+        }
+
+        if (numAddedEndPoints) {
+            // Spread endpoints out in a line on the field
+            let endpointSpace = playField.endpointSpace.rect;
+            let endpointXSpacer = 0;
+            let endpointYSpacer = endpointSpace.height / (numAddedEndPoints + 1);
+            let initEndpointX = endpointSpace.leftBoundary + (endpointSpace.width / 2);
+            let initEndpointY = endpointSpace.topBoundary + endpointYSpacer;
+
+            appendComponents([initEndpointX, initEndpointY], 
+                            [endpointXSpacer, endpointYSpacer],
+                            State.placedEndpointIDs, addedEndpoints);
+        }
+
+        // Store new data in Game Logic
+        FieldControls.logicControls.initStage(addedComponents);
+    },
+
+    placeComponent: function(componentName, pos) { 
 
         // Safety check. Need logicControls to communicate with Game Logic
-        if (FieldController.logicControls === null) {
+        if (FieldControls.logicControls === null) {
             console.debug('Attempted to add component but no game logic controller present.');
             errorMessage("Attempted to add component but no game logic controller present.");
             return;
         }
 
-        let clientTag = isClient ? "client" : "processor";
-        let newID = generateID();
+        let newID = generateUUID();
+        let logicResponse = FieldControls.logicControls.addComponent(componentName, newID);
 
-        let logicResponse = FieldController.logicControls.addComponent(componentName, newID, initial);
-
-        // Don't really need this check if it's an initial value. Should always be valid
         if (!logicResponse.valid) {
             console.log(logicResponse.info);
             errorMessage(logicResponse.info);
             return;
         }
-        var name = () => componentName;
 
-        let tags = [clientTag, componentName, 'selectable'];
-        let properties = [name(), select(), InterfaceComponent(componentName, newID, clientTag)];
-
-        if (!initial) {
-            tags.push('deletable');
-        }
-        if (!isClient) {
-            tags.push('draggable');
-            properties.push(drag());
-        }
+        let size = ScaledComponentImage();
+        let tags = FieldControls.logicControls.componentSpecs(componentName).tags;
+        let params = [
+            k.sprite(componentName, { width: size.width, height: size.height }),
+            k.pos(pos),
+            k.area(),
+            k.origin('center'),
+            componentName, 
+            newID,
+            '_component', // used as a group identifier
+            'selectable', 
+            'deletable',
+            'draggable',
+            drag(),
+            select(),
+            InterfaceComponent(componentName, newID, tags)
+        ];
         
-        let size = scaleComponentImage();
-        return addSprite(componentName.toLowerCase(), { 
-            pos: pos,
-            width: size.width, height: size.height,
-            area: true,
-            origin: 'center',
-            tags: tags,
-            properties: properties
-        });
+        return k.add(params);
     },
 
     connect: function(srcComponent, destComponent) {
-        // console.log("connet function");
-        // const test = 1;
-        // if (test == 1) {
-        //     errorMessage("test invalid");
-        // }
 
         // Safety check. Need logicControls to communicate with Game Logic
-        if (FieldController.logicControls === null) {
+        if (FieldControls.logicControls === null) {
             console.debug('Attempted to connect components but no game logic controller present.');
             errorMessage("Attempted to connect components but no game logic controller present.");
             return;
         }
-
         if (!srcComponent || !destComponent) {
-            console.debug('Attempted to connect components but either src or dest was missing');
-            errorMessage("Attempted to connect components but either src or dest was missing");
+            console.debug('Attempted to connect components but either src or dest was missing.');
+            errorMessage("Attempted to connect components but either src or dest was missing.");
             return;
         }
 
-
         let srcID = srcComponent.uuid();
         let destID = destComponent.uuid();
-        let logicResponse = FieldController.logicControls.addConnection(srcID, destID);
+        let logicResponse = FieldControls.logicControls.addConnection(srcID, destID);
         
         if (!logicResponse.valid) {
             console.log(logicResponse.info);
@@ -174,17 +251,22 @@ const FieldController = {
         let height = srcComponent.pos.dist(destComponent.pos);
 
         // FIXME: area() & rotate() don't work together, so can't click a connection 
-        let r = addRect({
-            width: ConnectionDisplayParams.width, height: height,
-            pos: srcComponent.pos,
-            color: ConnectionDisplayParams.backgroundColor,
-            opacity: ConnectionDisplayParams.opacity,
-            rotate: ang,
-            origin: 'top',
-            tags: [srcID, destID, 'connection'],
-            // area: true,
-            properties: [InterfaceConnection(srcComponent, destComponent)]
-        });
+        let baseParams = [
+            k.rect(ConnectionDisplayParams.width, height),
+            k.pos(srcComponent.pos),
+            k.color(...ConnectionDisplayParams.backgroundColor),
+            k.opacity(ConnectionDisplayParams.opacity),
+            k.origin('top'),
+            k.rotate(ang),
+            // k.area()
+        ];
+
+        let tags = [srcID, destID, 'connection'];
+        let properties = [InterfaceConnection(srcComponent, destComponent)];
+
+        let rectDef = baseParams.concat(tags, properties);
+        let r = k.add(rectDef);
+        
         k.readd(srcComponent);
         k.readd(destComponent);
         return r;
@@ -193,12 +275,11 @@ const FieldController = {
     removeComponent: function(component) {
 
         // Safety check. Need logicControls to communicate with Game Logic
-        if (FieldController.logicControls === null) {
+        if (FieldControls.logicControls === null) {
             console.debug('Attempted to remove component but no game logic controller present.');
             errorMessage("Attempted to remove component but no game logic controller present.");
             return;
         }
-
         if (!component) {
             console.debug('Attempted to remove component but it was missing');
             errorMessage("Attempted to remove component but it was missing");
@@ -207,11 +288,11 @@ const FieldController = {
 
         let componentName = component.name();
         let componentID = component.uuid();
-        let logicResponse = FieldController.logicControls.removeComponent(componentID);
+        let logicResponse = FieldControls.logicControls.removeComponent(componentID);
 
         if (!logicResponse.valid) {
             console.log(logicResponse.info);
-            errorMessage(logicResponse.info);
+            errorMessage("Attempted to remove component but it was missing");
             return false;
         }
         
@@ -226,12 +307,11 @@ const FieldController = {
     disconnect: function(srcComponent, destComponent) {
 
         // Safety check. Need logicControls to communicate with Game Logic
-        if (FieldController.logicControls === null) {
+        if (FieldControls.logicControls === null) {
             console.debug('Attempted to disconnect components but no game logic controller present.');
             errorMessage("Attempted to disconnect components but no game logic controller present.");
             return;
         }
-
         if (!srcComponent || !destComponent) {
             console.debug('Attempted to disconnect components but either src or dest was missing');
             errorMessage("Attempted to disconnect components but either src or dest was missing");
@@ -240,7 +320,7 @@ const FieldController = {
 
         let srcID = srcComponent.uuid();
         let destID = destComponent.uuid();
-        let logicResponse = FieldController.logicControls.removeConnection(srcID, destID);
+        let logicResponse = FieldControls.logicControls.removeConnection(srcID, destID);
 
         if (!logicResponse.valid) {
             console.log(logicResponse.info);
@@ -255,8 +335,72 @@ const FieldController = {
             }
         }
         return true;
-    }
+    },
 
+    spawnRequest: function(request, good) { 
+        let goodRequestParams = [
+            k.sprite("capn"),
+            k.pos(request.src.pos),
+            k.scale(0.20),
+            k.area(),
+            k.color(0, 255, 0),
+            k.health(10),
+            request.id,
+            request.state,
+            k.state("intransit", ["intransit", "processing", "blocked"]),
+            'request'
+        ]
+        
+        let badRequestParams = [
+            k.sprite("capn"),
+            k.pos(request.src.pos),
+            k.scale(0.15),
+            k.area(),
+            k.color(255, 0, 0),
+            k.health(5),
+            request.id,
+            request.state,
+            k.state("blocked", ["intransit", "processing", "blocked"]),
+            'request'
+        ]
+        
+        let goodReqDef = goodRequestParams.concat(request);
+        let badReqDef = badRequestParams.concat(request);
+        let drawReq = k.add(goodReqDef);
+        console.log(good);
+        if (good == false) {
+            drawReq = k.add(badReqDef);
+            console.log("bad req drawed");         
+        }         
+
+    },
+
+    moveRequest: function(request) {
+        let requests = k.get('request'); 
+        const speed = 120;
+        const dir = k.vec2(request.dest.pos.sub(request.src.pos));
+        //console.log(dir);
+        for (const r of requests) { 
+            r.onStateUpdate("intransit", () => {
+                r.move(dir);
+            })
+    
+            r.onStateUpdate("processing", () => {
+                this.hideRequest(r);
+            })
+            
+            r.onCollide('selectable', () => {
+                r.enterState("processing");   
+            })
+        }
+    },
+
+    hideRequest: function(request) {
+        k.destroy(request);
+        k.wait(3, () => {
+            this.spawnRequest(request, true);
+        })
+    }
 };
 
-export default FieldController;
+export default FieldControls;
