@@ -23,15 +23,19 @@ import InterfaceRequest from '../kaboom/components/interfaceRequest.js';
 
 import { dragControls, drag } from '../kaboom/components/drag.js';
 import { selectControls, connectControls, select } from '../kaboom/components/select.js';
-
 import { Popup, PopupButtons } from '../modules/popup.js';
+import { getColor } from '../../config/settings.js';
+
+
 
 export function LevelView() {
     this.newComponents = {};
 
     this.init();
-    this.scene = () => { this.buildScene(); };
-    this.test = (stageFuncs, lvlFuncs) => { this.includeLvlButtons(stageFuncs, lvlFuncs); };
+    this.scene = (color) => { 
+      this.buildScene(color); 
+    };
+    this.test = (stageFuncs, lvlFuncs) => { this.includeLvlButtons(stageFuncs, lvlFuncs); }
 };
 
 
@@ -76,7 +80,8 @@ LevelView.prototype.init = function() {
         viewLayout.banner.x, 
         viewLayout.banner.y, 
         viewLayout.banner.width, 
-        viewLayout.banner.height);
+        viewLayout.banner.height,
+    );
         
     this.statusBar = new StatusBar(
         viewLayout.statusBar.x,
@@ -109,8 +114,8 @@ LevelView.prototype.init = function() {
 };
 
 // Used as the actual scene "object" for Kaboom
-LevelView.prototype.buildScene = function() {
-    this.bannerBar.build();
+LevelView.prototype.buildScene = function(color) {
+    this.bannerBar.build(color);
     this.statusBar.build();
     this.playField.build();
     this.selectionBar.build();
@@ -378,7 +383,10 @@ LevelView.prototype.includeLvlButtons = function(stageFuncs, lvlFuncs) {
         stageFuncs, lvlFuncs);
 
     // override scene function
-    this.scene = () => { this.buildScene(); this.levelBtns.build(); };
+    this.scene = () => { 
+      this.buildScene(getColor());
+      this.levelBtns.build();
+    };
 };
 
 export default LevelView;

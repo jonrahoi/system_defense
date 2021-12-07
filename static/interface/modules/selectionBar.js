@@ -15,6 +15,7 @@ import { ComponentConfig } from '../../shared/lookup.js'
 const UNAVAILABLE_OPACITY = 0.5;
 const COMPONENT_SPAWN_POS = [k.width() / 2, k.height() / 2];
 
+
 export default function SelectionBar(screenX, screenY, screenWidth, screenHeight) {
     this.init(screenX, screenY, screenWidth, screenHeight);
 
@@ -245,8 +246,10 @@ SelectionBar.prototype.buildObject = function() {
             k.area(),
             '_selectionComponent'
         ];
-        let componentBtn = k.add(spriteDef);
+        componentBtn = k.add(spriteDef);
+        
         componentBtn.clicks(() => this.update(name));
+
         attributes['iconGraphic'] = componentBtn;
 
         // Then place text underneath

@@ -8,7 +8,7 @@ import k from '../kaboom/kaboom.js';
 export function GameOver(win=false) {
     this.init(win);
     
-    this.scene = () => { this.buildScene(); };
+    this.scene = (color) => { this.buildScene(color); };
 };
 
 GameOver.prototype.init = function(win) {
@@ -57,11 +57,11 @@ GameOver.prototype.init = function(win) {
     this.params.textObjs.title['y'] = this.params.y + (this.params.height / 2) - (this.params.textObjs.title.height / 2);
 };
 
-GameOver.prototype.buildScene = function() {
+GameOver.prototype.buildScene = function(color) {
     // Background
     k.add([
         k.rect(k.width(), k.height()),
-        this.params.backdropColor,
+        k.color(color),
         this.params.backdropOpacity,
     ]);
 

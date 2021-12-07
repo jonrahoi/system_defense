@@ -21,8 +21,7 @@ import { select } from '../kaboom/components/select.js';
 import { ConnectionDisplayParams } from '../kaboom/components/interfaceConnection.js';
 import { ScaledComponentImage } from '../kaboom/graphicUtils.js';
 
-k.loadSprite("capn", '../../assets/icons/browser/captain_192.png')
-
+// TODO: add captain_192.png to asset directory
 function errorMessage(message) {
     k.layers([
         "error",
@@ -219,7 +218,7 @@ const FieldControls = {
             select(),
             InterfaceComponent(componentName, newID, tags)
         ];
-        
+        params += tags
         return k.add(params);
     },
 
