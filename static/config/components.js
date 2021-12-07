@@ -9,7 +9,7 @@ export const componentDefs = {
                     cost: 0, // base level client is free (given at level start)
                     maxInputs: 1, // can have 1 incoming connection
                     maxOutputs: 1, // can have 1 outgoing connection
-                    transmitRate: 1, // can transmit 2 requests/sec
+                    transmitRate: 2, // can transmit 2 requests/sec
                     receiveRate: 2, // can receive 2 requests/sec 
                 },
                 2: {
@@ -21,7 +21,7 @@ export const componentDefs = {
                 }
             },
             img: "assets/images/components/iphone.png",
-            description: "I'm an iPhone"
+            description: "The starting point of the customer's request.\n\Cost: (L1)$0 (L2)$50"
         },
         ALEXA: {
             tags: ["CLIENT"],
@@ -43,7 +43,8 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/alexa.png",
-            description: "I'm Alexa!"
+            description: "The starting point of the customer's request.\n\Cost: (L1)$0 (L2)$30"
+                            //Please complete the transfer of 20 requests to the hosted image at this level"
         },
         LAPTOP: {
             tags: ["CLIENT"],
@@ -65,7 +66,8 @@ export const componentDefs = {
                 }
             },
             img: "assets/images/components/laptop.png",
-            description: "I'm a laptop"
+            description: "The starting point of the customer's request.\n\Cost: (L1)$0 (L2)$70"
+                            //Please complete the transfer of 20 requests to the hosted image at this level"
         },
         DESKTOP: {
             tags: ["CLIENT"],
@@ -87,7 +89,8 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/desktop.png",
-            description: "I'm a desktop"
+            description: "The starting point of the customer's request.\n\Cost: (L1)$0 (L2)$100"
+                            //Please complete the transfer of 20 requests to the hosted image at this level"
         },
         CLOUD_COMPUTE: {
             tags: ["CLIENT"],
@@ -109,7 +112,8 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/cloud_compute.png",
-            description: "I'm a cloud-computing software"
+            description: "The starting point of the customer's request.\n\Cost: (L1)$0 (L2)$120"
+                            //Please complete the transfer of 20 requests to the hosted image at this level"
         }
     },
     
@@ -137,7 +141,8 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/gateway.png",
-            description: "I'm a gateway"
+            description: "A hardware device that acts as a 'gate' between two networks.\n\Cost: (L1)$0 (L2)$50"
+                            //It may be a router, firewall, server, or another device that enables traffic to flow in and out of the network."
         },
         HUB: {
             tags: ["EDGE", "MIDDLE"],
@@ -161,7 +166,9 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/hub.png",
-            description: "I'm a hub"
+            description: "Allows multiple computers to communicate with each other over a network.\n\Cost: (L1)$0 (L2)$50"
+                            //It has several Ethernet ports that are used to connect two or more network devices together. \n\
+                            //Each computer or device connected to the hub can communicate with any other device connected to one of the hub's Ethernet ports."
         },
         SWITCH: {
             tags: ["EDGE", "MIDDLE"],
@@ -185,7 +192,11 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/switch.png",
-            description: "I'm a switch"
+            description: "Used to network multiple computers together.\n\Cost: (L1)$0 (L2)$50"
+                            //Switches are more advanced than hubs and less capable than routers. \n\
+                            //Unlike hubs, switches can limit the traffic to and from each port so that each device connected to the switch has a sufficient amount of bandwidth. \n\
+                            //For this reason, you can think of a switch as a 'smart hub.'\n\
+                            //However, switches don't provide the firewall and logging capabilities that routers do."
         },
         MODEM: {
             tags: ["EDGE", "MIDDLE"],
@@ -209,7 +220,7 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/modem.png",
-            description: "I'm a modem"
+            description: "Allows a computer or another device to connect to the Internet.\n\Cost: (L1)$0 (L2)$100"
         },
         ROUTER: {
             tags: ["EDGE", "MIDDLE"],
@@ -233,7 +244,9 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/router.png",
-            description: "I'm a router"
+            description: "Routes data from a local area network (LAN) to another network connection.\n\Cost: (L1)$0 (L2)$80"
+                            //A router acts like a coin sorting machine, allowing only authorized machines to connect to other computer systems.\n\
+                            //Most routers also keep log files about the local network activity."
         },
         LOAD_BALANCER: {
             tags: ["PRE_PROCESSOR", "MIDDLE"],
@@ -257,7 +270,8 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/load_balancer.png",
-            description: "I'm a load balancer"
+            description: "Distribute network and application traffic across different servers.\n\Cost: (L1)$0 (L2)$70"
+                            //It is used to improve the concurrent user capacity and overall reliability of applications."
         },
         CACHE: {
             tags: ["PRE_PROCESSOR", "MIDDLE"],
@@ -281,7 +295,8 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/cache.png",
-            description: "I'm a cache"
+            description: "Stores data so that future requests for that data can be served faster.\n\Cost: (L1)$0 (L2)$90"
+                            //The data stored in a cache might be the result of an earlier computation or a copy of data stored elsewhere"
         },
         SERVER: {
             tags: ["PROCESSOR", "MIDDLE"],
@@ -305,7 +320,9 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/server.png",
-            description: "I'm a web server"
+            description: "May connect over a network to a server on a different device.\n\Cost: (L1)$0 (L2)$70"
+                            //A server is a piece of computer hardware or software that provides functionality for other programs or devices, called 'clients'.\n\
+                            //A client process may run on the same device or may connect over a network to a server on a different device"
         },
         DATABASE: {
             tags: ["PROCESSOR", "MIDDLE"],
@@ -329,7 +346,9 @@ export const componentDefs = {
                 },
             },
             img: "assets/images/components/database.png",
-            description: "I'm a database"
+            description: "Organized collection of structured data.\n\Cost: (L1)$0 (L2)$70"
+                        //Online databases are hosted on websites."
+                        //made available as software as a service products accessible via a web browser." 
         }
     },
 
@@ -341,7 +360,7 @@ export const componentDefs = {
             maxInputs: 1, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
             img: "assets/images/endpoints/html.png",
-            description: "I'm an HTML page"
+            description: "The standard markup language for documents designed to be displayed in a web browser."
         },
         IMAGE: {
             tags: ["ENDPOINT"],
@@ -349,7 +368,8 @@ export const componentDefs = {
             maxInputs: 1, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
             img: "assets/images/endpoints/image.png",
-            description: "I'm an image"
+            description: "Hosts on a network include clients and servers--that send or receive data, services or applications."
+                            //Hosts typically do not include intermediary network devices like switches and routers, which are instead often categorized as nodes."
         },
         VIDEO: {
             tags: ["ENDPOINT"],
@@ -357,10 +377,10 @@ export const componentDefs = {
             maxInputs: 1, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
             img: "assets/images/endpoints/video.png",
-            description: "I'm a video"
+            description: "sAn online video platform, provided by a video hosting service, enables users to upload, convert, store and play back video content on the Internet."
+                            //Often via a structured, large-scale system that may generate revenue"
         }
     }
 };
 
 export default componentDefs;
-
