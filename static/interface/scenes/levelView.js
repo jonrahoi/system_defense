@@ -26,8 +26,6 @@ import { selectControls, connectControls, select } from '../kaboom/components/se
 import { Popup, PopupButtons } from '../modules/popup.js';
 import { getColor } from '../../config/settings.js';
 
-import { Popup, PopupButtons } from '../modules/popup.js';
-
 export function LevelView() {
     this.newComponents = {};
 
