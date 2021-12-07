@@ -9,6 +9,7 @@
 
 import componentDefs from "../config/components.js";
 import levelDefs from "../config/levels.js";
+import { connectionTypes, networkTypes } from '../config/connections.js';
 import gameConfig from "../config/config.js";
 import assetDirectory from "../assets/assetDirectory.js";
 
@@ -35,12 +36,7 @@ export const ComponentConfig = {
             return acc;
         }, {});
     },
-    entries: () => {
-        // var values = {};
-        // entries(componentDefs, 0, values);
-        // return values;
-        return Object.assign({}, componentDefs);
-    }
+    entries: () => Object.assign({}, componentDefs)
 };
 
 export const LevelConfig = {
@@ -56,12 +52,20 @@ export const GameConfig = {
     entries: () => Object.assign({}, gameConfig)
 }
 
+export const ConnectionConfig = {
+    get: (tag1, tag2) => connectionTypes[tag1] ? connectionTypes[tag1][tag2] : {},
+    compatabilities: (tag) => connectionTypes[tag]
+};
+
+export const NetworkTypeConfig = {
+    get: (name) => networkTypes[name],
+    entries: () => Object.assign({}, networkTypes)
+};
 
 
 
+/************** Base recursive algorithms ***************/
 
-
-// Base recursive algorithms
 const lookup = (object, target) => {
     if (object.hasOwnProperty(target)) { return object[target]; }
     

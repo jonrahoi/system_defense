@@ -24,6 +24,7 @@ export default function LogicComponent(id, name, specs, transmission) {
     this.numReceived = 0;
     
     this.incomingRequestQueue = []; // all of these requests are blocked
+    this.returningRequestQueue = []; // all of the requests that are returning as responses
     
     this.transmitFunc = transmission; // will provide the next component for a request given it's destination
     

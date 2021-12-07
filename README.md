@@ -17,7 +17,7 @@ This is a beta version for the system defense game. It includes a `Node.js` & `F
 3. `cd system_defense`
 4. `npm install`
 5. `npm start`
-6. Visit the address provided in the output of the above command (will most likely be **127.0.0.1:3000**)
+6. Visit the address provided in the output of the above command (will most likely be **127.0.0.1:3000** or **[::1]:3000** which translates to `localhost:3000`)
 
 ## Usage
 

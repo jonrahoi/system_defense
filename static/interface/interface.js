@@ -55,6 +55,13 @@ Interface.prototype.init = function() {
         resolve('ok');
     }));
 
+    // let c = k.vec2(10, 10);
+    // let x = k.vec2(1, 0);
+    // let ang = Math.atan2(c.x, c.y) * 180 / Math.PI;
+    // console.log(ang);
+    // console.log(c.angle(x));
+
+
     // Build game logic object
     this.gameLogic = new GameLogic();
 
@@ -106,12 +113,31 @@ Interface.prototype.loadScenes = function() {
 
 
 Interface.prototype.registerEvents = function() {
-    // Connect the level scene to the timer
-    TimerControls.register(sceneTracker.level.update, sceneTracker.level); // default interval type
+    
+    if (TESTING) {
+        let totalLevels = 6; // HARD CODED (just for testing)
+        const stageFuncs = {
+            up: () => this.handleStageClear(),
+            down: () => sceneTracker.level.showPopup()
+        };
+        const lvlFuncs = {
+            up: () => { if (State.levelNumber < totalLevels) { this.goLevel(State.levelNumber+1); } },
+            down: () => { if (State.levelNumber > 1) { this.goLevel(State.levelNumber-1); } }
+        };
+        sceneTracker.level.test(stageFuncs, lvlFuncs);
+        k.scene('level', sceneTracker.level.scene);
+        console.log('Initiated level testing...');
+
+        var printTime = (timestamp, speedup) => console.log(`-- ${timestamp}s --`);
+        TimerControls.register(printTime, this, TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
+    }
 
     // Connect game logic's timestep callback function to the timer (Game Logic's callback)
     TimerControls.register(this.gameLogic.processInterval, this.gameLogic, 
         TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
+
+    // Connect the level scene to the timer
+    TimerControls.register(sceneTracker.level.update, sceneTracker.level); // default interval type
 
     // Connect gameover to timer (using a wrapper function to indiciate game lost)
     var timeExpired = () => SceneControls.goGameover(false);
@@ -125,19 +151,7 @@ Interface.prototype.registerEvents = function() {
     var stagePassed = () => { if (State.stagePassed) { this.handleStageClear(); }};
     State.register(stagePassed, this);
 
-    if (TESTING) {
-        let totalLevels = 6; // HARD CODED (just for testing)
-        const stageFuncs = {
-            up: () => this.handleStageClear()
-        };
-        const lvlFuncs = {
-            up: () => { if (State.levelNumber < totalLevels) { this.goLevel(State.levelNumber+1); } },
-            down: () => { if (State.levelNumber > 1) { this.goLevel(State.levelNumber-1); } }
-        };
-        sceneTracker.level.test(stageFuncs, lvlFuncs);
-        k.scene('level', sceneTracker.level.scene);
-        console.log('Initiated level testing...');
-    }
+    
 };
 
 // Function to load and "go to" a level

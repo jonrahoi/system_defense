@@ -13,7 +13,7 @@ import Level from "../shared/level.js";
 import Network from "./modules/network.js";
 import LogicConnection from './modules/logicConnection.js';
 import getTransmitFunction from '../config/transmission.js';
-import { ComponentConfig, LevelConfig, GameConfig } from "../shared/lookup.js";
+import { ComponentConfig, LevelConfig, GameConfig, NetworkTypeConfig } from "../shared/lookup.js";
 import { StateMachine, State } from "../shared/state.js";
 import { LogicClient, LogicProcessor, LogicEndpoint } from './modules/logicMembers.js';
 
@@ -77,27 +77,47 @@ GameLogic.prototype.getStage = function(stageNumber, levelNumber) {
 
 // Expect object of componentIDs --> componentNames
 GameLogic.prototype.initStage = function(components) {
-    let expenses = 0;
     let newComponent;
     for (const [id, name] of Object.entries(components)) {
         newComponent = this._addComponent(name, id);
 
         this.network.networkAddComponent(newComponent);
-        StateMachine.placedComponent(newComponent);
-        expenses += newComponent.usageCost;
+        StateMachine.placedComponent(newComponent, true);
     }
     
-    // Setup current State
-    StateMachine.incrementExpenses(-expenses);
-    
-    // Reset all components and connections
-    this.network._getConnections().forEach(x => x.softReset());
+    // Reset all connections and load new network
+    let currentConnections = this.network._getConnections();
+    let newLatency = NetworkTypeConfig.get(State.networkType).latency;
+    for (let connection of currentConnections) {
+        connection.softReset();
+        connection.setLatency(newLatency);
+    }
 
+    // Reset all components
     let currentComponents = this.network._getComponents();
     currentComponents.forEach(x => x.softReset());
     
     // Assign goals and missions to the initial components
     this._assignGoals(currentComponents);
+
+    State.stateChange();
+};
+
+// Meant as private method to allow initial values to be placed without safety checks
+GameLogic.prototype._addComponent = function(componentName, componentID) {
+    let specs = componentSpecs(componentName);
+    let transmitFunc = getTransmitFunction([specs.transmission], this.network.adjList).bind(this);
+    if (specs.isClient) {
+        var newComponent = new LogicClient(componentID, componentName, specs, transmitFunc);
+    }
+    else if (specs.isEndpoint) {
+        var newComponent = new LogicEndpoint(componentID, componentName, specs, transmitFunc);
+    }
+    else {
+        var newComponent = new LogicProcessor(componentID, componentName, specs, transmitFunc);
+    }
+    this._assignGoals(this.network._getComponents());
+    return newComponent;
 };
 
 // Private method to assign the stage's goals (and subsequent missions) to all components
@@ -128,32 +148,12 @@ GameLogic.prototype._assignGoals = function(currentComponents) {
 };
 
 
-// Meant as private method to allow initial values to be placed without safety checks
-GameLogic.prototype._addComponent = function(componentName, componentID) {
-    let specs = componentSpecs(componentName);
-    let transmitFunc = getTransmitFunction([specs.transmission], this.network.adjList).bind(this);
-    if (specs.isClient) {
-        var newComponent = new LogicClient(componentID, componentName, specs, transmitFunc);
-    }
-    else if (specs.isEndpoint) {
-        var newComponent = new LogicEndpoint(componentID, componentName, specs, transmitFunc);
-    }
-    else {
-        var newComponent = new LogicProcessor(componentID, componentName, specs, transmitFunc);
-    }
-    this._assignGoals(this.network._getComponents());
-    return newComponent;
-};
-
-
 GameLogic.prototype.addComponent = function(componentName, componentID) {
     
     // Maybe do some sort of check to make sure the user's expenses aren't too high?
     let newComponent = this._addComponent(componentName, componentID);
     let networkResponse = this.network.networkAddComponent(newComponent);
-    
     if (networkResponse.valid) {
-        StateMachine.incrementExpenses(-specs.usageCost);
         StateMachine.placedComponent(newComponent);
     }
     return networkResponse;
@@ -182,18 +182,24 @@ GameLogic.prototype.upgradeComponent = function(componentID) {
 
 GameLogic.prototype.removeComponent = function(componentID) {
     let component = this.network.getComponent(componentID);
-    
-    // Get refund for upgrade cost?
-    if (component.level > 1) {
-        let refund = Math.ceil(component.cost * REFUND_RATE);
-        StateMachine.incrementCoins(refund);
+
+    if (!component) {
+        return {
+            valid: false,
+            info: 'Could not find component in network'
+        };
     }
-    
-    let networkResponse = this.network.networkRemovedComponent(componentID);
-    
+
+    let networkResponse = this.network.networkRemovedComponent(component);
+
     if (networkResponse.valid) {
         StateMachine.removedComponent(component);
-        StateMachine.incrementExpenses(-component.usageCost);
+
+        // Get refund for upgrade cost?
+        if (component.level > 1) {
+            let refund = Math.ceil(component.cost * REFUND_RATE);
+            StateMachine.incrementCoins(refund);
+        }
     }
     return networkResponse;
 };
@@ -204,7 +210,7 @@ GameLogic.prototype.addConnection = function(src_id, dest_id) {
     let srcComponent = this.network.getComponent(src_id);
     let destComponent = this.network.getComponent(dest_id);
     
-    let latency = 2; // TEMPORARY HARD CODE - will need to pull from a config file...
+    let latency = NetworkTypeConfig.get(State.networkType).latency;
     let connection = new LogicConnection(srcComponent, destComponent, latency);
     
     let networkResponse = this.network.networkAddConnection(connection);
@@ -227,10 +233,7 @@ GameLogic.prototype.removeConnection = function(src_id, dest_id) {
 
 
 GameLogic.prototype.processInterval = function(timestamp, speedup) {
-    
-    StateMachine.incrementScore(); // Not sure if score should increment every sec...
-    StateMachine.incrementCoins(-State.expenses);
-    
+
     let aliveRequests = [];
     // Loop over all components to process their requests and collect them
     let components = this.network._getComponents();
@@ -266,8 +269,8 @@ GameLogic.prototype.processInterval = function(timestamp, speedup) {
     }
     
     // An object of request IDs --> request states
-    console.log(reqStates);
-    StateMachine.setRequestStates(reqStates);
+    console.log(`Core - set request states:`, reqStates);
+    StateMachine.processInterval(reqStates);
     return reqStates;
 };
 

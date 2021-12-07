@@ -26,7 +26,7 @@ import { selectControls, connectControls, select } from '../kaboom/components/se
 import { Popup, PopupButtons } from '../modules/popup.js';
 import { getColor } from '../../config/settings.js';
 
-
+import { Popup, PopupButtons } from '../modules/popup.js';
 
 export function LevelView() {
     this.newComponents = {};
@@ -120,8 +120,8 @@ LevelView.prototype.buildScene = function(color) {
     this.playField.build();
     this.selectionBar.build();
     
-    this.buildStage();
     this.registerEvents();
+    this.buildStage();
 };
 
 // Meant to represent updating animations. However these could be dealt with through Kaboom
@@ -251,7 +251,6 @@ LevelView.prototype.initStage = function(newStageSpecs, newLevel=false) {
         this.newComponents['endpoints'] = newStageSpecs.endpoints;
         this.newComponents['additionalComponents'] = newStageSpecs.availableComponents;
     } else {
-        // alert here?
         this.popup = new Popup(null, null, null, null, State.stageDescription, [PopupButtons.OK], `Stage ${State.stageNumber}!`);
         console.log("STAGE CLEARED!");
         TimerControls.append(newStageSpecs.timeBonus);
@@ -281,8 +280,10 @@ LevelView.prototype.registerEvents = function() {
         if (k.isMouseMoved() && dragControls.current()) {
             let currDrag = dragControls.current();
             k.cursor("move");
-            let offset = this.playField.confineComponentSpace(pos.x, pos.y, currDrag.width, currDrag.height);
-            currDrag.updatePos(k.vec2(...offset));
+            // let offset = this.playField.confineComponentSpace(pos.x, pos.y, currDrag.width, currDrag.height);
+            // currDrag.updatePos(k.vec2(...offset));
+            currDrag.moveComponent(pos);
+            // currDrag.updatePos(pos);
         }
     });
     
@@ -299,7 +300,9 @@ LevelView.prototype.registerEvents = function() {
             }
             selectControls.release();
         }
-        dragControls.release();
+        if (dragControls.isDragging()) {
+            dragControls.release();
+        }
     });
 
     // When left button is clicked/pressed --> component selected
@@ -314,6 +317,12 @@ LevelView.prototype.registerEvents = function() {
                 dragControls.acquire(c, pos);
                 return;
             }
+        }
+        let connections = k.get('_connection');
+        // console.log('looking at connections...')
+        for (const c of connections) {
+            c.clicked(pos);
+            return;
         }
     });
 

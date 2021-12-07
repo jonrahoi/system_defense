@@ -2,7 +2,7 @@ export const componentDefs = {
     /*************************** CLIENTS *******************************/
     clients: {
         IPHONE: {
-            tags: ["CLIENT"],
+            tags: ['CLIENT'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -27,7 +27,7 @@ export const componentDefs = {
                             Please complete the transfer of 20 requests to the HTML at this level"
         },
         ALEXA: {
-            tags: ["CLIENT"],
+            tags: ['CLIENT'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -52,7 +52,7 @@ export const componentDefs = {
                             Please complete the transfer of 20 requests to the hosted image at this level"
         },
         LAPTOP: {
-            tags: ["CLIENT"],
+            tags: ['CLIENT'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -77,7 +77,7 @@ export const componentDefs = {
                             Please complete the transfer of 20 requests to the hosted image at this level"
         },
         DESKTOP: {
-            tags: ["CLIENT"],
+            tags: ['CLIENT'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -102,7 +102,7 @@ export const componentDefs = {
                             Please complete the transfer of 20 requests to the hosted image at this level"
         },
         CLOUD_COMPUTE: {
-            tags: ["CLIENT"],
+            tags: ['CLIENT'],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -140,7 +140,7 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connections
                     maxOutputs: 3, // can have 3 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
-                    throughput: 3 // can process 3 requests per "latency interval"
+                    throughput: 3 // can process 3 requests per 'latency interval'
                 },
                 2: {
                     cost: 50, // cost to upgrade
@@ -148,7 +148,7 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connections
                     maxOutputs: 4, // can have 4 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
-                    throughput: 4 // can process 4 requests per "latency interval"
+                    throughput: 4 // can process 4 requests per 'latency interval'
                 },
             },
             img: "assets/images/components/gateway.png",
@@ -167,7 +167,7 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connections
                     maxOutputs: 2, // can have 2 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
-                    throughput: 3 // can process 3 requests per "latency interval"
+                    throughput: 3 // can process 3 requests per 'latency interval'
                 },
                 2: {
                     cost: 50, // cost to upgrade
@@ -175,7 +175,7 @@ export const componentDefs = {
                     maxInputs: 3, // can have 3 incoming connections
                     maxOutputs: 3, // can have 3 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
-                    throughput: 4 // can process 4 requests per "latency interval"
+                    throughput: 4 // can process 4 requests per 'latency interval'
                 },
             },
             img: "assets/images/components/hub.png",
@@ -195,7 +195,7 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connections
                     maxOutputs: 2, // can have 2 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
-                    throughput: 4 // can process 4 requests per "latency interval"
+                    throughput: 4 // can process 4 requests per 'latency interval'
                 },
                 2: {
                     cost: 50, // cost to upgrade
@@ -203,7 +203,7 @@ export const componentDefs = {
                     maxInputs: 3, // can have 3 incoming connections
                     maxOutputs: 3, // can have 3 outgoing connections
                     latency: 1, // takes 1 second to process a single request
-                    throughput: 5 // can process 5 requests per "latency interval"
+                    throughput: 5 // can process 5 requests per 'latency interval'
                 },
             },
             img: "assets/images/components/switch.png",
@@ -225,7 +225,7 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connections
                     maxOutputs: 4, // can have 4 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
-                    throughput: 5 // can process 5 requests per "latency interval"
+                    throughput: 5 // can process 5 requests per 'latency interval'
                 },
                 2: {
                     cost: 100, // cost to upgrade
@@ -233,7 +233,7 @@ export const componentDefs = {
                     maxInputs: 3, // can have 3 incoming connections
                     maxOutputs: 4, // can have 4 outgoing connections
                     latency: 1, // takes 1 second to process a single request
-                    throughput: 7 // can process 7 requests per "latency interval"
+                    throughput: 7 // can process 7 requests per 'latency interval'
                 },
             },
             img: "assets/images/components/modem.png",
@@ -252,7 +252,7 @@ export const componentDefs = {
                     maxInputs: 3, // can have 3 incoming connections
                     maxOutputs: 4, // can have 4 outgoing connections
                     latency: 2, // takes 1.5 seconds to process a single request
-                    throughput: 5 // can process 5 requests per "latency interval"
+                    throughput: 5 // can process 5 requests per 'latency interval'
                 },
                 2: {
                     cost: 80, // cost to upgrade
@@ -260,7 +260,7 @@ export const componentDefs = {
                     maxInputs: 3, // can have 3 incoming connections
                     maxOutputs: 4, // can have 4 outgoing connections
                     latency: 1, // takes 1 second to process a single request
-                    throughput: 6 // can process 6 requests per "latency interval"
+                    throughput: 6 // can process 6 requests per 'latency interval'
                 },
             },
             img: "assets/images/components/router.png",
@@ -280,7 +280,7 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connections
                     maxOutputs: 3, // can have 3 outgoing connections
                     latency: 1, // takes 1 seconds to process a single request
-                    throughput: 6 // can process 6 requests per "latency interval"
+                    throughput: 6 // can process 6 requests per 'latency interval'
                 },
                 2: {
                     cost: 70, // cost to upgrade
@@ -288,7 +288,7 @@ export const componentDefs = {
                     maxInputs: 4, // can have 4 incoming connections
                     maxOutputs: 4, // can have 4 outgoing connections
                     latency: 1, // takes 0.5 seconds to process a single request
-                    throughput: 10 // can process 10 requests per "latency interval"
+                    throughput: 10 // can process 10 requests per 'latency interval'
                 },
             },
             img: "assets/images/components/load_balancer.png",
@@ -307,7 +307,7 @@ export const componentDefs = {
                     maxInputs: 1, // can have 1 incoming connection
                     maxOutputs: 1, // can have 1 outgoing connection
                     latency: 1, // takes 1 second to process a single request
-                    throughput: 8 // can process 8 requests per "latency interval"
+                    throughput: 8 // can process 8 requests per 'latency interval'
                 },
                 2: {
                     cost: 90, // cost to upgrade
@@ -315,7 +315,7 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connections
                     maxOutputs: 2, // can have 2 outgoing connections
                     latency: 1, // takes 0.5 seconds to process a single request
-                    throughput: 15 // can process 15 requests per "latency interval"
+                    throughput: 15 // can process 15 requests per 'latency interval'
                 },
             },
             img: "assets/images/components/cache.png",
@@ -334,7 +334,7 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connection
                     maxOutputs: 2, // can have 2 outgoing connection
                     latency: 2, // takes 2 seconds to process a single request
-                    throughput: 5 // can process 5 requests per "latency interval"
+                    throughput: 5 // can process 5 requests per 'latency interval'
                 },
                 2: {
                     cost: 70, // cost to upgrade
@@ -342,7 +342,7 @@ export const componentDefs = {
                     maxInputs: 3, // can have 3 incoming connections
                     maxOutputs: 3, // can have 3 outgoing connections
                     latency: 1, // takes 1.5 seconds to process a single request
-                    throughput: 8 // can process 8 requests per "latency interval"
+                    throughput: 8 // can process 8 requests per 'latency interval'
                 },
             },
             img: "assets/images/components/server.png",
@@ -361,7 +361,7 @@ export const componentDefs = {
                     maxInputs: 2, // can have 2 incoming connection
                     maxOutputs: 2, // can have 2 outgoing connection
                     latency: 2, // takes 2 seconds to process a single request
-                    throughput: 5 // can process 5 requests per "latency interval"
+                    throughput: 5 // can process 5 requests per 'latency interval'
                 },
                 2: {
                     cost: 80, // cost to upgrade
@@ -369,7 +369,7 @@ export const componentDefs = {
                     maxInputs: 3, // can have 3 incoming connections
                     maxOutputs: 3, // can have 3 outgoing connections
                     latency: 1, // takes 1.5 seconds to process a single request
-                    throughput: 8 // can process 8 requests per "latency interval"
+                    throughput: 8 // can process 8 requests per 'latency interval'
                 },
             },
             img: "assets/images/components/database.png",
@@ -384,7 +384,7 @@ export const componentDefs = {
     /***************************** ENDPOINTS *******************************/    
     endpoints: {
         HTML: {
-            tags: ["ENDPOINT"],
+            tags: ['ENDPOINT'],
             transmission: 'return',
             maxInputs: 1, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
@@ -394,7 +394,7 @@ export const componentDefs = {
                             HTML is the standard markup language for documents designed to be displayed in a web browser."
         },
         IMAGE: {
-            tags: ["ENDPOINT"],
+            tags: ['ENDPOINT'],
             transmission: 'return',
             maxInputs: 1, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
@@ -404,7 +404,7 @@ export const componentDefs = {
                             Hosts typically do not include intermediary network devices like switches and routers, which are instead often categorized as nodes."
         },
         VIDEO: {
-            tags: ["ENDPOINT"],
+            tags: ['ENDPOINT'],
             transmission: 'return',
             maxInputs: 1, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection

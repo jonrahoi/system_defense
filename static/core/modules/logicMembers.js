@@ -115,30 +115,35 @@ LogicProcessor.prototype.processTimestep = function() {
     // Inspect processing requests
     var modifiedRequests = [];
     let i = this.numProcessing;
+    let reqPackage, currRequest, processingTime;
     while (i--) {
-        let reqPackage = this.processingRequests[i];
+        reqPackage = this.processingRequests[i];
+        currRequest = reqPackage[1];
         if (++reqPackage[0] >= this.latency) {
+
+
             this.numProcessing--;
             this.numProcessed++;
-            if (this.goal && reqPackage[1].destID == this.id) {
-                reqPackage[1].setCompleted();
+            if (this.goal && currRequest.destID == this.id) {
+                currRequest.setResponse();
+                let nextConnection 
                 StateMachine.incrementCompletedReqs();
                 if (this.numProcessed >= this.goal) {
                     this.goalMet = true;
                     return [];
                 }
             } else {
-                let nextConnection = this.transmitFunc(reqPackage[1]);
+                let nextConnection = this.transmitFunc(currRequest);
                 // Check that a path exists
                 if (nextConnection) {
-                    nextConnection.addRequest(reqPackage[1]);
-                    reqPackage[1].transmit(nextConnection);
+                    nextConnection.addRequest(currRequest);
+                    currRequest.transmit(nextConnection);
                     this.numTransmitted++;
                 }
             }
             this.processingRequests.splice(i, 1);
         }
-        modifiedRequests.push(reqPackage[1]);
+        modifiedRequests.push(currRequest);
     }
     
     // Try to accept new requests from incoming queue to be processed
@@ -174,7 +179,7 @@ LogicEndpoint.prototype.processTimestep = function() {
         modifiedRequests.push(req);
         this.numReceived++;
         if (this.goal && req.destID == this.id) {
-            req.setCompleted();
+            req.setResponse();
             StateMachine.incrementCompletedReqs();
             if (this.numReceived >= this.goal) {
                 this.goalMet = true;

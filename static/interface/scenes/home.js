@@ -125,12 +125,13 @@ Home.prototype.init = function() {
     menuBoxParams['height'] = ((this.params.screenHeight  - menuBoxParams.yOffsetSpacer) - (menuBoxParams.yOuterSpacer * 2));
 
     // x & y of center of the menu box
+    // half screen width - half panel width
     menuBoxParams['x'] = (this.params.screenX
-        + ((this.params.screenWidth - menuBoxParams.width) / 2)); // half screen width - half panel width
-        // + (menuBoxParams.width / 2)); // half menu box width for centering
+        + ((this.params.screenWidth - menuBoxParams.width) / 2)); 
+    
+    // init y + half screen height - half panel height + offsetSpacer
     menuBoxParams['y'] = (this.params.screenY 
-        + ((this.params.screenHeight - menuBoxParams.height + menuBoxParams.yOffsetSpacer) / 2)); // init y + half screen height - half panel height + offsetSpacer
-        // + (menuBoxParams.height / 2)); // half menu box height for centering
+        + ((this.params.screenHeight - menuBoxParams.height + menuBoxParams.yOffsetSpacer) / 2)); 
 
     // Spacer between the boundary of the menu box and it's internal components
     menuBoxParams['xInnerSpacer'] = menuBoxParams.width * menuBoxParams.xInnerOffsetRatio;
@@ -219,10 +220,10 @@ Home.prototype.buildScene = function(color) {
     ]);
 
     // Loop over all defined graphic objects and add them to the scene
-    let itemName, spriteParams;
+    let itemName;
     for (const [name, params] of Object.entries(this.objects)) {
-        // Add icon
-        itemName = name.slice(0, -4); // remove tag of 'Icon' or 'Text'
+        // Add button
+        itemName = name.slice(0, -4); // remove tag of 'Rect' or 'Text'
         if (name.includes('Rect')) {
             this[`${itemName}Btn`] = k.add([
                 k.rect(params.width, params.height ),
