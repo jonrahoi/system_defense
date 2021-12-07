@@ -131,7 +131,7 @@ export const componentDefs = {
     /**************************** PROCESSORS *******************************/
     processors: {
         GATEWAY: {
-            tags: ["EDGE"],
+            tags: ["EDGE", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -158,7 +158,7 @@ export const componentDefs = {
                             It may be a router, firewall, server, or another device that enables traffic to flow in and out of the network."
         },
         HUB: {
-            tags: ["EDGE"],
+            tags: ["EDGE", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -186,7 +186,7 @@ export const componentDefs = {
                             Each computer or device connected to the hub can communicate with any other device connected to one of the hub's Ethernet ports."
         },
         SWITCH: {
-            tags: ["EDGE"],
+            tags: ["EDGE", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -216,7 +216,7 @@ export const componentDefs = {
                             However, switches don't provide the firewall and logging capabilities that routers do."
         },
         MODEM: {
-            tags: ["EDGE"],
+            tags: ["EDGE", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -243,7 +243,7 @@ export const componentDefs = {
                             It is a hardware component that allows a computer or another device, such as a router or switch, to connect to the Internet."
         },
         ROUTER: {
-            tags: ["EDGE"],
+            tags: ["EDGE", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -271,7 +271,7 @@ export const componentDefs = {
                             Most routers also keep log files about the local network activity."
         },
         LOAD_BALANCER: {
-            tags: ["PRE_PROCESSOR"],
+            tags: ["PRE_PROCESSOR", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -298,7 +298,7 @@ export const componentDefs = {
                             It is used to improve the concurrent user capacity and overall reliability of applications."
         },
         CACHE: {
-            tags: ["PRE_PROCESSOR"],
+            tags: ["PRE_PROCESSOR", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -325,7 +325,7 @@ export const componentDefs = {
                             The data stored in a cache might be the result of an earlier computation or a copy of data stored elsewhere"
         },
         SERVER: {
-            tags: ["PROCESSOR"],
+            tags: ["PROCESSOR", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -352,7 +352,7 @@ export const componentDefs = {
                             A client process may run on the same device or may connect over a network to a server on a different device"
         },
         DATABASE: {
-            tags: ["PROCESSOR"],
+            tags: ["PROCESSOR", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -417,4 +417,3 @@ export const componentDefs = {
 };
 
 export default componentDefs;
-

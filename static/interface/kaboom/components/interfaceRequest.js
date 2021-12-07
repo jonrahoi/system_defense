@@ -1,2 +1,9 @@
+import k from '../kaboom.js';
 
-// TODO
+export default function InterfaceRequest(reqID, srcObj, destObj, stateName) {
+    this.id = reqID;
+    this.src = srcObj;
+    this.dest = destObj;
+    this.state = stateName;
+};
+

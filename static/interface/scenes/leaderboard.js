@@ -133,8 +133,6 @@ Leaderboard.prototype.init = function() {
         y: (this.params.screenY + this.params.yTitleSpacer)
     }
 
-
-
     this.objects['back'] = { 
         x: ((this.params.width + this.params.screenX) // right-most edge
                     - this.params.xInnerSpacer // offset
@@ -145,10 +143,11 @@ Leaderboard.prototype.init = function() {
 
 
 Leaderboard.prototype.buildScene = function(color) {
+    // TODO: fix this image imports
     // load sprites
-    for (let name in this.componentsImg){
-      k.loadSprite(name, this.componentsImg[name])
-    }
+    // for (let name in this.componentsImg){
+    //   k.loadSprite(name, this.componentsImg[name])
+    // }
 
     // Backdrop color
     k.add([

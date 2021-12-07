@@ -231,7 +231,7 @@ StatusBar.prototype.buildObject = function() {
             let unit = this.params.iconWidth * 0.5;
 
             recParams = [
-                k.rect(unit * itemName.length, this.params.iconHeight * 1),
+                k.rect(unit * itemName.length, this.params.iconHeight),
                 k.layer("rec"),
                 k.pos(params.x + 10, params.y + 10),
                 k.color(206, 212, 223),

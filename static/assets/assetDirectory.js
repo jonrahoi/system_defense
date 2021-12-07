@@ -41,29 +41,14 @@ export const assetDirectory = {
 
     // Miscellaneous
     'back': 'assets/icons/back.png',
-
+    'close': 'assets/icons/close.png',
+    
     // UI images
     'captain_circled': 'assets/images/ui/captain_circled.png',
     'transparent_captain': 'assets/images/ui/captain_full_transparent.png',
     'captain_transparent_background': 'assets/images/ui/captain_transparent_background.png',
     'home_background': 'assets/images/ui/home_background.png',
-    'network_background': 'assets/images/ui/network_background.png',
-
-    // components
-    'iphone': 'assets/images/components/iphone.png',
-    'laptop': 'assets/images/components/laptop.png',
-    'gateway': 'assets/images/components/gateway.png',
-    'desktop': 'assets/images/components/desktop.png',
-    'alexa': 'assets/images/components/alexa.png',
-    'cloud_compute': 'assets/images/components/cloud_compute.png',
-    'hub': 'assets/images/components/hub.png',
-    'switch': 'assets/images/components/switch.png',
-    'modem': 'assets/images/components/modem.png',
-    'router': 'assets/images/components/router.png',
-    'load_balancer': 'assets/images/components/load_balancer.png',
-    'cache': 'assets/images/components/cache.png',
-    'server': 'assets/images/components/server.png',
-    'database': 'assets/images/components/database.png'
+    'network_background': 'assets/images/ui/network_background.png'
 };
 
 export default assetDirectory;

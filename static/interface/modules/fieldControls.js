@@ -10,9 +10,9 @@
 
 import k from '../kaboom/kaboom.js';
 
-
 import InterfaceComponent from '../kaboom/components/interfaceComponent.js';
 import InterfaceConnection from '../kaboom/components/interfaceConnection.js';
+import InterfaceRequest from '../kaboom/components/interfaceRequest.js';
 import State from '../../shared/state.js';
 import generateUUID from '../../utilities/uuid.js';
 
@@ -21,6 +21,7 @@ import { select } from '../kaboom/components/select.js';
 import { ConnectionDisplayParams } from '../kaboom/components/interfaceConnection.js';
 import { ScaledComponentImage } from '../kaboom/graphicUtils.js';
 
+// TODO: add captain_192.png to asset directory
 function errorMessage(message) {
     k.layers([
         "error",
@@ -217,7 +218,7 @@ const FieldControls = {
             select(),
             InterfaceComponent(componentName, newID, tags)
         ];
-        
+        params += tags
         return k.add(params);
     },
 
@@ -230,8 +231,8 @@ const FieldControls = {
             return;
         }
         if (!srcComponent || !destComponent) {
-            console.debug('Attempted to connect components but either src or dest was missing');
-            errorMessage("Attempted to connect components but either src or dest was missing");
+            console.debug('Attempted to connect components but either src or dest was missing.');
+            errorMessage("Attempted to connect components but either src or dest was missing.");
             return;
         }
 
@@ -290,7 +291,7 @@ const FieldControls = {
 
         if (!logicResponse.valid) {
             console.log(logicResponse.info);
-            errorMessage(logicResponse.info);
+            errorMessage("Attempted to remove component but it was missing");
             return false;
         }
         
@@ -333,6 +334,71 @@ const FieldControls = {
             }
         }
         return true;
+    },
+
+    spawnRequest: function(request, good) { 
+        let goodRequestParams = [
+            k.sprite("capn"),
+            k.pos(request.src.pos),
+            k.scale(0.20),
+            k.area(),
+            k.color(0, 255, 0),
+            k.health(10),
+            request.id,
+            request.state,
+            k.state("intransit", ["intransit", "processing", "blocked"]),
+            'request'
+        ]
+        
+        let badRequestParams = [
+            k.sprite("capn"),
+            k.pos(request.src.pos),
+            k.scale(0.15),
+            k.area(),
+            k.color(255, 0, 0),
+            k.health(5),
+            request.id,
+            request.state,
+            k.state("blocked", ["intransit", "processing", "blocked"]),
+            'request'
+        ]
+        
+        let goodReqDef = goodRequestParams.concat(request);
+        let badReqDef = badRequestParams.concat(request);
+        let drawReq = k.add(goodReqDef);
+        console.log(good);
+        if (good == false) {
+            drawReq = k.add(badReqDef);
+            console.log("bad req drawed");         
+        }         
+
+    },
+
+    moveRequest: function(request) {
+        let requests = k.get('request'); 
+        const speed = 120;
+        const dir = k.vec2(request.dest.pos.sub(request.src.pos));
+        //console.log(dir);
+        for (const r of requests) { 
+            r.onStateUpdate("intransit", () => {
+                r.move(dir);
+            })
+    
+            r.onStateUpdate("processing", () => {
+                this.hideRequest(r);
+            })
+            
+            r.onCollide('selectable', () => {
+                r.enterState("processing");   
+            })
+        }
+    },
+
+    hideRequest: function(request) {
+        k.destroy(request);
+        k.wait(3, () => {
+            this.spawnRequest(request, true);
+        })
     }
 };
 

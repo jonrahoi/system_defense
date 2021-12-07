@@ -39,7 +39,7 @@ const levelDefs = {
                         quantity: 10 // number of requets needed to meet the goal
                     }   
                 ],
-                description: "I'm level 1, Stage 1. Make 20 requests to the HTML page"
+                description: "HEY THERE PRIVATE!\nLet's say you want to access an HTML page from your IPHONE.\nThink you can do that?\nMake 10 REQUESTS to the HTML page."
             },
             2: {
                 coinReward: 50, // Coin reward for reaching Stage 2
@@ -65,7 +65,7 @@ const levelDefs = {
                         quantity: 1
                     }
                 ],
-                description: "I'm level 1, Stage 2. Make 30 requests to the HTML page"
+                description: "GREAT!\nYou're on your way to becoming a CAPTAIN yourself!\nMake 30 REQUESTS to the HTML page with 2 IPHONES.\nRemember more CLIENTS means more REQUESTS to slow down your system!"
             }
         }
     },
@@ -109,7 +109,7 @@ const levelDefs = {
                         quantity: 20 // number of requets needed to meet the goal
                     }   
                 ],
-                description: "I'm level 2, Stage 1. Make 20 requests to the hosted image"
+                description: "YOU'RE GETTING THE HAND OF IT!\nNow pull up an IMAGE on your LAPTOP.\nMake 20 REQUESTS to the IMAGE."
             },
             2: {
                 coinReward: 60,
@@ -135,7 +135,7 @@ const levelDefs = {
                         quantity: 1
                     }
                 ],
-                description: "I'm level 2, Stage 2. Make 30 requests to the hosted image"
+                description: "HAH-HAH-HA!\nBUT CAN YOU HANDLE AN IPHONE AS WELL?!\nMake 30 REQUESTS to the IMAGE."
             }
         }
     },
@@ -183,7 +183,7 @@ const levelDefs = {
                         quantity: 20 // number of requets needed to meet the goal
                     }   
                 ],
-                description: "I'm level 3, Stage 1. Make 20 requests to the hosted video"
+                description: "LET'S GET CREATIVE!\nTIME TO PIRATE SOME VIDEOS!\nMake 20 REQUESTS to the VIDEO."
             },
             2: {
                 coinReward: 60,
@@ -208,7 +208,7 @@ const levelDefs = {
                         quantity: 1
                     }
                 ],
-                description: "I'm level 3, Stage 2. Make 30 requests to the hosted video"
+                description: "ARRRGH!\nDON'T FORGET THE DIRTY ONES!\nMake 30 REQUESTS to the VIDEO."
             },
             3: {
                 coinReward: 60,
@@ -233,7 +233,7 @@ const levelDefs = {
                         quantity: 1
                     },
                 ],
-                description: "I'm level 3, Stage 3. Make 50 requests to the hosted video"
+                description: "GET ME MARVEL'S 'ENDGAME'! Make 50 REQUESTS to the VIDEO."
             }
         }
     }
