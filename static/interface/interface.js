@@ -119,7 +119,8 @@ Interface.prototype.registerEvents = function() {
     if (TESTING) {
         let totalLevels = 6; // HARD CODED (just for testing)
         const stageFuncs = {
-            up: () => this.handleStageClear()
+            up: () => this.handleStageClear(),
+            down: () => sceneTracker.level.showPopup()
         };
         const lvlFuncs = {
             up: () => { if (State.levelNumber < totalLevels) { this.goLevel(State.levelNumber+1); } },
