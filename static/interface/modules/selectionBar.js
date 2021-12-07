@@ -10,6 +10,7 @@ import k from '../kaboom/kaboom.js';
 
 import { ScaledComponentImage } from '../kaboom/graphicUtils.js';
 import FieldController from './fieldControls.js';
+import { ComponentConfig } from '../../shared/lookup.js'
 
 const UNAVAILABLE_OPACITY = 0.5;
 const COMPONENT_SPAWN_POS = [k.width() / 2, k.height() / 2];
@@ -265,6 +266,45 @@ SelectionBar.prototype.buildObject = function() {
 
         label = k.add(textDef);
         attributes['textGraphic'] = label;
+
+        k.layers([
+            "rec",
+            "comment",
+        ], "game")
+
+        let description = ComponentConfig.get(name).description
+
+        let recHeight = (Math.ceil(description.length / 40)) * (attributes.height / 3);
+        let tooltipWidth = attributes.width * 8;
+        let recParams, commentParams;
+        recParams = [
+            k.rect(tooltipWidth, recHeight),
+            k.layer("rec"),
+            k.pos(attributes.x + 10, attributes.y + 10),
+            k.color(206, 212, 223),
+            k.scale(0),
+            k.outline(attributes.width * 0.07),
+        ];
+        commentParams = [
+            k.text("", { size: attributes.width * 0.32, width: tooltipWidth }),
+            k.layer("comment"),
+            k.pos(attributes.x + 12.5, attributes.y + 12.5),
+        ];
+
+        let rec = k.add(recParams);
+        let comment = k.add(commentParams);
+        componentBtn.hovers(() => {
+            rec.scale = 1
+            comment.text = description
+        }, () => {
+            rec.scale = 0
+            comment.text = ""
+        })
+
+        componentBtn.clicks(() => {
+            rec.scale = 0
+            comment.text = ""
+        })
     };
 };
 

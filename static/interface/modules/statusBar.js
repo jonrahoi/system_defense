@@ -170,7 +170,7 @@ StatusBar.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
     for (let item of this.params.leftItems) {
         prevX = buildItem(item, prevX, prevY);
     }
-    
+
     // Loop over middleItems
     prevX = ((this.params.x + (this.params.width / 2)) // mid point of bar
             - (middleWidth / 4)); // half of group width & another half for centering
@@ -212,23 +212,55 @@ StatusBar.prototype.buildObject = function() {
     ]);
 
     // Loop over all defined graphic objects and add them to the scene
-    let itemName, spriteParams, text;
+    let itemName, spriteParams, recParams, commentParams, text;
+    k.layers([
+        "rec",
+        "comment",
+    ], "game")
+
     for (const [name, params] of Object.entries(this.objects)) {
         // Add icon
         itemName = name.slice(0, -4); // remove tag of 'Icon' or 'Text'
         if (name.includes('Icon')) {
             spriteParams = [
-                k.sprite(itemName, { width: this.params.iconWidth, 
+                k.sprite(itemName, { width: this.params.iconWidth,
                                     height: this.params.iconHeight }),
-                k.pos(params.x, params.y)];
+                k.pos(params.x, params.y),
+                k.area(),
+            ];
+
+            let unit = this.params.iconWidth * 0.5;
+
+            recParams = [
+                k.rect(unit * itemName.length, this.params.iconHeight),
+                k.layer("rec"),
+                k.pos(params.x + 10, params.y + 10),
+                k.color(206, 212, 223),
+                k.scale(0),
+                k.outline(this.params.iconWidth * 0.07),
+            ];
+            commentParams = [
+                k.text("", { size: this.params.iconWidth * 0.74 }),
+                k.layer("comment"),
+                k.pos(params.x + 12.5, params.y + 12.5),
+            ];
 
             if (params.type == 'btn') {
                 spriteParams.push(k.area()); // necessary for clicks
                 this[`${itemName}Btn`] = k.add(spriteParams);
             } else {
-                k.add(spriteParams);
+                let spr = k.add(spriteParams);
+                let rec = k.add(recParams);
+                let comment = k.add(commentParams);
+                spr.hovers(() => {
+                    rec.scale = 1
+                    comment.text = name.slice(0, -4)
+                }, () => {
+                    rec.scale = 0
+                    comment.text = ""
+                })
             }
-        } 
+        }
 
         // Add text
         else if (name.includes('Text')) {

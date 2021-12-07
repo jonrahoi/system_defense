@@ -43,7 +43,7 @@ export const assetDirectory = {
     // Miscellaneous
     'back': 'assets/icons/back.png',
     'close': 'assets/icons/close.png',
-
+    
     // UI images
     'captain_circled': 'assets/images/ui/captain_circled.png',
     'transparent_captain': 'assets/images/ui/captain_full_transparent.png',

@@ -37,6 +37,7 @@ ________________________________________________________________________________
 import k from '../kaboom/kaboom.js';
 import { SceneControls } from '../interface.js';
 import { ScaledBackground } from '../kaboom/graphicUtils.js';
+import { getColor } from '../../config/settings.js';
 
 
 
@@ -45,7 +46,7 @@ export function Home(levelOneFunc) {
     this.init();
 
     // necessary to preserve `this` reference (check out arrow functions if unfamiliar)
-    this.scene = () => { this.buildScene(); };
+    this.scene = (color) => { this.buildScene(color); };
 };
 
 /**
@@ -59,7 +60,7 @@ Home.prototype.init = function() {
         screenWidth: k.width(), // total screen width
         screenHeight: k.height(), // total screen height
 
-        backdropColor: [180, 200, 250], // backdrop color (behind transparent image)
+        backdropColor: getColor(), // backdrop color (behind transparent image)
         backdropOpacity: 1, // opacity of backdrop
 
         titleWidthRatio: 0.45, // ratio compared to the screen width
@@ -193,12 +194,12 @@ Home.prototype.init = function() {
 /**
  * Adds all of the scene's objects to the screen using the initialized parameters
  */
-Home.prototype.buildScene = function() {
+Home.prototype.buildScene = function(color) {
     // Backdrop color
     k.add([
         k.rect(this.params.screenWidth, this.params.screenHeight),
         k.pos(this.params.screenX, this.params.screenY),
-        k.color(...this.params.backdropColor),
+        k.color(color),
         k.opacity(this.params.backdropOpacity)
     ]);
     

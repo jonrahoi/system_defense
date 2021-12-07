@@ -21,7 +21,11 @@ export function Banner(screenX, screenY, screenWidth, screenHeight) {
     this.init(screenX, screenY, screenWidth, screenHeight);
 
     // Expose function anonymously to ensure correct context
-    this.build = () => { this.buildObject(); };
+    this.build = (color) => {
+      this.buildObject(color) 
+    };
+
+
 }
 
 /**
@@ -37,7 +41,7 @@ Banner.prototype.init = function(screenX, screenY, screenWidth, screenHeight) {
         width: screenWidth, // width of the banner (expand to fill screen width)
         height: screenHeight, // height of the banner (expand to fill screen height)
 
-        backgroundColor: [29, 64, 105], // solid color to fill banner
+        backgroundColor: [255,255,255], // solid color to fill banner
         backgroundOpacity: 1, // opacity of the background color
 
         xInnerOffsetRatio: 0.02, // distance from left/right-most objects to banner left/right boundary
@@ -194,12 +198,12 @@ Banner.prototype.init = function(screenX, screenY, screenWidth, screenHeight) {
 /**
  * Adds all of the graphic objects to the screen using the initialized parameters
  */
-Banner.prototype.buildObject = function() {
+Banner.prototype.buildObject = function(color) {
     // Banner bar
     k.add([
         k.rect(this.params.width, this.params.height),
         k.pos(this.params.x, this.params.y),
-        this.params.color,
+        k.color(color),
         this.params.opacity,
     ]);
 

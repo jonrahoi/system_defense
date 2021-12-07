@@ -1,10 +1,7 @@
-
-
 /*
  * A generic and multi-purpose popup object that is added to the current scene.
  * Provides buttons to continue
  */
-
 
 import k from '../kaboom/kaboom.js';
 import { ScaledIcon } from '../kaboom/graphicUtils.js';
@@ -32,7 +29,7 @@ Popup.prototype.init = function(x, y, width, height, mainText, buttons, titleTex
         bodyText: mainText,
         titleText: titleText,
 
-        color: [198, 171, 108], 
+        color: [255, 255, 150], 
         opacity: 0.95,
         outlineWidth: 4,
         outlineColor: [0, 0, 0],
@@ -187,7 +184,7 @@ Popup.prototype.init = function(x, y, width, height, mainText, buttons, titleTex
         width: this.params.bodyWidth,
         height: this.params.bodyHeight,
         x: this.objects.titleText.x,
-        y: this.params.y - ((this.params.height - this.params.bodyHeight) / 4) + (this.params.yInnerSpacer + this.params.yTitleOffset)
+        y: this.params.y - ((this.params.height - this.params.bodyHeight - 125) / 4) + (this.params.yInnerSpacer + this.params.yTitleOffset)
     }
 
     let prevOptionX = this.params.x;// - (optionsWidth / 2);

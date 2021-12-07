@@ -19,9 +19,12 @@ import TestLevelChange from '../modules/testPanel.js';
 import State from '../../shared/state.js';
 import FieldControls from '../modules/fieldControls.js';
 import TimerControls from '../../utilities/timer.js';
+import InterfaceRequest from '../kaboom/components/interfaceRequest.js';
 
 import { dragControls, drag } from '../kaboom/components/drag.js';
 import { selectControls, connectControls, select } from '../kaboom/components/select.js';
+import { Popup, PopupButtons } from '../modules/popup.js';
+import { getColor } from '../../config/settings.js';
 
 import { Popup, PopupButtons } from '../modules/popup.js';
 
@@ -29,8 +32,10 @@ export function LevelView() {
     this.newComponents = {};
 
     this.init();
-    this.scene = () => { this.buildScene(); };
-    this.test = (stageFuncs, lvlFuncs) => { this.includeLvlButtons(stageFuncs, lvlFuncs); };
+    this.scene = (color) => { 
+      this.buildScene(color); 
+    };
+    this.test = (stageFuncs, lvlFuncs) => { this.includeLvlButtons(stageFuncs, lvlFuncs); }
 };
 
 
@@ -75,7 +80,8 @@ LevelView.prototype.init = function() {
         viewLayout.banner.x, 
         viewLayout.banner.y, 
         viewLayout.banner.width, 
-        viewLayout.banner.height);
+        viewLayout.banner.height,
+    );
         
     this.statusBar = new StatusBar(
         viewLayout.statusBar.x,
@@ -108,8 +114,8 @@ LevelView.prototype.init = function() {
 };
 
 // Used as the actual scene "object" for Kaboom
-LevelView.prototype.buildScene = function() {
-    this.bannerBar.build();
+LevelView.prototype.buildScene = function(color) {
+    this.bannerBar.build(color);
     this.statusBar.build();
     this.playField.build();
     this.selectionBar.build();
@@ -121,60 +127,107 @@ LevelView.prototype.buildScene = function() {
 // Meant to represent updating animations. However these could be dealt with through Kaboom
 // UPDATE ALL REQUESTS HERE? (@see State.requestStates)
 LevelView.prototype.update = function(timestamp, speedup) {
-    // console.log(`Animation timestep: ${timestamp} @ ${speedup}x`);
-    console.log(`Interface - recieved request states:`, State.requestStates);
+    console.log(`Animation timestep: ${timestamp} @ ${speedup}x`);
 
-    /*
-     * NOTE: assumes 1 timestep-latecy for all components/connections (not realistic)
-     *
-     * 0) ClientA <--> ComponentA <--> ComponentB <--> EndpointA 
-     *      (setup)
-     * 
-     * 1) ClientA(R1, R2) <--> ComponentA <--> ComponentB <--> EndpointA 
-     *      R1 & R2 spawn at the client (emit 'SPAWN' status)
-     * 
-     * 2) ClientA(R3, R4) <-(R1, R2)-> ComponentA <--> ComponentB <--> EndpointA 
-     *      R1 & R2 move to 'TRANSIT' state on the connection
-     *      R3 & R4 sqawn at the client (emit 'SPAWN' status)
-     * 
-     * 3) ClientA(R5, R6) <-(R3, R4)-> (R1, R2)ComponentA <--> ComponentB <--> EndpointA 
-     *      R1 & R2 move to 'BLOCKED' state at ComponentA
-     *      R3 & R4 move to 'TRANSIT' state on the connection
-     *      R5 & R6 sqawn at the client (emit 'SPAWN' status)
-     * 
-     * 4) ClientA(R7, R8) <-(R5, R6)-> (R3, R4)ComponentA(R1, R2) <--> ComponentB <--> EndpointA 
-     *      R1 & R2 move to 'PROCESSING' state in ComponentA
-     *      R3 & R4 move to 'BLOCKED' state at ComponentA
-     *      R5 & R6 move to 'TRANSIT' state on the connection
-     *      R7 & R8 sqawn at the client (emit 'SPAWN' status)
-     * 
-     * 4) ClientA(R9, R10) <-(R7, R8)-> (R5, R6)ComponentA(R3, R4) <-(R1, R2)-> ComponentB <--> EndpointA 
-     *      R1 & R2 move to 'TRANSIT' state on the connection
-     *      R3 & R4 move to'PROCESSING' state in ComponentA
-     *      R5 & R6 move to 'BLOCKED' state at ComponentA
-     *      R7 & R8 move to'TRANSIT' state on the connection
-     *      R9 & R10 sqawn at the client (emit 'SPAWN' status)
-     *
-     * 
-     * ...) ClientA(R17, R18) <-(R15, R16)-> (R13, R14)ComponentA(R11, R12) <-(R9, R10)-> (R7, R8)ComponentB(R5, R6) <-(R3, R4)-> (R1, R2)EndpointA 
-     *      R1 & R2 become `PROCESSING` at the EndpointA (never blocked at endpoint)
-     *      R3 & R4 move to 'TRANSIT' state on the connection
-     *      R5 & R6 move to 'PROCESSING' state at ComponentB
-     *      R7 & R8 move to'BLOCKED' state on the ComponentB
-     *      R9 & R10 move to 'TRANSIT' state on the connection
-     *      R11 & R12 move to 'PROCESSING' state at ComponentA
-     *      R13 & R14 move to 'BLOCKED' state at ComponentA
-     *      R15 & R16 move to'TRANSIT' state on the connection
-     *      R17 & R18 sqawn at the client (emit 'SPAWN' status)
-     * 
-     *********
-     * R1 now becomes a response (it's `isResponse` flag will be TRUE). 
-     * It will now travel the opposite direction (maybe change shape?). It will follow
-     * the same cycle of:
-     * TRANSIT --> BLOCKED --> PROCESSING (will always take 1 timestep) --> TRANSIT ... --> COMPLETED
-     * 
-     * REPEAT!
-     */
+    for (let i = 0; i < State.requestStates.length; i++) {       
+        //console.log("Obj: " + JSON.stringify(State.requestStates[i]));
+        let selectables = k.get('selectable');
+        let clients = k.get('CLIENT');
+        let middles = k.get('MIDDLE');
+        let endpoints = k.get('ENDPOINT');
+        var newRequest = new InterfaceRequest(State.requestStates[i].id, selectables[0], selectables[1],
+                                                State.requestStates[i].name);
+        
+        var stateType = newRequest.state;
+
+        for (let i = 0; i < clients.length; i++) {
+            var clientx = clients[i].pos.x
+            var clienty = clients[i].pos.y
+            if (stateType == 'KILLED') {
+                const text = k.add([
+                    k.text(JSON.stringify(stateType)),
+                    k.pos(clientx, clienty),
+                    k.area(),
+                    {
+                        size: 10,
+                        font: "sink",
+                        width: 500,
+                        color: k.rgb(0, 0, 0)
+                    },
+                    k.move(k.dir(90), 100),
+                    k.cleanup(1)
+                ])
+            }
+            if (stateType == 'BLOCKED') {
+                const text = k.add([
+                    k.text(JSON.stringify(stateType)),
+                    k.pos(clientx, clienty),
+                    k.area(),
+                    {
+                        size: 10,
+                        font: "sink",
+                        width: 500,
+                        color: k.rgb(255, 0, 0)
+                    },
+                    k.move(k.dir(-90), 100),
+                    k.cleanup(1)
+                ])
+            }
+        }
+        for (let i = 0; i < middles.length; i++) {
+            var midx = middles[i].pos.x
+            var midy = middles[i].pos.y
+            if (stateType == 'INTRANSIT') {
+                    const text = k.add([
+                        k.text(JSON.stringify(stateType)),
+                        k.pos(midx-75, midy),
+                        k.area(),
+                        {
+                            size: 10,
+                            font: "sink",
+                            width: 500,
+                            color: k.rgb(100, 100, 100)
+                        },
+                        k.move(k.dir(-90), 100),
+                        k.cleanup(1)
+                    ])
+            }
+            if (stateType == 'PROCESSING') {
+                    const text = k.add([
+                        k.text(JSON.stringify(stateType)),
+                        k.pos(midx+25, midy),
+                        k.area(),
+                        {
+                            size: 10,
+                            font: "sink",
+                            width: 500,
+                            color: k.rgb(0, 255, 0)
+                        },
+                        k.move(k.dir(-90), 100),
+                        k.cleanup(1)
+                    ])
+            }
+        }
+        for (let i = 0; i < endpoints.length; i++) {
+            var endx = endpoints[i].pos.x
+            var endy = endpoints[i].pos.y
+            if (stateType == 'COMPLETED') {
+                const text = k.add([
+                    k.text(JSON.stringify(stateType)),
+                    k.pos(endx, endy),
+                    k.area(),
+                    {
+                        size: 10,
+                        font: "sink",
+                        width: 500,
+                        color: k.rgb(0, 0, 255)
+                    },
+                    k.move(k.dir(-90), 100),
+                    k.cleanup(1)
+                ])
+            }
+        }
+    }
 };
 
 // Load a level object into this view
@@ -339,7 +392,10 @@ LevelView.prototype.includeLvlButtons = function(stageFuncs, lvlFuncs) {
         stageFuncs, lvlFuncs);
 
     // override scene function
-    this.scene = () => { this.buildScene(); this.levelBtns.build(); };
+    this.scene = () => { 
+      this.buildScene(getColor());
+      this.levelBtns.build();
+    };
 };
 
 export default LevelView;

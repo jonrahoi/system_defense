@@ -20,8 +20,11 @@ export const componentDefs = {
                     receiveRate: 3, // can receive 3 requests/sec 
                 }
             },
-            img: 'assets/images/components/iphone.png',
-            description: "I'm an iPhone"
+            img: "assets/images/components/iphone.png",
+            description: "I'm an iPhone \n\
+                            Cost: $0(L1) $50(L2)\n\
+                            The starting point of the customer's request\n\
+                            Please complete the transfer of 20 requests to the HTML at this level"
         },
         ALEXA: {
             tags: ['CLIENT'],
@@ -42,8 +45,11 @@ export const componentDefs = {
                     receiveRate: 2, // can receive 2 requests/sec 
                 },
             },
-            img: 'assets/images/components/alexa.png',
-            description: "I'm Alexa!"
+            img: "assets/images/components/alexa.png",
+            description: "I'm Alexa \n\
+                            Cost: $0(L1) $30(L2)\n\
+                            The starting point of the customer's request\n\
+                            Please complete the transfer of 20 requests to the hosted image at this level"
         },
         LAPTOP: {
             tags: ['CLIENT'],
@@ -64,8 +70,11 @@ export const componentDefs = {
                     receiveRate: 4, // can receive 4 requests/sec 
                 }
             },
-            img: 'assets/images/components/laptop.png',
-            description: "I'm a laptop"
+            img: "assets/images/components/laptop.png",
+            description: "I'm a laptop \n\
+                            Cost: $0(L1) $70(L2)\n\
+                            The starting point of the customer's request\n\
+                            Please complete the transfer of 20 requests to the hosted image at this level"
         },
         DESKTOP: {
             tags: ['CLIENT'],
@@ -86,8 +95,11 @@ export const componentDefs = {
                     receiveRate: 6, // can receive 6 requests/sec 
                 },
             },
-            img: 'assets/images/components/desktop.png',
-            description: "I'm a desktop"
+            img: "assets/images/components/desktop.png",
+            description: "I'm a desktop \n\
+                            Cost: $0(L1) $100(L2)\n\
+                            The starting point of the customer's request\n\
+                            Please complete the transfer of 20 requests to the hosted image at this level"
         },
         CLOUD_COMPUTE: {
             tags: ['CLIENT'],
@@ -108,15 +120,18 @@ export const componentDefs = {
                     receiveRate: 12, // can receive 12 requests/sec 
                 },
             },
-            img: 'assets/images/components/cloud_compute.png',
-            description: "I'm a cloud-computing instance"
+            img: "assets/images/components/cloud_compute.png",
+            description: "I'm a cloud-computing software \n\
+                            Cost: $0(L1) $120(L2)\n\
+                            The starting point of the customer's request\n\
+                            Please complete the transfer of 20 requests to the hosted image at this level"
         }
     },
     
     /**************************** PROCESSORS *******************************/
     processors: {
         GATEWAY: {
-            tags: ['EDGE'],
+            tags: ["EDGE", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -136,11 +151,14 @@ export const componentDefs = {
                     throughput: 4 // can process 4 requests per 'latency interval'
                 },
             },
-            img: 'assets/images/components/gateway.png',
-            description: "I'm a gateway"
+            img: "assets/images/components/gateway.png",
+            description: "I'm a Gateway \n\
+                            Cost: $0(L1) $50(L2)\n\
+                            A Gateway is a hardware device that acts as a 'gate' between two networks. \n\
+                            It may be a router, firewall, server, or another device that enables traffic to flow in and out of the network."
         },
         HUB: {
-            tags: ['EDGE'],
+            tags: ["EDGE", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -160,11 +178,15 @@ export const componentDefs = {
                     throughput: 4 // can process 4 requests per 'latency interval'
                 },
             },
-            img: 'assets/images/components/hub.png',
-            description: "I'm a hub"
+            img: "assets/images/components/hub.png",
+            description: "I'm a hub \n\
+                            Cost: $0(L1) $50(L2)\n\
+                            A network hub is a device that allows multiple computers to communicate with each other over a network. \n\
+                            It has several Ethernet ports that are used to connect two or more network devices together. \n\
+                            Each computer or device connected to the hub can communicate with any other device connected to one of the hub's Ethernet ports."
         },
         SWITCH: {
-            tags: ['EDGE'],
+            tags: ["EDGE", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -184,11 +206,17 @@ export const componentDefs = {
                     throughput: 5 // can process 5 requests per 'latency interval'
                 },
             },
-            img: 'assets/images/components/switch.png',
-            description: "I'm a switch"
+            img: "assets/images/components/switch.png",
+            description: "I'm a switch \n\
+                            Cost: $0(L1) $50(L2)\n\
+                            A switch is used to network multiple computers together.\n\
+                            Switches are more advanced than hubs and less capable than routers. \n\
+                            Unlike hubs, switches can limit the traffic to and from each port so that each device connected to the switch has a sufficient amount of bandwidth. \n\
+                            For this reason, you can think of a switch as a 'smart hub.'\n\
+                            However, switches don't provide the firewall and logging capabilities that routers do."
         },
         MODEM: {
-            tags: ['EDGE'],
+            tags: ["EDGE", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -208,11 +236,14 @@ export const componentDefs = {
                     throughput: 7 // can process 7 requests per 'latency interval'
                 },
             },
-            img: 'assets/images/components/modem.png',
-            description: "I'm a modem"
+            img: "assets/images/components/modem.png",
+            description: "I'm a modem\n\
+                            Cost: $0(L1) $100(L2)\n\
+                            A Modem is short for 'Modulator-Demodulator.'\n\
+                            It is a hardware component that allows a computer or another device, such as a router or switch, to connect to the Internet."
         },
         ROUTER: {
-            tags: ['EDGE'],
+            tags: ["EDGE", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -232,11 +263,15 @@ export const componentDefs = {
                     throughput: 6 // can process 6 requests per 'latency interval'
                 },
             },
-            img: 'assets/images/components/router.png',
-            description: "I'm a router"
+            img: "assets/images/components/router.png",
+            description: "I'm a router\n\
+                            Cost: $0(L1) $80(L2)\n\
+                            is a hardware device that routes data from a local area network (LAN) to another network connection. \n\
+                            A router acts like a coin sorting machine, allowing only authorized machines to connect to other computer systems.\n\
+                            Most routers also keep log files about the local network activity."
         },
         LOAD_BALANCER: {
-            tags: ['PRE_PROCESSOR'],
+            tags: ["PRE_PROCESSOR", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -256,11 +291,14 @@ export const componentDefs = {
                     throughput: 10 // can process 10 requests per 'latency interval'
                 },
             },
-            img: 'assets/images/components/load_balancer.png',
-            description: "I'm a load balancer"
+            img: "assets/images/components/load_balancer.png",
+            description: "I'm a load balancer\n\
+                            Cost: $0(L1) $70(L2)\n\
+                            A load balancer is a piece of hardware that acts like a reverse proxy to distribute network and application traffic across different servers. \n\
+                            It is used to improve the concurrent user capacity and overall reliability of applications."
         },
         CACHE: {
-            tags: ['PRE_PROCESSOR'],
+            tags: ["PRE_PROCESSOR", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -280,11 +318,14 @@ export const componentDefs = {
                     throughput: 15 // can process 15 requests per 'latency interval'
                 },
             },
-            img: 'assets/images/components/cache.png',
-            description: "I'm a cache"
+            img: "assets/images/components/cache.png",
+            description: "I'm a cache\n\
+                            Cost: $0(L1) $90(L2)\n\
+                            A cache is a hardware or software component that stores data so that future requests for that data can be served faster\n\
+                            The data stored in a cache might be the result of an earlier computation or a copy of data stored elsewhere"
         },
         SERVER: {
-            tags: ['PROCESSOR'],
+            tags: ["PROCESSOR", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -304,11 +345,14 @@ export const componentDefs = {
                     throughput: 8 // can process 8 requests per 'latency interval'
                 },
             },
-            img: 'assets/images/components/server.png',
-            description: "I'm a web server"
+            img: "assets/images/components/server.png",
+            description: "I'm a web server \n\
+                            Cost: $0(L1) $70(L2)\n\
+                            A server is a piece of computer hardware or software that provides functionality for other programs or devices, called 'clients'.\n\
+                            A client process may run on the same device or may connect over a network to a server on a different device"
         },
         DATABASE: {
-            tags: ['PROCESSOR'],
+            tags: ["PROCESSOR", "MIDDLE"],
             transmission: 'dijkstra',
             upgrades: {
                 1: {
@@ -328,8 +372,12 @@ export const componentDefs = {
                     throughput: 8 // can process 8 requests per 'latency interval'
                 },
             },
-            img: 'assets/images/components/database.png',
-            description: "I'm a database"
+            img: "assets/images/components/database.png",
+            description: "I'm a database \n\
+                            Cost: $0(L1) $80(L2)\n\
+                            An online database is a database accessible from a local network or the Internet\n\
+                            As opposed to one that is stored locally on an individual computer or its attached storage.\n\
+                            Online databases are hosted on websites, made available as software as a service products accessible via a web browser."
         }
     },
 
@@ -340,27 +388,32 @@ export const componentDefs = {
             transmission: 'return',
             maxInputs: 1, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
-            img: 'assets/images/endpoints/html.png',
-            description: "I'm an HTML page"
+            img: "assets/images/endpoints/html.png",
+            description: "I'm an HTML page(ENDPOINT)\n\
+                            The Hyper Text Markup Language.\n\
+                            HTML is the standard markup language for documents designed to be displayed in a web browser."
         },
         IMAGE: {
             tags: ['ENDPOINT'],
             transmission: 'return',
             maxInputs: 1, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
-            img: 'assets/images/endpoints/image.png',
-            description: "I'm an image"
+            img: "assets/images/endpoints/image.png",
+            description: "I'm an image Hoster(ENDPOINT)\n\
+                            Hosts on a network include clients and servers--that send or receive data, services or applications.\n\
+                            Hosts typically do not include intermediary network devices like switches and routers, which are instead often categorized as nodes."
         },
         VIDEO: {
             tags: ['ENDPOINT'],
             transmission: 'return',
             maxInputs: 1, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
-            img: 'assets/images/endpoints/video.png',
-            description: "I'm a video"
+            img: "assets/images/endpoints/video.png",
+            description: "I'm a video hoster(ENDPOINT)\n\
+                            An online video platform, provided by a video hosting service, enables users to upload, convert, store and play back video content on the Internet.\n\
+                            Often via a structured, large-scale system that may generate revenue"
         }
     }
 };
 
 export default componentDefs;
-

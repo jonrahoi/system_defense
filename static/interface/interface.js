@@ -22,6 +22,7 @@ import Leaderboard from './scenes/leaderboard.js';
 import Settings from './scenes/settings.js';
 import Home from './scenes/home.js';
 
+import { getColor } from '../config/settings.js';
 
 const TESTING = true;
 const sceneTracker = {};
@@ -79,28 +80,35 @@ Interface.prototype.loadScenes = function() {
     // Build and store Home scene
     let home = new Home(() => { this.goLevel(1); });
     sceneTracker['home'] = home;
-    k.scene('home', home.scene);
+    k.scene('home', (color)=>{
+      home.scene(color)
+    });
 
     // Build and store Leaderboard scene
     let leaderboard = new Leaderboard();
     sceneTracker['leaderboard'] = leaderboard;
-    k.scene('leaderboard', leaderboard.scene.bind(this));
+    k.scene('leaderboard', (color)=>{
+      leaderboard.scene.bind(this)(color)
+    });
 
     // Build and store Settings scene
     let settings = new Settings();
     sceneTracker['settings'] = settings;
-    k.scene('settings', settings.scene);
+    k.scene('settings', (color)=>{
+      settings.scene(color)
+    });
 
     // Build and store Level scene
     let level = new LevelView();
     sceneTracker['level'] = level;
-    k.scene('level', level.scene);
+    k.scene('level', (color)=>{level.scene(color)});
 
     // Build and store GameOver scene
     let gameover = new GameOver();
     sceneTracker['gameover'] = gameover;
-    k.scene('gameover', gameover.scene.bind(this));
-
+    k.scene('gameover', (color)=>{
+      gameover.scene.bind(this)(color)
+    });
 };
 
 
@@ -170,7 +178,7 @@ Interface.prototype.goLevel = function(levelNum) {
     TimerControls.init(timeLimit);
 
     // Go to the level scene
-    k.go('level');
+    k.go('level', getColor());
 };
 
 // Handler function called when a stage has been completed
@@ -188,12 +196,12 @@ Interface.prototype.handleStageClear = function() {
 
 // Set of controls to move between scenes. Independent of THIS instance
 export const SceneControls = {
-    goHome: () => { TimerControls.reset(); k.go('home'); },
-    goLeaderboard: () => k.go('leaderboard'),
-    goSettings: () => k.go('settings'),
+    goHome: () => { TimerControls.reset(); k.go('home', getColor()); },
+    goLeaderboard: () => k.go('leaderboard', getColor()),
+    goSettings: () => k.go('settings', getColor()),
     goGameover: (win) => {
         TimerControls.restore(); // completely wipe the timer
         sceneTracker.gameover.init(win);
-        k.go('gameover');
+        k.go('gameover', getColor());
     }
 };

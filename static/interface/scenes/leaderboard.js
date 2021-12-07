@@ -2,6 +2,8 @@
 
 import k from '../kaboom/kaboom.js';
 import { SceneControls } from '../interface.js';
+import { getColor } from '../../config/settings.js';
+import assetDirectory from '../../assets/assetDirectory.js';
 
 // ALL ICONS HAVE SAME SIZE (512p x 512p)
 const iconWidth = 512;
@@ -13,10 +15,57 @@ export function Leaderboard() {
     this.init();
 
     // necessary to preserve `this` reference (check out arrow functions if unfamiliar)
-    this.scene = () => { this.buildScene(); };
+    this.scene = (color) => { this.buildScene(color); };
+
 };
 
 Leaderboard.prototype.init = function() {
+
+    this.components = {
+      'Client': {
+        'IPHONE': 'I\'m an Iphone   Cost: (L1)$0 (L2)$50\n\Tips: The starting point of the customers\' request.',
+        'LAPTOP': 'I\m a laptop     Cost: (L1)$0 (L2)$70\n\Tips: The starting point of the customer\' request.',
+        'ALEXA': 'I\'m Alexa        Cost: (L1)$0 (L2)$30\n\Tips: The starting point of the customers\' request.',
+        'DESKTOP': 'I\'m a desktop  Cost: (L1)$0 (L2)$100\n\Tips: The starting point of the customer\'s request.',
+        'CLOUD_COMPUTE': 'I\'m a cloud-computing software  Cost: (L1)$0 (L2)$120\n\Tips: The starting point of the customer\'s request.',
+      },
+      'Processors': {
+        'GATEWAY': 'A Gateway is a hardware device that acts as a \'gate\' between two networks. It may be a \n\ router, firewall, server, or another device that enables traffic to flow in and out of the network.',
+        'HUB': 'A hub is a device that allows multiple computers to communicate with each other over a network. It has several Ethernet ports that are used to \n\ connect two or more network devices together.',
+        'SWITCH': 'A switch is used to network multiple computers together. Switches are more advanced than hubs and less capable than routers. Unlike hubs,\n\ switches can limit the traffic to and from each port so that each device connected to the switch has a sufficient amount of bandwidth.',
+        'MODEM': 'Modem is a hardware component that allows a computer or another device, such as a router or switch, to connect to the Internet.',
+        'ROUTER': 'Router is a hardware device that routes data from a local area network (LAN) to another network connection. A router acts like a coin sorting machine, allowing only authorized machines to connect to other computer systems.',
+        'LOAD_BALANCER': 'A load balancer is a piece of hardware that acts like a reverse proxy to distribute network and application traffic across different servers.\n\It is used to improve the concurrent user capacity and overall reliability of applications.',
+        'CACHE': 'A cache is a hardware or software component that stores data so that future requests for that data can be served faster. The data stored in a cache might be the result of an\n\ earlier computation or a copy of data stored elsewhere.',
+        'SERVER': 'This device may connect over a network to a server on a different device. A server is a piece of computer hardware or software that provides functionality for other programs\n\ or devices, called \'clients\'. ',
+        'DATABASE': 'Organized collection of structured data. Online databases are hosted on websites. made available as software as a service products accessible via a web browser.'
+      }
+    }
+
+    this.componentsImg = {
+      'IPHONE': assetDirectory["iphone"],
+      'LAPTOP': assetDirectory["laptop"],
+      'ALEXA':assetDirectory["alexa"],
+      'GATEWAY': assetDirectory["gateway"],
+      'DESKTOP': assetDirectory["desktop"],
+      'CLOUD_COMPUTE': assetDirectory["cloud_compute"],
+      'HUB': assetDirectory['hub'],
+      'SWITCH': assetDirectory['switch'],
+      'MODEM': assetDirectory['modem'],
+      'ROUTER': assetDirectory['router'],
+      'LOAD_BALANCER': assetDirectory['load_balancer'],
+      'CACHE': assetDirectory['cache'],
+      'SERVER': assetDirectory['server'],
+      'DATABASE': assetDirectory['database']
+
+    }
+
+    this.gapHeight = 100 // the distance from title to the 1st subtitle 
+    this.subTitleCount = 0 
+    this.subTitleBottomMargin = 50
+
+    this.componentCount = 0
+    this.componentBottomMargin = 60
 
     // TEST TEST TEST --> Meant as a template, not actual values
 
@@ -26,7 +75,7 @@ Leaderboard.prototype.init = function() {
         width: k.width(), // total screen width
         height: k.height(), // total screen height
 
-        backdropColor: k.color(180, 200, 250), // backdrop color (same as home scene)
+        backdropColor: getColor(), // backdrop color (same as home scene)
         backdropOpacity: k.opacity(1), // opacity of backdrop
 
         xInnerOffsetRatio: 0.01, // distance from left/right-most objects to banner left/right boundary
@@ -37,6 +86,10 @@ Leaderboard.prototype.init = function() {
         titleHeightRatio: 0.07, // ratio compared to the screen height
         yTitleOffsetRatio: 0.5, // ratio of y-spacing from screen top based on title height
 
+        subTitleWidthRatio: 0.25, // ratio compared to the screen width
+        subTitleHeightRatio: 0.05, // ratio compared to the screen height
+        yTitleOffsetRatio: 0.5, // ratio of y-spacing from screen top based on title height
+        
         controlIconScale: 0.45, // used to resize the control icons (home, volume, settings...)
         constrolIconXSpacerRatio: 0.35, // spacing ratio based on scaled icon height
         controlIconOpacity: k.opacity(0.9), // opacity of control-enabled icons
@@ -89,29 +142,59 @@ Leaderboard.prototype.init = function() {
 };
 
 
-Leaderboard.prototype.buildScene = function() {
+Leaderboard.prototype.buildScene = function(color) {
+    // TODO: fix this image imports
+    // load sprites
+    // for (let name in this.componentsImg){
+    //   k.loadSprite(name, this.componentsImg[name])
+    // }
+
     // Backdrop color
     k.add([
         k.rect(this.params.width, this.params.height),
         k.pos(this.params.screenX, this.params.screenY),
-        this.params.backdropColor,
+        k.color(color),
         this.params.backdropOpacity,
     ]);
 
     // Title
     k.add([
-        k.text('Instructions', { size: this.objects.title.height, width: this.objects.title.width }),
-        k.pos(this.objects.title.x, this.objects.title.y),
+        k.text('Instructions', { size: this.objects.title.height - 40, width: this.objects.title.width }),
+        k.pos(this.objects.title.x - 600, this.objects.title.y-20),
     ]);
 
+    for (let type in this.components){
+      // add subtitle(type)
+      k.add([
+        k.text(type, { size: this.objects.title.height - 45 }),
+        k.pos(this.objects.title.x - 575, this.objects.title.y-70 + this.gapHeight + this.subTitleBottomMargin*this.subTitleCount + this.componentCount*this.componentBottomMargin),
+      ])
+      // addsubTitleCount
+      this.subTitleCount++
+      for (let componentName in this.components[type]){
+        // add componentImg
+        k.add([
+          k.scale(0.1),
+          k.sprite(componentName),
+          k.pos(this.objects.title.x - 550, this.objects.title.y-80  + this.gapHeight + this.subTitleBottomMargin*this.subTitleCount + this.componentCount*this.componentBottomMargin),
+        ])
+        // add componentName and info 
+        k.add([
+          k.color(0,0,100),
+          k.text(`${componentName}:${this.components[type][componentName]}`,{ size: this.objects.title.height - 55 }),
+          k.pos(this.objects.title.x - 450, this.objects.title.y-70 + this.gapHeight + this.subTitleBottomMargin*this.subTitleCount + this.componentCount*this.componentBottomMargin),
+        ])
+        this.componentCount++
+      }
+
+    }
 
     // Back button
     const backBtn = k.add([
-        k.sprite('back', { width: this.params.controlIcons.width,
-                            height: this.params.controlIcons.height }),
-        k.pos(this.objects.back.x, this.objects.back.y),
-        this.params.controlIconOpacity,
-        k.area(),
+      k.text('Back', { size: this.objects.title.height - 40}),
+      k.pos(this.objects.title.x + 1200, this.objects.title.y-80 + this.gapHeight + this.subTitleBottomMargin*this.subTitleCount + this.componentCount*this.componentBottomMargin),
+      k.color(0,0,100),
+      k.area(),
     ]);
     backBtn.clicks(SceneControls.goHome);
 };
