@@ -3,15 +3,15 @@
  */
 
 
-import k from '../kaboom/index.js';
+import k from '../kaboom/kaboom.js';
 
 export function GameOver(win=false) {
-    this.buildParameters(win);
+    this.init(win);
     
-    this.build = () => { this.buildObject(); };
+    this.scene = (color) => { this.buildScene(color); };
 };
 
-GameOver.prototype.buildParameters = function(win) {
+GameOver.prototype.init = function(win) {
     let text, backgroundColor, textColor;
     if (win == true) {
         text = 'Congratulations! You Win!';
@@ -57,11 +57,11 @@ GameOver.prototype.buildParameters = function(win) {
     this.params.textObjs.title['y'] = this.params.y + (this.params.height / 2) - (this.params.textObjs.title.height / 2);
 };
 
-GameOver.prototype.buildObject = function() {
+GameOver.prototype.buildScene = function(color) {
     // Background
     k.add([
         k.rect(k.width(), k.height()),
-        this.params.backdropColor,
+        k.color(color),
         this.params.backdropOpacity,
     ]);
 
