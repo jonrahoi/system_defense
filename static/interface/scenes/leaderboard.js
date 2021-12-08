@@ -30,15 +30,15 @@ Leaderboard.prototype.init = function() {
         'CLOUD_COMPUTE': 'I\'m a cloud-computing software  Cost: (L1)$0 (L2)$120\n\Tips: The starting point of the customer\'s request.',
       },
       'Processors': {
-        'GATEWAY': 'A Gateway is a hardware device that acts as a \'gate\' between two networks.',
-        'HUB': 'A hub is a device that allows multiple computers to communicate with each other over a network.',
-        'SWITCH': 'A switch is used to network multiple computers together. Unlike hubs, switches can limit the traffic to and from each port.',
-        'MODEM': 'Modem is a hardware component that allows a computer or another device, such as a router or switch, to connect to the Internet.',
-        'ROUTER': 'Router is a hardware device that routes data from a local area network (LAN) to another network connection.',
-        'LOAD_BALANCER': 'A load balancer is a piece of hardware that acts like a reverse proxy to distribute network and application traffic across different servers.',
-        'CACHE': 'A cache is a hardware or software component that stores data so that future requests for that data can be served faster.',
-        'SERVER': 'This device may connect over a network to a server on a different device. A server is a piece of computer hardware or software.',
-        'DATABASE': 'Organized collection of structured data. Online databases are hosted on websites. '
+        'GATEWAY': 'A Gateway is a hardware device that acts as a \'gate\' \n\ between two networks.',
+        'HUB': 'A hub is a device that allows multiple computers to communicate\n\ with each other over a network.',
+        'SWITCH': 'A switch is used to network multiple computers together. \n\ Unlike hubs, switches can limit the traffic to and from each port.',
+        'MODEM': 'Modem is a hardware component that allows a computer or another device, \n\ such as a router or switch, to connect to the Internet.',
+        'ROUTER': 'Router is a hardware device that routes data from a local \n\ area network (LAN) to another network connection.',
+        'LOAD_BALANCER': 'A load balancer is a piece of hardware that acts\n\ like a reverse proxy to distribute network.',
+        'CACHE': 'A cache is a hardware or software component that stores data\n\ so that future requests for that data can be served faster.',
+        'SERVER': 'This device may connect over a network to a server on a different device.\n\ A server is a piece of computer hardware or software.',
+        'DATABASE': 'Organized collection of structured data. \n\ Online databases are hosted on websites. '
       }
     }
 
@@ -133,6 +133,8 @@ Leaderboard.prototype.init = function() {
         y: (this.params.screenY + this.params.yTitleSpacer)
     }
 
+
+
     this.objects['back'] = { 
         x: ((this.params.width + this.params.screenX) // right-most edge
                     - this.params.xInnerSpacer // offset
@@ -143,11 +145,10 @@ Leaderboard.prototype.init = function() {
 
 
 Leaderboard.prototype.buildScene = function(color) {
-    // TODO: fix this image imports
     // load sprites
-    // for (let name in this.componentsImg){
-    //   k.loadSprite(name, this.componentsImg[name])
-    // }
+    for (let name in this.componentsImg){
+      k.loadSprite(name, this.componentsImg[name])
+    }
 
     // Backdrop color
     k.add([
@@ -159,15 +160,15 @@ Leaderboard.prototype.buildScene = function(color) {
 
     // Title
     k.add([
-        k.text('Instructions', { size: this.objects.title.height - 40, width: this.objects.title.width }),
-        k.pos(this.objects.title.x - 600, this.objects.title.y-20),
+        k.text('Instructions', { size: this.objects.title.height - 30, width: this.objects.title.width }),
+        k.pos(this.objects.title.x - 200, this.objects.title.y-10),
     ]);
 
     for (let type in this.components){
       // add subtitle(type)
       k.add([
         k.text(type, { size: this.objects.title.height - 45 }),
-        k.pos(this.objects.title.x - 575, this.objects.title.y-70 + this.gapHeight + this.subTitleBottomMargin*this.subTitleCount + this.componentCount*this.componentBottomMargin),
+        k.pos(this.objects.title.x - 175, this.objects.title.y-70 + this.gapHeight + this.subTitleBottomMargin*this.subTitleCount + this.componentCount*this.componentBottomMargin),
       ])
       // addsubTitleCount
       this.subTitleCount++
@@ -176,13 +177,13 @@ Leaderboard.prototype.buildScene = function(color) {
         k.add([
           k.scale(0.1),
           k.sprite(componentName),
-          k.pos(this.objects.title.x - 550, this.objects.title.y-80  + this.gapHeight + this.subTitleBottomMargin*this.subTitleCount + this.componentCount*this.componentBottomMargin),
+          k.pos(this.objects.title.x - 150, this.objects.title.y-80  + this.gapHeight + this.subTitleBottomMargin*this.subTitleCount + this.componentCount*this.componentBottomMargin),
         ])
         // add componentName and info 
         k.add([
           k.color(0,0,100),
           k.text(`${componentName}:${this.components[type][componentName]}`,{ size: this.objects.title.height - 55 }),
-          k.pos(this.objects.title.x - 450, this.objects.title.y-70 + this.gapHeight + this.subTitleBottomMargin*this.subTitleCount + this.componentCount*this.componentBottomMargin),
+          k.pos(this.objects.title.x - 50, this.objects.title.y-70 + this.gapHeight + this.subTitleBottomMargin*this.subTitleCount + this.componentCount*this.componentBottomMargin),
         ])
         this.componentCount++
       }
@@ -192,11 +193,13 @@ Leaderboard.prototype.buildScene = function(color) {
     // Back button
     const backBtn = k.add([
       k.text('Back', { size: this.objects.title.height - 40}),
-      k.pos(this.objects.title.x + 1200, this.objects.title.y-80 + this.gapHeight + this.subTitleBottomMargin*this.subTitleCount + this.componentCount*this.componentBottomMargin),
+      k.pos(this.objects.title.x + 400, this.objects.title.y-80+ this.gapHeight + this.subTitleBottomMargin*this.subTitleCount + this.componentCount*this.componentBottomMargin),
       k.color(0,0,100),
       k.area(),
+
     ]);
     backBtn.clicks(SceneControls.goHome);
+    this.init();
 };
 
 
