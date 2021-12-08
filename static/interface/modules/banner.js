@@ -68,7 +68,7 @@ Banner.prototype.init = function(screenX, screenY, screenWidth, screenHeight) {
         ],
         rightItems: [
             { name: 'home', type: 'btn', widthRatio: 0.65, heightRatio: 0.65 }, 
-            { name: 'mute', type: 'btn', widthRatio: 0.65, heightRatio: 0.65 }, 
+            // { name: 'mute', type: 'btn', widthRatio: 0.65, heightRatio: 0.65 }, 
             { name: 'settings', type: 'btn', widthRatio: 0.65, heightRatio: 0.65 }]
     };
 
@@ -243,9 +243,12 @@ Banner.prototype.buildObject = function(color) {
         }
     }
 
+    this.homeBtn.hovers(() => { this.homeBtn.scale = 1.1; }, () => { this.homeBtn.scale = 1; });
+    this.settingsBtn.hovers(() => { this.settingsBtn.scale = 1.1; }, () => { this.settingsBtn.scale = 1; });
+
     // Connect buttons to control functions
     this.homeBtn.clicks(SceneControls.goHome);
-    this.muteBtn.clicks(() => console.log("MUTE CLICKED"));
+    // this.muteBtn.clicks(() => console.log("MUTE CLICKED"));
     this.settingsBtn.clicks(SceneControls.goSettings);
 };
 
