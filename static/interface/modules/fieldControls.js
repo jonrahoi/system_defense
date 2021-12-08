@@ -98,6 +98,7 @@ const FieldControls = {
         ];
 
         const appendComponents = (currPos, spacers, existingIDs, newComponents, boundaryBox) => { 
+
             // First adjust all existing endpoint's positions
             let existingComponent, interfaceComponents;
             for (const componentID of existingIDs) {
@@ -121,12 +122,9 @@ const FieldControls = {
                 for (let i = 0; i < component.quantity; i++) {
                     newID = generateUUID();
                     tags.push(newID, component.name);
-                    interfaceComponent = InterfaceComponent(component.name, newID, tags, currPos, size.width, size.height);
-                    interfaceComponent.setBoundaryBox(boundaryBox);
-                    kaboomParams = [k.sprite(component.name, size), k.pos(currPos), 
-                        interfaceComponent
-                        // InterfaceComponent(component.name, newID, tags)
-                        ];
+                    kaboomParams = [k.sprite(component.name, size), 
+                                    k.pos(currPos), 
+                                    InterfaceComponent(component.name, newID, tags)];
 
                     k.add(baseParams.concat(kaboomParams, tags));
                     addedComponents[newID] = component.name;
@@ -147,7 +145,7 @@ const FieldControls = {
         if (numAddedClients) {
             let clientSpace = playField.clientSpace.rect;
             let clientSpacer = k.vec2(0, clientSpace.height / (totalNumClients + 1));
-            let initClientPos = clientSpace.E;
+            let initClientPos = k.vec2(...clientSpace.center);
             appendComponents(initClientPos, clientSpacer,
                             State.placedClientIDs, addedClients, clientSpace);
         }
@@ -158,8 +156,9 @@ const FieldControls = {
             let processorXSpacer = componentSpace.width / (numAddedProcessors + 1);
             let processorYSpacer = 0;
 
-            let processorSpacer = componentSpace.A.add(k.vec2(processorXSpacer, (componentSpace.height / 2)));
-            let initProcessorPos = componentSpace.E;
+            let processorSpacer = k.vec2(componentSpace.x + processorXSpacer, 
+                                        componentSpace.y + componentSpace.height / 2);
+            let initProcessorPos = k.vec2(...componentSpace.center);
     
             appendComponents(initProcessorPos, processorSpacer,
                             [], addedProcessors, componentSpace);
@@ -171,8 +170,9 @@ const FieldControls = {
             let endpointXSpacer = 0;
             let endpointYSpacer = endpointSpace.height / (numAddedEndPoints + 1);
 
-            let endpointSpacer = endpointSpace.A.add((endpointSpace.width / 2), endpointYSpacer);
-            let initEndpointPos = endpointSpace.E;
+            let endpointSpacer = k.vec2(endpointSpace.x + endpointSpace.width / 2,
+                                            endpointSpace.y + endpointYSpacer);
+            let initEndpointPos = k.vec2(...endpointSpace.center);
             appendComponents(initEndpointPos, endpointSpacer,
                             State.placedEndpointIDs, addedEndpoints, endpointSpace);
         }
@@ -195,9 +195,9 @@ const FieldControls = {
 
         if (!logicResponse.valid) {
             console.log(logicResponse.info);
-            errorMessage(logicResponse.info);
             return;
         }
+
         let size = ScaledComponentImage();
         let tags = FieldControls.logicControls.componentSpecs(componentName).tags;
         let params = [
@@ -213,9 +213,10 @@ const FieldControls = {
             'draggable',
             drag(),
             select(),
-            InterfaceComponent(componentName, newID, tags, pos, size.width, size.height)
+            InterfaceComponent(componentName, newID, tags)
         ];
-        params += tags
+        params.concat(tags)
+        console.log(params)
         return k.add(params);
     },
 
@@ -233,8 +234,9 @@ const FieldControls = {
             return;
         }
 
-        let srcID = srcComponent.uuid();
-        let destID = destComponent.uuid();
+        let srcID = srcComponent.getID();
+        let destID = destComponent.getID();
+
         let logicResponse = FieldControls.logicControls.addConnection(srcID, destID);
         
         if (!logicResponse.valid) {
@@ -243,37 +245,29 @@ const FieldControls = {
             return;
         }
 
-        let ang = srcComponent.pos.angle(destComponent.pos) + 90;
+        let ang = srcComponent.pos.angle(destComponent.pos);
         let height = srcComponent.pos.dist(destComponent.pos);
-        let centerX = Math.min(srcComponent.pos.x, destComponent.pos.x) 
-                        + (Math.abs(srcComponent.pos.x - destComponent.pos.x) / 2);
-        let centerY = Math.min(srcComponent.pos.y, destComponent.pos.y) 
-                        + (Math.abs(srcComponent.pos.y - destComponent.pos.y) / 2);
 
         // FIXME: area() & rotate() don't work together, so can't click a connection 
         let baseParams = [
             k.rect(ConnectionDisplayParams.width, height),
-            k.pos(k.vec2(centerX, centerY)),
+            k.pos(srcComponent.pos),
             k.color(...ConnectionDisplayParams.backgroundColor),
             k.opacity(ConnectionDisplayParams.opacity),
-            k.origin('center'),
+            k.origin('top'),
             k.rotate(ang),
             // k.area()
         ];
 
         let tags = [srcID, destID, '_connection'];
-        let interConnection = new InterfaceConnection(srcComponent, destComponent);
+        let properties = [InterfaceConnection(srcComponent, destComponent)];
 
-        let rectDef = baseParams.concat(tags);
-        rectDef.push(interConnection);
-        let connection = k.add(rectDef);
-
-        srcComponent.connect(connection);
-        destComponent.connect(connection);
+        let rectDef = baseParams.concat(tags, properties);
+        let r = k.add(rectDef);
         
         k.readd(srcComponent);
         k.readd(destComponent);
-        return connection;
+        return r;
     },
 
     removeComponent: function(component) {
@@ -290,8 +284,8 @@ const FieldControls = {
             return;
         }
 
-        let componentName = component.name();
-        let componentID = component.uuid();
+        let componentName = component.getID();
+        let componentID = component.getID();
         let logicResponse = FieldControls.logicControls.removeComponent(componentID);
 
         if (!logicResponse.valid) {
@@ -322,8 +316,8 @@ const FieldControls = {
             return;
         }
 
-        let srcID = srcComponent.uuid();
-        let destID = destComponent.uuid();
+        let srcID = srcComponent.getID();
+        let destID = destComponent.getID();
         let logicResponse = FieldControls.logicControls.removeConnection(srcID, destID);
 
         if (!logicResponse.valid) {
@@ -341,70 +335,85 @@ const FieldControls = {
         return true;
     },
 
-    spawnRequest: function(request, good) { 
-        let goodRequestParams = [
-            k.sprite("capn"),
-            k.pos(request.src.pos),
-            k.scale(0.20),
-            k.area(),
-            k.color(0, 255, 0),
-            k.health(10),
-            request.id,
-            request.state,
-            k.state("intransit", ["intransit", "processing", "blocked"]),
-            'request'
-        ]
+    spawnRequest: function(requestState, initPos) {
         
-        let badRequestParams = [
-            k.sprite("capn"),
-            k.pos(request.src.pos),
-            k.scale(0.15),
-            k.area(),
-            k.color(255, 0, 0),
-            k.health(5),
-            request.id,
-            request.state,
-            k.state("blocked", ["intransit", "processing", "blocked"]),
-            'request'
-        ]
+        let params = [
+            k.circle(10),
+            k.pos(initPos),
+            // k.area(),
+            k.origin('center'),
+            requestState.id,
+            '_request', // used as a group identifier
+            InterfaceRequest(requestState),
+        ];
         
-        let goodReqDef = goodRequestParams.concat(request);
-        let badReqDef = badRequestParams.concat(request);
-        let drawReq = k.add(goodReqDef);
-        console.log(good);
-        if (good == false) {
-            drawReq = k.add(badReqDef);
-            console.log("bad req drawed");         
-        }         
-
-    },
-
-    moveRequest: function(request) {
-        let requests = k.get('request'); 
-        const speed = 120;
-        const dir = k.vec2(request.dest.pos.sub(request.src.pos));
-        //console.log(dir);
-        for (const r of requests) { 
-            r.onStateUpdate("intransit", () => {
-                r.move(dir);
-            })
-    
-            r.onStateUpdate("processing", () => {
-                this.hideRequest(r);
-            })
-            
-            r.onCollide('selectable', () => {
-                r.enterState("processing");   
-            })
-        }
-    },
-
-    hideRequest: function(request) {
-        k.destroy(request);
-        k.wait(3, () => {
-            this.spawnRequest(request, true);
-        })
+        return k.add(params);
     }
+
+    // spawnRequest: function(request, good) { 
+    //     let goodRequestParams = [
+    //         k.sprite("capn"),
+    //         k.pos(request.src.pos),
+    //         k.scale(0.20),
+    //         k.area(),
+    //         k.color(0, 255, 0),
+    //         k.health(10),
+    //         request.id,
+    //         request.state,
+    //         k.state("intransit", ["intransit", "processing", "blocked"]),
+    //         'request'
+    //     ]
+        
+    //     let badRequestParams = [
+    //         k.sprite("capn"),
+    //         k.pos(request.src.pos),
+    //         k.scale(0.15),
+    //         k.area(),
+    //         k.color(255, 0, 0),
+    //         k.health(5),
+    //         request.id,
+    //         request.state,
+    //         k.state("blocked", ["intransit", "processing", "blocked"]),
+    //         'request'
+    //     ]
+        
+    //     let goodReqDef = goodRequestParams.concat(request);
+    //     let badReqDef = badRequestParams.concat(request);
+    //     let drawReq = k.add(goodReqDef);
+    //     console.log(good);
+    //     if (good == false) {
+    //         drawReq = k.add(badReqDef);
+    //         console.log("bad req drawed");         
+    //     }         
+
+    // },
+
+    // moveRequest: function(request) {
+    //     let requests = k.get('request'); 
+    //     const speed = 120;
+    //     const dir = k.vec2(request.dest.pos.sub(request.src.pos));
+    //     //console.log(dir);
+    //     for (const r of requests) { 
+    //         r.onStateUpdate("intransit", () => {
+    //             r.move(dir);
+    //         })
+    
+    //         r.onStateUpdate("processing", () => {
+    //             this.hideRequest(r);
+    //         })
+            
+    //         r.onCollide('selectable', () => {
+    //             r.enterState("processing");   
+    //         })
+    //     }
+    // },
+
+    // hideRequest: function(request) {
+    //     k.destroy(request);
+    //     k.wait(3, () => {
+    //         this.spawnRequest(request, true);
+    //     })
+    // }
 };
 
 export default FieldControls;

@@ -269,7 +269,7 @@ GameLogic.prototype.processInterval = function(timestamp, speedup) {
     }
     
     // An object of request IDs --> request states
-    console.log(`Core - set request states:`, reqStates);
+    // console.log(`Core - set request states:`, reqStates);
     StateMachine.processInterval(reqStates);
     return reqStates;
 };

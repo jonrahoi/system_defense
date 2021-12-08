@@ -19,14 +19,14 @@ import TestLevelChange from '../modules/testPanel.js';
 import State from '../../shared/state.js';
 import FieldControls from '../modules/fieldControls.js';
 import TimerControls from '../../utilities/timer.js';
-import InterfaceRequest from '../kaboom/components/interfaceRequest.js';
 
+import InterfaceRequest from '../kaboom/components/interfaceRequest.js';
 import { dragControls, drag } from '../kaboom/components/drag.js';
 import { selectControls, connectControls, select } from '../kaboom/components/select.js';
 import { Popup, PopupButtons } from '../modules/popup.js';
 import { getColor } from '../../config/settings.js';
+import { RequestStateDefs } from '../../core/modules/logicRequest.js';
 
-import { Popup, PopupButtons } from '../modules/popup.js';
 
 export function LevelView() {
     this.newComponents = {};
@@ -124,110 +124,337 @@ LevelView.prototype.buildScene = function(color) {
     this.buildStage();
 };
 
+
+
+const doublyNestedMap = () => {
+    const nested = {
+        data: {},
+        set: (k1, k2, v) => {
+            if (!k1 | !k2) { return; }
+            if (!nested.data.hasOwnProperty(k1)) {
+                nested.data[k1] = {}
+            }
+            if (!nested.data[k1].hasOwnProperty(k2)) {
+                nested.data[k1][k2] = []
+            }
+            nested.data[k1][k2].push(v);
+        },
+        get: (k1, k2, v) => {
+            if (k1 && nested.data.hasOwnProperty(k1)) {
+                if (k2 && nested.data[k1].hasOwnProperty(k2)) {
+                    return nested.data[k1][k2];
+                }
+                return nested.data[k1];
+            }
+            if (!k1 && !k2) { return nested.data; }
+            return;
+        },
+        group: (arr, attr1, attr2) => {
+            return arr.reduce((acc, obj) => {
+                let key1 = obj[attr1],
+                    key2 = obj[attr2];
+                    
+                nested.set(key1, key2, obj);
+                return acc;
+            });
+        }
+    };
+    return nested;
+};
+
+
+const groupBy = (arr, attr) => {
+    return arr.reduce((acc, obj) => {
+        let key = obj[attr];
+        if (!acc[key]) {
+            acc[key] = []
+        }
+        acc[key].push(obj)
+        return acc
+        }, {})
+}
+
+// const syncRequests = (states, graphics) => {
+
+
+
+// }
+
+
+
+
+
+
 // Meant to represent updating animations. However these could be dealt with through Kaboom
 // UPDATE ALL REQUESTS HERE? (@see State.requestStates)
 LevelView.prototype.update = function(timestamp, speedup) {
     console.log(`Animation timestep: ${timestamp} @ ${speedup}x`);
 
-    for (let i = 0; i < State.requestStates.length; i++) {       
-        //console.log("Obj: " + JSON.stringify(State.requestStates[i]));
-        let selectables = k.get('selectable');
-        let clients = k.get('CLIENT');
-        let middles = k.get('MIDDLE');
-        let endpoints = k.get('ENDPOINT');
-        var newRequest = new InterfaceRequest(State.requestStates[i].id, selectables[0], selectables[1],
-                                                State.requestStates[i].name);
-        
-        var stateType = newRequest.state;
 
-        for (let i = 0; i < clients.length; i++) {
-            var clientx = clients[i].pos.x
-            var clienty = clients[i].pos.y
-            if (stateType == 'KILLED') {
-                const text = k.add([
-                    k.text(JSON.stringify(stateType)),
-                    k.pos(clientx, clienty),
-                    k.area(),
-                    {
-                        size: 10,
-                        font: "sink",
-                        width: 500,
-                        color: k.rgb(0, 0, 0)
-                    },
-                    k.move(k.dir(90), 100),
-                    k.cleanup(1)
-                ])
+    let currReqState, currGraphicReq, currComponent, currConnection;
+    let currClients = k.get('CLIENT');
+    let currProcessors = k.get('EDGE').concat(k.get('PRE_PROCESSOR'), k.get('PROCESSOR'));
+    let currEndpoints = k.get('ENDPOINT');
+    // let currConnections = k.get('_connection');
+
+
+    let visibleReqs = k.get('_request');
+    let matchedReqs = groupBy(State.requestStates.concat(visibleReqs), 'uuid');
+    // { id0: [reqState0, graphicReq0], id1: [reqState1, graphicReq1],... }
+
+    
+    for (let reqPair of Object.values(matchedReqs)) {
+        currReqState = reqPair[0];
+        currGraphicReq = reqPair[1];
+
+        console.log('States:', currReqState, 'Graphics', currGraphicReq);
+
+        // Only state that does not involve its graphic version
+        if (currReqState.stateName == RequestStateDefs.spawned) {
+            let spawnPoint;
+            currComponent = currClients.find(a => a.getID() === currReqState.currComponentID);
+            
+            if (currComponent) {
+                spawnPoint = currComponent.pos;
+            } else {
+                spawnPoint = k.vec2(k.width() / 2, k.height() / 2);
             }
-            if (stateType == 'BLOCKED') {
-                const text = k.add([
-                    k.text(JSON.stringify(stateType)),
-                    k.pos(clientx, clienty),
-                    k.area(),
-                    {
-                        size: 10,
-                        font: "sink",
-                        width: 500,
-                        color: k.rgb(255, 0, 0)
-                    },
-                    k.move(k.dir(-90), 100),
-                    k.cleanup(1)
-                ])
-            }
+            currGraphicReq = FieldControls.spawnRequest(currReqState, spawnPoint);
+            continue;
         }
-        for (let i = 0; i < middles.length; i++) {
-            var midx = middles[i].pos.x
-            var midy = middles[i].pos.y
-            if (stateType == 'INTRANSIT') {
-                    const text = k.add([
-                        k.text(JSON.stringify(stateType)),
-                        k.pos(midx-75, midy),
-                        k.area(),
-                        {
-                            size: 10,
-                            font: "sink",
-                            width: 500,
-                            color: k.rgb(100, 100, 100)
-                        },
-                        k.move(k.dir(-90), 100),
-                        k.cleanup(1)
-                    ])
+
+        if (!currGraphicReq) { continue; }
+
+        if (currReqState.stateName == RequestStateDefs.intransit) {
+                
+            if (!currGraphicReq.isState(RequestStateDefs.intransit)) {
+                currGraphicReq.stateChange(currReqState);
+                
+                let connection = k.get([currReqState.currComponentID, currReqState.nextComponentID]);
+                if (connection.length > 0) {
+                    let c = connection[0];
+                    c.addRequest(currGraphicReq); 
+                    currGraphicReq.setConnection(c);
+                    // currGraphicReq.setConnection(c.getPosByPercent.bind(c));
+                }
             }
-            if (stateType == 'PROCESSING') {
-                    const text = k.add([
-                        k.text(JSON.stringify(stateType)),
-                        k.pos(midx+25, midy),
-                        k.area(),
-                        {
-                            size: 10,
-                            font: "sink",
-                            width: 500,
-                            color: k.rgb(0, 255, 0)
-                        },
-                        k.move(k.dir(-90), 100),
-                        k.cleanup(1)
-                    ])
+            currGraphicReq.progress(currReqState.percent);
+
+        } else if (currReqState.stateName == RequestStateDefs.processing) {
+
+            // graphic differs which means there was a recent state change
+            if (!currGraphicReq.isState(RequestStateDefs.processing)) { 
+                currGraphicReq.stateChange(currReqState);
+
+                let connection = k.get([currReqState.currComponentID, currReqState.nextComponentID]);
+                if (connection.length > 0) {
+                    let c = connection[0];
+                    c.delRequest(currGraphicReq);
+                    currGraphicReq.unsetConnection(c);
+                }
+            } 
+            currGraphicReq.progress(currReqState.percent);
+
+        } else if (currReqState.stateName == RequestStateDefs.blocked) {
+            if (!currGraphicReq.isState(RequestStateDefs.blocked)) {
+                currGraphicReq.stateChange(currReqState);
+
+                let connection = k.get([currReqState.currComponentID, currReqState.nextComponentID]);
+                if (connection.length > 0) {
+                    let c = connection[0];
+                    c.delRequest(currGraphicReq);
+                    currGraphicReq.unsetConnection(c);
+                }
+
             }
+            currGraphicReq.progress(currReqState.percent);
+
+            // } else if (currReqState.stateName == 'COMPLETED') { 
+        } else {
+            // anything to change for 1 timestemp before it is removed...
+            delete matchedReqs[currGraphicReq.uuid];
+            k.destroy(currGraphicReq);
         }
-        for (let i = 0; i < endpoints.length; i++) {
-            var endx = endpoints[i].pos.x
-            var endy = endpoints[i].pos.y
-            if (stateType == 'COMPLETED') {
-                const text = k.add([
-                    k.text(JSON.stringify(stateType)),
-                    k.pos(endx, endy),
-                    k.area(),
-                    {
-                        size: 10,
-                        font: "sink",
-                        width: 500,
-                        color: k.rgb(0, 0, 255)
-                    },
-                    k.move(k.dir(-90), 100),
-                    k.cleanup(1)
-                ])
-            }
-        }
+
     }
+    // console.log(requestTracker)
+
+    // Deal with newly spawned requests. Need to create new graphic request objects
+    // let newlySpawned = newStateGroups['SPAWNED']; // will have the form of { id0: [state], id1: [state], ...}
+
+    // for (let i = 0; i < newlySpawned.length; i++) {
+    //     currReqState = newlySpawned[i];
+    //     currGraphicReq = visibleReqs.find(a => a.id() === currReqState.id);
+    //     currComponent = currClients.find(a => a.id() === currReqState.id);
+
+    //     let params = [
+    //         k.pos(currComponent.pos),
+    //         // k.area(),
+    //         k.origin('center'),
+    //         currReqState.id,
+    //         '_request', // used as a group identifier
+    //         InterfaceRequest(currReqState)
+    //     ];
+        
+    //     let graphicReq =  k.add(params);
+    //     visibleReqs.push(graphicReq);
+    // }
+
+
+    
+
+    // // Clean up graphics from dead requests
+    // let died = { ...reqPairings.get('TIMEDOUT'), ...reqPairings.get('KILLED') };
+    // for (let i = 0; i < died.length; i++) {
+    //     // Room for any sort of graphic changess...
+
+    //     k.destroy(died[i]);
+    // }
+    
+    // // Keep completed requests seperate despite technically being "killed"
+    // let completed = reqPairings.get('COMPLETED');
+    // for (let i = 0; i < completed.length; i++) {
+    //     // Room for any sort of graphic changess...
+
+    //     k.destroy(completed[i]);
+    // }
+
+
+    // let processing = reqPairings.get('PROCESSING');
+    
+
+
+
+    // let blocked = reqPairings.get('BLOCKED');
+    
+    
+    // let inTransit = reqPairings.get('INTRANSIT');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // for (let i = 0; i < State.requestStates.length; i++) {       
+    //     //console.log("Obj: " + JSON.stringify(State.requestStates[i]));
+    //     let selectables = k.get('selectable');
+    //     let clients = k.get('CLIENT');
+    //     let middles = k.get('MIDDLE');
+    //     let endpoints = k.get('ENDPOINT');
+    //     var newRequest = new InterfaceRequest(State.requestStates[i].id, selectables[0], selectables[1],
+    //                                             State.requestStates[i].name);
+        
+    //     var stateType = newRequest.state;
+
+    //     for (let i = 0; i < clients.length; i++) {
+    //         var clientx = clients[i].pos.x
+    //         var clienty = clients[i].pos.y
+    //         if (stateType == 'KILLED') {
+    //             const text = k.add([
+    //                 k.text(JSON.stringify(stateType)),
+    //                 k.pos(clientx, clienty),
+    //                 k.area(),
+    //                 {
+    //                     size: 10,
+    //                     font: "sink",
+    //                     width: 500,
+    //                     color: k.rgb(0, 0, 0)
+    //                 },
+    //                 k.move(k.dir(90), 100),
+    //                 k.cleanup(1)
+    //             ])
+    //         }
+    //         if (stateType == 'BLOCKED') {
+    //             const text = k.add([
+    //                 k.text(JSON.stringify(stateType)),
+    //                 k.pos(clientx, clienty),
+    //                 k.area(),
+    //                 {
+    //                     size: 10,
+    //                     font: "sink",
+    //                     width: 500,
+    //                     color: k.rgb(255, 0, 0)
+    //                 },
+    //                 k.move(k.dir(-90), 100),
+    //                 k.cleanup(1)
+    //             ])
+    //         }
+    //     }
+    //     for (let i = 0; i < middles.length; i++) {
+    //         var midx = middles[i].pos.x
+    //         var midy = middles[i].pos.y
+    //         if (stateType == 'INTRANSIT') {
+    //                 const text = k.add([
+    //                     k.text(JSON.stringify(stateType)),
+    //                     k.pos(midx-75, midy),
+    //                     k.area(),
+    //                     {
+    //                         size: 10,
+    //                         font: "sink",
+    //                         width: 500,
+    //                         color: k.rgb(100, 100, 100)
+    //                     },
+    //                     k.move(k.dir(-90), 100),
+    //                     k.cleanup(1)
+    //                 ])
+    //             connection = k.get([newRequest.src])
+    //         }
+    //         if (stateType == 'PROCESSING') {
+    //                 const text = k.add([
+    //                     k.text(JSON.stringify(stateType)),
+    //                     k.pos(midx+25, midy),
+    //                     k.area(),
+    //                     {
+    //                         size: 10,
+    //                         font: "sink",
+    //                         width: 500,
+    //                         color: k.rgb(0, 255, 0)
+    //                     },
+    //                     k.move(k.dir(-90), 100),
+    //                     k.cleanup(1)
+    //                 ])
+    //         }
+    //     }
+    //     for (let i = 0; i < endpoints.length; i++) {
+    //         var endx = endpoints[i].pos.x
+    //         var endy = endpoints[i].pos.y
+    //         if (stateType == 'COMPLETED') {
+    //             const text = k.add([
+    //                 k.text(JSON.stringify(stateType)),
+    //                 k.pos(endx, endy),
+    //                 k.area(),
+    //                 {
+    //                     size: 10,
+    //                     font: "sink",
+    //                     width: 500,
+    //                     color: k.rgb(0, 0, 255)
+    //                 },
+    //                 k.move(k.dir(-90), 100),
+    //                 k.cleanup(1)
+    //             ])
+    //         }
+    //     }
+    // }
 };
 
 // Load a level object into this view
@@ -268,105 +495,95 @@ LevelView.prototype.initStage = function(newStageSpecs, newLevel=false) {
 // Deal with mouse & keyboard events. Connect TimerControls and State callbacks
 LevelView.prototype.registerEvents = function() { 
 
-    // Register function to update status bar time
-    TimerControls.register(this.statusBar.updateTime, this.statusBar, TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
-    TimerControls.register(this.statusBar.updateTime, this.statusBar, TimerControls.RegistrationTypes.TIME_ADJUSTEMENT);
-
-    // Register function update status bar state values
-    State.register(this.statusBar.updateState, this.statusBar);
-
-    // When left button is HELD --> start of drag
-    k.onMouseDown('left', (pos) => {
-        if (k.isMouseMoved() && dragControls.current()) {
-            let currDrag = dragControls.current();
-            k.cursor("move");
-            // let offset = this.playField.confineComponentSpace(pos.x, pos.y, currDrag.width, currDrag.height);
-            // currDrag.updatePos(k.vec2(...offset));
-            currDrag.moveComponent(pos);
-            // currDrag.updatePos(pos);
-        }
-    });
-    
-    // When left button is released --> end a drag or display selection
-    k.onMouseRelease('left', (pos) => {
-        if (!dragControls.isDragging()) {
-            // Get all processors
-            let selectables = k.get('selectable');
-            for (const c of selectables) {
-                if (c.hasPoint(pos)) {
-                    selectControls.acquire(c);
-                    return;
-                }
-            }
-            selectControls.release();
-        }
-        if (dragControls.isDragging()) {
-            dragControls.release();
-        }
-    });
-
-    // When left button is clicked/pressed --> component selected
-    k.onMousePress('left', (pos) => {
-        // Default remove any in-progress connections
-        connectControls.release();
-
-        // Get all 'drag' components
-        let dragComponents = k.get('draggable');
-        for (const c of dragComponents) {
-            if (c.hasPoint(pos)) {
-                dragControls.acquire(c, pos);
-                return;
-            }
-        }
-        let connections = k.get('_connection');
-        // console.log('looking at connections...')
-        for (const c of connections) {
-            c.clicked(pos);
-            return;
-        }
-    });
-
-    // When right button is pressed --> indicates a connection being made
-    k.onMousePress('right', (pos) => {
-        // Default remove current selections
-        selectControls.release();
-
-        // Get all selectable components
-        let selectables = k.get('selectable');
-        for (const c of selectables) {
-            if (c.hasPoint(pos)) {
-                connectControls.acquire(c);
-                if (connectControls.isValid()) {
-                    FieldControls.connect(connectControls.current().src, connectControls.current().dest);
-                    connectControls.release();
-                }
-                return;
-            }
-        }
-        connectControls.release();
-    });
-
-    // When delete key is pressed --> destroy currently selected component (if deletable)
-    k.onKeyPress('backspace', () => {
-        // Check for currently selected processor
-        if (selectControls.current()) {
-            let selection = selectControls.current();
-            if (selection.is('deletable')) {
-                if (selection.is('connection')) {
-                    selectControls.release();
-                    return FieldControls.disconnect(selection.src(), selection.dest());
-                }
-                if (FieldControls.removeComponent(selection)) {
-                    let componentName = selection.name().toUpperCase();
-                    this.selectionBar.update(componentName, 1);
-                }
-            } else {
-                console.debug("Can't delete this item");
-            }
-        }
-        selectControls.release();
-        connectControls.release();
-    });
+     // Register function to update status bar time
+     TimerControls.register(this.statusBar.updateTime, this.statusBar, TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
+     TimerControls.register(this.statusBar.updateTime, this.statusBar, TimerControls.RegistrationTypes.TIME_ADJUSTEMENT);
+ 
+     // Register function update status bar state values
+     State.register(this.statusBar.updateState, this.statusBar);
+ 
+     // When left button is HELD --> start of drag
+     k.onMouseDown('left', (pos) => {
+         if (k.isMouseMoved() && dragControls.current()) {
+             let currDrag = dragControls.current();
+             k.cursor("move");
+             let offset = this.playField.confineComponentSpace(pos.x, pos.y, currDrag.width, currDrag.height);
+             currDrag.updatePos(k.vec2(...offset));
+         }
+     });
+     
+     // When left button is released --> end a drag or display selection
+     k.onMouseRelease('left', (pos) => {
+         if (!dragControls.isDragging()) {
+             // Get all processors
+             let selectables = k.get('selectable');
+             for (const c of selectables) {
+                 if (c.hasPoint(pos)) {
+                     selectControls.acquire(c);
+                     return;
+                 }
+             }
+             selectControls.release();
+         }
+         dragControls.release();
+     });
+ 
+     // When left button is clicked/pressed --> component selected
+     k.onMousePress('left', (pos) => {
+         // Default remove any in-progress connections
+         connectControls.release();
+ 
+         // Get all 'drag' components
+         let dragComponents = k.get('draggable');
+         for (const c of dragComponents) {
+             if (c.hasPoint(pos)) {
+                 dragControls.acquire(c, pos);
+                 return;
+             }
+         }
+     });
+ 
+     // When right button is pressed --> indicates a connection being made
+     k.onMousePress('right', (pos) => {
+         // Default remove current selections
+         selectControls.release();
+ 
+         // Get all selectable components
+         let selectables = k.get('selectable');
+         for (const c of selectables) {
+             if (c.hasPoint(pos)) {
+                 connectControls.acquire(c);
+                 if (connectControls.isValid()) {
+                     FieldControls.connect(connectControls.current().src, connectControls.current().dest);
+                     connectControls.release();
+                 }
+                 return;
+             }
+         }
+         connectControls.release();
+     });
+ 
+     // When delete key is pressed --> destroy currently selected component (if deletable)
+     k.onKeyPress('backspace', () => {
+         // Check for currently selected processor
+         if (selectControls.current()) {
+             let selection = selectControls.current();
+             if (selection.is('deletable')) {
+                 if (selection.is('connection')) {
+                     selectControls.release();
+                     return FieldControls.disconnect(selection.src(), selection.dest());
+                 }
+                 if (FieldControls.removeComponent(selection)) {
+                     let componentName = selection.name().toUpperCase();
+                     this.selectionBar.update(componentName, 1);
+                 }
+             } else {
+                 console.debug("Can't delete this item");
+             }
+         }
+         selectControls.release();
+         connectControls.release();
+     });
 };
 
 

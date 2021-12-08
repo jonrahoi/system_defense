@@ -17,7 +17,18 @@
 
 import generateUUID from '../../utilities/uuid.js';
 
-const TIMEOUT = 20;
+const TIMEOUT = 10;
+const INIT_DELAY = 1;
+
+export const RequestStateDefs = {
+    spawned: 'SPAWNED',
+    blocked: 'BLOCKED',
+    processing: 'PROCESSING',
+    intransit: 'INTRANSIT',
+    completed: 'COMPLETED',
+    timedout: 'TIMEOUT',
+    killed: 'KILLED'
+};
 
 export var LogicRequest = (source, destID) => {
 
@@ -85,98 +96,100 @@ export var LogicRequest = (source, destID) => {
         processTimestep: function() {
             this.age++;
             this.currProcessTime++;
+            if (this.age == 1) {
+                return RequestStateFactory(RequestStateDefs.spawned, this);
+            }
             if (this.blocked) {
                 if (this.currProcessTime > TIMEOUT) {
                     console.log("I timed out!");
                     this.timedout = true;
-                    return RequestStateFactory('TIMEDOUT', this);
+                    return RequestStateFactory(RequestStateDefs.timedout, this);
                 } else {
-                    return RequestStateFactory('BLOCKED', this);
+                    return RequestStateFactory(RequestStateDefs.blocked, this);
                 }
             }
 
-            else if (this.processing) {
-                return RequestStateFactory('PROCESSING', this);
+            if (this.processing) {
+                return RequestStateFactory(RequestStateDefs.processing, this);
             }
 
-            else if (this.inTransit) {
+            if (this.inTransit) {
                 if (this.currProcessTime >= TIMEOUT) {
                     console.log("I timed out!");
                     this.timedout = true;
-                    return RequestStateFactory('TIMEDOUT', this);
+                    return RequestStateFactory(RequestStateDefs.timedout, this);
                 } else {
-                    return RequestStateFactory('INTRANSIT', this);
+                    return RequestStateFactory(RequestStateDefs.intransit, this);
                 }
-            }
+            } 
 
-            else if (this.completed) {
-                return RequestStateFactory('COMPLETED', this);
+            if (this.completed) {
+                return RequestStateFactory(RequestStateDefs.completed, this);
             }
 
             // Request died (most likely because there wasn't a connection to it's destination)
-            else {
-                this.killed = true;
-                return RequestStateFactory('KILLED', this);
-            }
+            this.killed = true;
+            return RequestStateFactory(RequestStateDefs.killed, this);
         }
     }
     return req;
 };
 
-export default LogicRequest;
+
 
 
 const RequestStateFactory = (stateName, req) => {
     var state;
     switch(stateName) {
-        case 'SPAWNED':
+        case RequestStateDefs.spawned:
             state = {
-                name: 'SPAWNED',
-                currID: req.currComponent.id
+                stateName: RequestStateDefs.spawned,
+                currComponentID: req.currComponent.id
             };
             break;
-        case 'BLOCKED':
+        case RequestStateDefs.blocked:
             state = {
-                name: 'BLOCKED',
+                stateName: RequestStateDefs.blocked,
                 percent: req.currProcessTime / TIMEOUT,
-                currID: req.currComponent.id,
+                currComponentID: req.currComponent.id,
                 isResponse: req.isResponse
             };
             break;
-        case 'PROCESSING':
+        case RequestStateDefs.processing:
             state = {
-                name: 'PROCESSING',
+                stateName: RequestStateDefs.processing,
                 percent: req.currProcessTime / req.currComponent.throughput,
-                currID: req.currComponent.id,
+                currComponentID: req.currComponent.id,
                 isResponse: req.isResponse
             };
             break;
-        case 'INTRANSIT':
+        case RequestStateDefs.intransit:
             state = {
-                name: 'INTRANSIT',
+                stateName: RequestStateDefs.intransit,
                 percent: req.currProcessTime / req.currConnection.latency,
-                currID: req.currComponent.id,
-                nextID: req.nextComponent.id,
+                currComponentID: req.currComponent.id,
+                nextComponentID: req.nextComponent.id,
                 isResponse: req.isResponse
             };
             break;
-        case 'TIMEDOUT':
+        case RequestStateDefs.timedout:
             state = {
-                name: 'TIMEDOUT'
+                stateName: RequestStateDefs.timedout
             };
             break;
-        case 'KILLED':
+        case RequestStateDefs.killed:
             state = {
-                name: 'KILLED'
+                stateName: RequestStateDefs.killed
             }
             break;
-        case 'COMPLETED':
+        case RequestStateDefs.completed:
             state = {
-                name: 'COMPLETED'
+                stateName: RequestStateDefs.completed
             };
             break;
     }
     state['age'] = req.age;
-    state['id'] = req.id;
+    state['uuid'] = req.id;
     return state;
 };
+
