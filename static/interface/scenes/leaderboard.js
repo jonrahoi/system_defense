@@ -187,7 +187,7 @@ Leaderboard.prototype.buildScene = function(color) {
     for (let type in this.components){
       // add subtitle(type)
       k.add([
-        k.text(type, { size: this.objects.subtitle.height }),
+        k.text(type, { size: this.objects.subtitle.height}),
         // k.pos(this.objects.subtitle.x, this.objects.subtitle.y + this.gapHeight + this.subTitleBottomMargin * this.subTitleCount + this.componentCount * this.componentBottomMargin),
         k.pos(this.objects.subtitle.x, 
           this.objects.subtitle.y + this.subTitleBottomMargin * this.subTitleCount + this.componentCount * this.componentBottomMargin),
