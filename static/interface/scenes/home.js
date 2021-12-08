@@ -237,7 +237,7 @@ Home.prototype.buildScene = function(color) {
 
         // Add text
         else if (name.includes('Text')) {
-            k.add([
+            this[`${itemName}`] = k.add([
                 k.text(params.text.charAt(0).toUpperCase() + params.text.slice(1), 
                         { size: params.height, width: params.width }),
                 k.pos(params.x, params.y),
@@ -247,6 +247,10 @@ Home.prototype.buildScene = function(color) {
             ]);
         }
     }
+
+    this.playBtn.hovers(() => {this.playBtn.scale = 1.02; }, () => { this.playBtn.scale = 1; });
+    this.instructionsBtn.hovers(() => {this.instructionsBtn.scale = 1.02; }, () => { this.instructionsBtn.scale = 1; });
+    this.settingsBtn.hovers(() => {this.settingsBtn.scale = 1.02; }, () => { this.settingsBtn.scale = 1; });
 
     // Connect buttons to control functions
     this.playBtn.clicks(this.levelOneFunc);

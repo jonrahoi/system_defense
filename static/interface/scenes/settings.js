@@ -73,21 +73,21 @@ Settings.prototype.init = function() {
     this.params['titleHeight'] = this.params.height * this.params.titleHeightRatio;
 
     // Calculated distance between top of title and top of screen
-    this.params['yTitleSpacer'] = this.params.titleHeight * this.params.yTitleOffsetRatio;
+    this.params['yTitleSpacer'] = this.params.titleHeight;
 
     this.objects = {};
     this.objects['title'] = {
         width: this.params.width * this.params.titleWidthRatio,
         height: this.params.height * this.params.titleHeightRatio,
-        x: ((this.params.width / 2) - (this.params.titleWidth / 2)),
-        y: (this.params.screenY + this.params.yTitleSpacer)
+        x: this.params.width / 2,
+        y: this.params.screenY + this.params.yTitleSpacer
     }
 
     this.objects['bgColor'] = {
       width: this.params.width * this.params.subTitleWidthRatio,
       height: this.params.height * this.params.subTitleHeightRatio,
-      x: ((this.params.width / 2) - (this.params.titleWidth / 2)),
-      y: (this.params.screenY + this.params.yTitleSpacer + 100)
+      x: this.params.width / 2,
+      y: (this.params.screenY + this.params.yTitleSpacer) * 3
     }
 
     this.objects['back'] = { 
@@ -111,25 +111,29 @@ Settings.prototype.buildScene = function(color) {
     // Title
     k.add([
         k.text('Settings', { size: this.objects.title.height, width: this.objects.title.width }),
-        k.pos(this.objects.title.x - 150, this.objects.title.y),
+        k.pos(this.objects.title.x, this.objects.title.y),
+        k.origin("center"),
     ]);
 
     // bgColor Title
     k.add([
-      k.text('Background color', { size: this.objects.bgColor.height - 10}),
-      k.pos(this.objects.bgColor.x - 150, this.objects.bgColor.y),
+      k.text('Background color', { size: this.objects.bgColor.height}),
+      k.pos(this.objects.bgColor.x, this.objects.title.y * 3),
+      k.origin("center"),
     ]);
 
     k.add([
-      k.text('(Effective after back)', { size: this.objects.bgColor.height - 25}),
-      k.pos(this.objects.bgColor.x - 150, this.objects.bgColor.y + 50),
+      k.text('(Effective after back)', { size: this.objects.bgColor.height * 0.7}),
+      k.pos(this.objects.bgColor.x, this.objects.title.y * 4),
+      k.origin("center"),
     ]);
     
     // current color
     k.add([
-      k.text('Current', { size: this.objects.bgColor.height - 20}),
-      k.pos(this.objects.bgColor.x , this.objects.bgColor.y + 110),
+      k.text('Current', { size: this.objects.bgColor.height * 0.7 }),
+      k.pos(this.objects.bgColor.x * 0.8, this.objects.title.y * 6),
       //k.color(0,0,100),
+      k.origin("center"),
     ]);
 
 
@@ -140,14 +144,16 @@ Settings.prototype.buildScene = function(color) {
       k.outline(4),
       k.color(curRed, curGreen, curBlue),
       k.rect(30, 30),
-      k.pos(this.objects.bgColor.x+this.objects.bgColor.width - 100, this.objects.bgColor.y + 110),
+      k.pos(this.objects.bgColor.x * 1.2, this.objects.title.y * 6),
+      k.origin("center"),
     ])
 
     // select color
     k.add([
-      k.text('Select', { size: this.objects.bgColor.height - 20, width: this.objects.bgColor.width }),
-      k.pos(this.objects.bgColor.x  , this.objects.bgColor.y + 200),
+      k.text('Select', { size: this.objects.bgColor.height * 0.7 }),
+      k.pos(this.objects.bgColor.x * 0.8, this.objects.title.y * 7),
       //k.color(0,0,100),
+      k.origin("center"),
     ]);    
 
     // color option
@@ -157,7 +163,8 @@ Settings.prototype.buildScene = function(color) {
       k.color(255,255,255),
       k.rect(30, 30),
       k.area(),
-      k.pos(this.objects.bgColor.x+this.objects.bgColor.width - 150, this.objects.bgColor.y + 200)      
+      k.pos(this.objects.bgColor.x * (1.2 - 0.09), this.objects.title.y * 7),
+      k.origin("center"),
     ])
 
     let blueBtn = k.add([
@@ -166,37 +173,48 @@ Settings.prototype.buildScene = function(color) {
       k.color(180, 200,250),
       k.rect(30, 30),
       k.area(),
-      k.pos(this.objects.bgColor.x+this.objects.bgColor.width - 100, this.objects.bgColor.y + 200)
+      k.pos(this.objects.bgColor.x * 1.2, this.objects.title.y * 7),
+      k.origin("center"),
     ])
 
-    let greenBtn = k.add([
+    let pinkBtn = k.add([
       "colorBtn",
       k.outline(4),
       k.color(255,192,203),
       k.rect(30, 30),
       k.area(),
-      k.pos(this.objects.bgColor.x+this.objects.bgColor.width - 50, this.objects.bgColor.y + 200)
+      k.pos(this.objects.bgColor.x * (1.2 + 0.09), this.objects.title.y * 7),
+      k.origin("center"),
     ])
 
+    whiteBtn.hovers(() => { whiteBtn.scale = 1.1; }, () => { whiteBtn.scale = 1; });
+    blueBtn.hovers(() => { blueBtn.scale = 1.1; }, () => { blueBtn.scale = 1; });
+    pinkBtn.hovers(() => { pinkBtn.scale = 1.1; }, () => { pinkBtn.scale = 1; });
+
     k.clicks("colorBtn", (btn)=>{
-        setColor([btn.color.r, btn.color.g, btn.color.b])
-        k.destroyAll("colorBlock")
-        showColor = k.add([
-          "colorBlock",
-          k.outline(4),
-          k.color(btn.color.r, btn.color.g, btn.color.b),
-          k.rect(30, 30),
-          k.pos(this.objects.bgColor.x+this.objects.bgColor.width - 100, this.objects.bgColor.y + 100)
-        ])
+        setColor([btn.color.r, btn.color.g, btn.color.b]);
+
+        k.destroyAll("colorBlock");
+        let showColor = k.add([
+        "colorBlock",
+        k.outline(4),
+        k.color(btn.color.r, btn.color.g, btn.color.b),
+        k.rect(30, 30),
+        k.pos(this.objects.bgColor.x * 1.2, this.objects.title.y * 6),
+        k.origin("center"),
+      ]);
     })
 
     // Back button
     const backBtn = k.add([
-      k.text('Back', { size: this.objects.title.height - 30}),
-      k.pos(this.objects.title.x + 500, this.objects.title.y + 600),
+      k.text('Back', { size: this.objects.title.height * 0.7}),
+      k.pos(this.params.width * 0.5, this.params.height * 0.9),
       k.color(0,0,100),
       k.area(),
+      k.origin("center"),
     ]);
+
+    backBtn.hovers(() => { backBtn.scale = 1.1; }, () => { backBtn.scale = 1; });
     backBtn.clicks(SceneControls.goHome);
 };
 

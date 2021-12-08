@@ -25,8 +25,6 @@ import { dragControls, drag } from '../kaboom/components/drag.js';
 import { selectControls, connectControls, select } from '../kaboom/components/select.js';
 import { Popup, PopupButtons } from '../modules/popup.js';
 import { getColor } from '../../config/settings.js';
-import { RequestStateDefs } from '../../core/modules/logicRequest.js';
-
 
 export function LevelView() {
     this.newComponents = {};
@@ -125,336 +123,110 @@ LevelView.prototype.buildScene = function(color) {
 };
 
 
-
-const doublyNestedMap = () => {
-    const nested = {
-        data: {},
-        set: (k1, k2, v) => {
-            if (!k1 | !k2) { return; }
-            if (!nested.data.hasOwnProperty(k1)) {
-                nested.data[k1] = {}
-            }
-            if (!nested.data[k1].hasOwnProperty(k2)) {
-                nested.data[k1][k2] = []
-            }
-            nested.data[k1][k2].push(v);
-        },
-        get: (k1, k2, v) => {
-            if (k1 && nested.data.hasOwnProperty(k1)) {
-                if (k2 && nested.data[k1].hasOwnProperty(k2)) {
-                    return nested.data[k1][k2];
-                }
-                return nested.data[k1];
-            }
-            if (!k1 && !k2) { return nested.data; }
-            return;
-        },
-        group: (arr, attr1, attr2) => {
-            return arr.reduce((acc, obj) => {
-                let key1 = obj[attr1],
-                    key2 = obj[attr2];
-                    
-                nested.set(key1, key2, obj);
-                return acc;
-            });
-        }
-    };
-    return nested;
-};
-
-
-const groupBy = (arr, attr) => {
-    return arr.reduce((acc, obj) => {
-        let key = obj[attr];
-        if (!acc[key]) {
-            acc[key] = []
-        }
-        acc[key].push(obj)
-        return acc
-        }, {})
-}
-
-// const syncRequests = (states, graphics) => {
-
-
-
-// }
-
-
-
-
-
-
 // Meant to represent updating animations. However these could be dealt with through Kaboom
 // UPDATE ALL REQUESTS HERE? (@see State.requestStates)
 LevelView.prototype.update = function(timestamp, speedup) {
     console.log(`Animation timestep: ${timestamp} @ ${speedup}x`);
 
+    for (let i = 0; i < State.requestStates.length; i++) {       
+        //console.log("Obj: " + JSON.stringify(State.requestStates[i]));
+        let selectables = k.get('selectable');
+        let clients = k.get('CLIENT');
+        let middles = k.get('MIDDLE');
+        let endpoints = k.get('ENDPOINT');
+        var newRequest = new InterfaceRequest(State.requestStates[i].id, selectables[0], selectables[1],
+                                                State.requestStates[i].name);
+        
+        var stateType = newRequest.state;
 
-    let currReqState, currGraphicReq, currComponent, currConnection;
-    let currClients = k.get('CLIENT');
-    let currProcessors = k.get('EDGE').concat(k.get('PRE_PROCESSOR'), k.get('PROCESSOR'));
-    let currEndpoints = k.get('ENDPOINT');
-    // let currConnections = k.get('_connection');
-
-
-    let visibleReqs = k.get('_request');
-    let matchedReqs = groupBy(State.requestStates.concat(visibleReqs), 'uuid');
-    // { id0: [reqState0, graphicReq0], id1: [reqState1, graphicReq1],... }
-
-    
-    for (let reqPair of Object.values(matchedReqs)) {
-        currReqState = reqPair[0];
-        currGraphicReq = reqPair[1];
-
-        console.log('States:', currReqState, 'Graphics', currGraphicReq);
-
-        // Only state that does not involve its graphic version
-        if (currReqState.stateName == RequestStateDefs.spawned) {
-            let spawnPoint;
-            currComponent = currClients.find(a => a.getID() === currReqState.currComponentID);
-            
-            if (currComponent) {
-                spawnPoint = currComponent.pos;
-            } else {
-                spawnPoint = k.vec2(k.width() / 2, k.height() / 2);
+        for (let i = 0; i < clients.length; i++) {
+            var clientx = clients[i].pos.x
+            var clienty = clients[i].pos.y
+            if (stateType == 'KILLED') {
+                const text = k.add([
+                    k.text(JSON.stringify(stateType)),
+                    k.pos(clientx, clienty),
+                    k.area(),
+                    {
+                        size: 10,
+                        font: "sink",
+                        width: 500,
+                        color: k.rgb(0, 0, 0)
+                    },
+                    k.move(k.dir(90), 100),
+                    k.cleanup(1)
+                ])
             }
-            currGraphicReq = FieldControls.spawnRequest(currReqState, spawnPoint);
-            continue;
+            if (stateType == 'BLOCKED') {
+                const text = k.add([
+                    k.text(JSON.stringify(stateType)),
+                    k.pos(clientx, clienty),
+                    k.area(),
+                    {
+                        size: 10,
+                        font: "sink",
+                        width: 500,
+                        color: k.rgb(255, 0, 0)
+                    },
+                    k.move(k.dir(-90), 100),
+                    k.cleanup(1)
+                ])
+            }
         }
-
-        if (!currGraphicReq) { continue; }
-
-        if (currReqState.stateName == RequestStateDefs.intransit) {
-                
-            if (!currGraphicReq.isState(RequestStateDefs.intransit)) {
-                currGraphicReq.stateChange(currReqState);
-                
-                let connection = k.get([currReqState.currComponentID, currReqState.nextComponentID]);
-                if (connection.length > 0) {
-                    let c = connection[0];
-                    c.addRequest(currGraphicReq); 
-                    currGraphicReq.setConnection(c);
-                    // currGraphicReq.setConnection(c.getPosByPercent.bind(c));
-                }
+        for (let i = 0; i < middles.length; i++) {
+            var midx = middles[i].pos.x
+            var midy = middles[i].pos.y
+            if (stateType == 'INTRANSIT') {
+                    const text = k.add([
+                        k.text(JSON.stringify(stateType)),
+                        k.pos(midx-75, midy),
+                        k.area(),
+                        {
+                            size: 10,
+                            font: "sink",
+                            width: 500,
+                            color: k.rgb(100, 100, 100)
+                        },
+                        k.move(k.dir(-90), 100),
+                        k.cleanup(1)
+                    ])
             }
-            currGraphicReq.progress(currReqState.percent);
-
-        } else if (currReqState.stateName == RequestStateDefs.processing) {
-
-            // graphic differs which means there was a recent state change
-            if (!currGraphicReq.isState(RequestStateDefs.processing)) { 
-                currGraphicReq.stateChange(currReqState);
-
-                let connection = k.get([currReqState.currComponentID, currReqState.nextComponentID]);
-                if (connection.length > 0) {
-                    let c = connection[0];
-                    c.delRequest(currGraphicReq);
-                    currGraphicReq.unsetConnection(c);
-                }
-            } 
-            currGraphicReq.progress(currReqState.percent);
-
-        } else if (currReqState.stateName == RequestStateDefs.blocked) {
-            if (!currGraphicReq.isState(RequestStateDefs.blocked)) {
-                currGraphicReq.stateChange(currReqState);
-
-                let connection = k.get([currReqState.currComponentID, currReqState.nextComponentID]);
-                if (connection.length > 0) {
-                    let c = connection[0];
-                    c.delRequest(currGraphicReq);
-                    currGraphicReq.unsetConnection(c);
-                }
-
+            if (stateType == 'PROCESSING') {
+                    const text = k.add([
+                        k.text(JSON.stringify(stateType)),
+                        k.pos(midx+25, midy),
+                        k.area(),
+                        {
+                            size: 10,
+                            font: "sink",
+                            width: 500,
+                            color: k.rgb(0, 255, 0)
+                        },
+                        k.move(k.dir(-90), 100),
+                        k.cleanup(1)
+                    ])
             }
-            currGraphicReq.progress(currReqState.percent);
-
-            // } else if (currReqState.stateName == 'COMPLETED') { 
-        } else {
-            // anything to change for 1 timestemp before it is removed...
-            delete matchedReqs[currGraphicReq.uuid];
-            k.destroy(currGraphicReq);
         }
-
+        for (let i = 0; i < endpoints.length; i++) {
+            var endx = endpoints[i].pos.x
+            var endy = endpoints[i].pos.y
+            if (stateType == 'COMPLETED') {
+                const text = k.add([
+                    k.text(JSON.stringify(stateType)),
+                    k.pos(endx, endy),
+                    k.area(),
+                    {
+                        size: 10,
+                        font: "sink",
+                        width: 500,
+                        color: k.rgb(0, 0, 255)
+                    },
+                    k.move(k.dir(-90), 100),
+                    k.cleanup(1)
+                ])
+            }
+        }
     }
-    // console.log(requestTracker)
-
-    // Deal with newly spawned requests. Need to create new graphic request objects
-    // let newlySpawned = newStateGroups['SPAWNED']; // will have the form of { id0: [state], id1: [state], ...}
-
-    // for (let i = 0; i < newlySpawned.length; i++) {
-    //     currReqState = newlySpawned[i];
-    //     currGraphicReq = visibleReqs.find(a => a.id() === currReqState.id);
-    //     currComponent = currClients.find(a => a.id() === currReqState.id);
-
-    //     let params = [
-    //         k.pos(currComponent.pos),
-    //         // k.area(),
-    //         k.origin('center'),
-    //         currReqState.id,
-    //         '_request', // used as a group identifier
-    //         InterfaceRequest(currReqState)
-    //     ];
-        
-    //     let graphicReq =  k.add(params);
-    //     visibleReqs.push(graphicReq);
-    // }
-
-
-    
-
-    // // Clean up graphics from dead requests
-    // let died = { ...reqPairings.get('TIMEDOUT'), ...reqPairings.get('KILLED') };
-    // for (let i = 0; i < died.length; i++) {
-    //     // Room for any sort of graphic changess...
-
-    //     k.destroy(died[i]);
-    // }
-    
-    // // Keep completed requests seperate despite technically being "killed"
-    // let completed = reqPairings.get('COMPLETED');
-    // for (let i = 0; i < completed.length; i++) {
-    //     // Room for any sort of graphic changess...
-
-    //     k.destroy(completed[i]);
-    // }
-
-
-    // let processing = reqPairings.get('PROCESSING');
-    
-
-
-
-    // let blocked = reqPairings.get('BLOCKED');
-    
-    
-    // let inTransit = reqPairings.get('INTRANSIT');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // for (let i = 0; i < State.requestStates.length; i++) {       
-    //     //console.log("Obj: " + JSON.stringify(State.requestStates[i]));
-    //     let selectables = k.get('selectable');
-    //     let clients = k.get('CLIENT');
-    //     let middles = k.get('MIDDLE');
-    //     let endpoints = k.get('ENDPOINT');
-    //     var newRequest = new InterfaceRequest(State.requestStates[i].id, selectables[0], selectables[1],
-    //                                             State.requestStates[i].name);
-        
-    //     var stateType = newRequest.state;
-
-    //     for (let i = 0; i < clients.length; i++) {
-    //         var clientx = clients[i].pos.x
-    //         var clienty = clients[i].pos.y
-    //         if (stateType == 'KILLED') {
-    //             const text = k.add([
-    //                 k.text(JSON.stringify(stateType)),
-    //                 k.pos(clientx, clienty),
-    //                 k.area(),
-    //                 {
-    //                     size: 10,
-    //                     font: "sink",
-    //                     width: 500,
-    //                     color: k.rgb(0, 0, 0)
-    //                 },
-    //                 k.move(k.dir(90), 100),
-    //                 k.cleanup(1)
-    //             ])
-    //         }
-    //         if (stateType == 'BLOCKED') {
-    //             const text = k.add([
-    //                 k.text(JSON.stringify(stateType)),
-    //                 k.pos(clientx, clienty),
-    //                 k.area(),
-    //                 {
-    //                     size: 10,
-    //                     font: "sink",
-    //                     width: 500,
-    //                     color: k.rgb(255, 0, 0)
-    //                 },
-    //                 k.move(k.dir(-90), 100),
-    //                 k.cleanup(1)
-    //             ])
-    //         }
-    //     }
-    //     for (let i = 0; i < middles.length; i++) {
-    //         var midx = middles[i].pos.x
-    //         var midy = middles[i].pos.y
-    //         if (stateType == 'INTRANSIT') {
-    //                 const text = k.add([
-    //                     k.text(JSON.stringify(stateType)),
-    //                     k.pos(midx-75, midy),
-    //                     k.area(),
-    //                     {
-    //                         size: 10,
-    //                         font: "sink",
-    //                         width: 500,
-    //                         color: k.rgb(100, 100, 100)
-    //                     },
-    //                     k.move(k.dir(-90), 100),
-    //                     k.cleanup(1)
-    //                 ])
-    //             connection = k.get([newRequest.src])
-    //         }
-    //         if (stateType == 'PROCESSING') {
-    //                 const text = k.add([
-    //                     k.text(JSON.stringify(stateType)),
-    //                     k.pos(midx+25, midy),
-    //                     k.area(),
-    //                     {
-    //                         size: 10,
-    //                         font: "sink",
-    //                         width: 500,
-    //                         color: k.rgb(0, 255, 0)
-    //                     },
-    //                     k.move(k.dir(-90), 100),
-    //                     k.cleanup(1)
-    //                 ])
-    //         }
-    //     }
-    //     for (let i = 0; i < endpoints.length; i++) {
-    //         var endx = endpoints[i].pos.x
-    //         var endy = endpoints[i].pos.y
-    //         if (stateType == 'COMPLETED') {
-    //             const text = k.add([
-    //                 k.text(JSON.stringify(stateType)),
-    //                 k.pos(endx, endy),
-    //                 k.area(),
-    //                 {
-    //                     size: 10,
-    //                     font: "sink",
-    //                     width: 500,
-    //                     color: k.rgb(0, 0, 255)
-    //                 },
-    //                 k.move(k.dir(-90), 100),
-    //                 k.cleanup(1)
-    //             ])
-    //         }
-    //     }
-    // }
 };
 
 // Load a level object into this view

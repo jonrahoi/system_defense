@@ -279,6 +279,11 @@ StatusBar.prototype.buildObject = function() {
         }
     }
 
+    this.playBtn.hovers(() => { this.playBtn.scale = 1.1; }, () => { this.playBtn.scale = 1; });
+    this.pauseBtn.hovers(() => { this.pauseBtn.scale = 1.1; }, () => { this.pauseBtn.scale = 1; });
+    this.restartBtn.hovers(() => { this.restartBtn.scale = 1.1; }, () => { this.restartBtn.scale = 1; });
+    this.fastForwardBtn.hovers(() => { this.fastForwardBtn.scale = 1.1; }, () => { this.fastForwardBtn.scale = 1; });
+
     // Connect buttons to control functions
     this.playBtn.clicks(TimerControls.play);
     this.pauseBtn.clicks(TimerControls.pause);

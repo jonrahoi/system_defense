@@ -335,85 +335,70 @@ const FieldControls = {
         return true;
     },
 
-    spawnRequest: function(requestState, initPos) {
+    spawnRequest: function(request, good) { 
+        let goodRequestParams = [
+            k.sprite("capn"),
+            k.pos(request.src.pos),
+            k.scale(0.20),
+            k.area(),
+            k.color(0, 255, 0),
+            k.health(10),
+            request.id,
+            request.state,
+            k.state("intransit", ["intransit", "processing", "blocked"]),
+            'request'
+        ]
         
-        let params = [
-            k.circle(10),
-            k.pos(initPos),
-            // k.area(),
-            k.origin('center'),
-            requestState.id,
-            '_request', // used as a group identifier
-            InterfaceRequest(requestState),
-        ];
+        let badRequestParams = [
+            k.sprite("capn"),
+            k.pos(request.src.pos),
+            k.scale(0.15),
+            k.area(),
+            k.color(255, 0, 0),
+            k.health(5),
+            request.id,
+            request.state,
+            k.state("blocked", ["intransit", "processing", "blocked"]),
+            'request'
+        ]
         
-        return k.add(params);
-    }
+        let goodReqDef = goodRequestParams.concat(request);
+        let badReqDef = badRequestParams.concat(request);
+        let drawReq = k.add(goodReqDef);
+        console.log(good);
+        if (good == false) {
+            drawReq = k.add(badReqDef);
+            console.log("bad req drawed");         
+        }         
 
-    // spawnRequest: function(request, good) { 
-    //     let goodRequestParams = [
-    //         k.sprite("capn"),
-    //         k.pos(request.src.pos),
-    //         k.scale(0.20),
-    //         k.area(),
-    //         k.color(0, 255, 0),
-    //         k.health(10),
-    //         request.id,
-    //         request.state,
-    //         k.state("intransit", ["intransit", "processing", "blocked"]),
-    //         'request'
-    //     ]
-        
-    //     let badRequestParams = [
-    //         k.sprite("capn"),
-    //         k.pos(request.src.pos),
-    //         k.scale(0.15),
-    //         k.area(),
-    //         k.color(255, 0, 0),
-    //         k.health(5),
-    //         request.id,
-    //         request.state,
-    //         k.state("blocked", ["intransit", "processing", "blocked"]),
-    //         'request'
-    //     ]
-        
-    //     let goodReqDef = goodRequestParams.concat(request);
-    //     let badReqDef = badRequestParams.concat(request);
-    //     let drawReq = k.add(goodReqDef);
-    //     console.log(good);
-    //     if (good == false) {
-    //         drawReq = k.add(badReqDef);
-    //         console.log("bad req drawed");         
-    //     }         
+    },
 
-    // },
-
-    // moveRequest: function(request) {
-    //     let requests = k.get('request'); 
-    //     const speed = 120;
-    //     const dir = k.vec2(request.dest.pos.sub(request.src.pos));
-    //     //console.log(dir);
-    //     for (const r of requests) { 
-    //         r.onStateUpdate("intransit", () => {
-    //             r.move(dir);
-    //         })
+    moveRequest: function(request) {
+        let requests = k.get('request'); 
+        const speed = 120;
+        const dir = k.vec2(request.dest.pos.sub(request.src.pos));
+        //console.log(dir);
+        for (const r of requests) { 
+            r.onStateUpdate("intransit", () => {
+                r.move(dir);
+            })
     
-    //         r.onStateUpdate("processing", () => {
-    //             this.hideRequest(r);
-    //         })
+            r.onStateUpdate("processing", () => {
+                this.hideRequest(r);
+            })
             
-    //         r.onCollide('selectable', () => {
-    //             r.enterState("processing");   
-    //         })
-    //     }
-    // },
+            r.onCollide('selectable', () => {
+                r.enterState("processing");   
+            })
+        }
+    },
 
-    // hideRequest: function(request) {
-    //     k.destroy(request);
-    //     k.wait(3, () => {
-    //         this.spawnRequest(request, true);
-    //     })
-    // }
+    hideRequest: function(request) {
+        k.destroy(request);
+        k.wait(3, () => {
+            this.spawnRequest(request, true);
+        })
+    }
 };
 
 export default FieldControls;
