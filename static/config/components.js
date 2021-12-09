@@ -357,7 +357,7 @@ export const componentDefs = {
         HTML: {
             tags: ["ENDPOINT"],
             transmission: 'return',
-            maxInputs: 1, // can have 1 incoming connection
+            maxInputs: 999, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
             img: "assets/images/endpoints/html.png",
             description: "The standard markup language for documents designed to be displayed in a web browser."
@@ -365,7 +365,7 @@ export const componentDefs = {
         IMAGE: {
             tags: ["ENDPOINT"],
             transmission: 'return',
-            maxInputs: 1, // can have 1 incoming connection
+            maxInputs: 999, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
             img: "assets/images/endpoints/image.png",
             description: "Hosts on a network include clients and servers--that send or receive data, services or applications."
@@ -374,7 +374,7 @@ export const componentDefs = {
         VIDEO: {
             tags: ["ENDPOINT"],
             transmission: 'return',
-            maxInputs: 1, // can have 1 incoming connection
+            maxInputs: 999, // can have 1 incoming connection
             maxOutputs: 1, // can have 1 outgoing connection
             img: "assets/images/endpoints/video.png",
             description: "sAn online video platform, provided by a video hosting service, enables users to upload, convert, store and play back video content on the Internet."
