@@ -127,7 +127,7 @@ export const componentDefs = {
                     cost: 0, // base level component is free (charged for usage)
                     usageCost: 1, // 1 coin/sec
                     maxInputs: 999, // can have 2 incoming connections
-                    maxOutputs: 3, // can have 3 outgoing connections
+                    maxOutputs: 999, // can have 3 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
                     throughput: 3 // can process 3 requests per "latency interval"
                 },
@@ -135,7 +135,7 @@ export const componentDefs = {
                     cost: 50, // cost to upgrade
                     usageCost: 2, // 2 coins/sec
                     maxInputs: 999, // can have 2 incoming connections
-                    maxOutputs: 4, // can have 4 outgoing connections
+                    maxOutputs: 999, // can have 4 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
                     throughput: 4 // can process 4 requests per "latency interval"
                 },
@@ -152,7 +152,7 @@ export const componentDefs = {
                     cost: 0, // base level component is free (charged for usage)
                     usageCost: 1, // 1 coin/sec
                     maxInputs: 999, // can have 2 incoming connections
-                    maxOutputs: 2, // can have 2 outgoing connections
+                    maxOutputs: 999, // can have 2 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
                     throughput: 3 // can process 3 requests per "latency interval"
                 },
@@ -160,7 +160,7 @@ export const componentDefs = {
                     cost: 50, // cost to upgrade
                     usageCost: 2, // 2 coins/sec
                     maxInputs: 999, // can have 3 incoming connections
-                    maxOutputs: 3, // can have 3 outgoing connections
+                    maxOutputs: 999, // can have 3 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
                     throughput: 4 // can process 4 requests per "latency interval"
                 },
@@ -178,7 +178,7 @@ export const componentDefs = {
                     cost: 0, // base level component is free (charged for usage)
                     usageCost: 2, // 2 coins/sec
                     maxInputs: 999, // can have 2 incoming connections
-                    maxOutputs: 2, // can have 2 outgoing connections
+                    maxOutputs: 999, // can have 2 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
                     throughput: 4 // can process 4 requests per "latency interval"
                 },
@@ -186,7 +186,7 @@ export const componentDefs = {
                     cost: 50, // cost to upgrade
                     usageCost: 3, // 3 coins/sec
                     maxInputs: 999, // can have 3 incoming connections
-                    maxOutputs: 3, // can have 3 outgoing connections
+                    maxOutputs: 999, // can have 3 outgoing connections
                     latency: 1, // takes 1 second to process a single request
                     throughput: 5 // can process 5 requests per "latency interval"
                 },
@@ -206,7 +206,7 @@ export const componentDefs = {
                     cost: 0, // base level component is free (charged for usage)
                     usageCost: 3, // 3 coins/sec
                     maxInputs: 999, // can have 2 incoming connections
-                    maxOutputs: 4, // can have 4 outgoing connections
+                    maxOutputs: 999, // can have 4 outgoing connections
                     latency: 2, // takes 2 seconds to process a single request
                     throughput: 5 // can process 5 requests per "latency interval"
                 },
@@ -214,7 +214,7 @@ export const componentDefs = {
                     cost: 100, // cost to upgrade
                     usageCost: 5, // 5 coins/sec
                     maxInputs: 999, // can have 3 incoming connections
-                    maxOutputs: 4, // can have 4 outgoing connections
+                    maxOutputs: 999, // can have 4 outgoing connections
                     latency: 1, // takes 1 second to process a single request
                     throughput: 7 // can process 7 requests per "latency interval"
                 },
@@ -230,7 +230,7 @@ export const componentDefs = {
                     cost: 0, // base level component is free (charged for usage)
                     usageCost: 3, // 3 coins/sec
                     maxInputs: 999, // can have 3 incoming connections
-                    maxOutputs: 4, // can have 4 outgoing connections
+                    maxOutputs: 999, // can have 4 outgoing connections
                     latency: 2, // takes 1.5 seconds to process a single request
                     throughput: 5 // can process 5 requests per "latency interval"
                 },
@@ -238,7 +238,7 @@ export const componentDefs = {
                     cost: 80, // cost to upgrade
                     usageCost: 4, // 4 coins/sec
                     maxInputs: 999, // can have 3 incoming connections
-                    maxOutputs: 4, // can have 4 outgoing connections
+                    maxOutputs: 999, // can have 4 outgoing connections
                     latency: 1, // takes 1 second to process a single request
                     throughput: 6 // can process 6 requests per "latency interval"
                 },
@@ -256,7 +256,7 @@ export const componentDefs = {
                     cost: 0, // base level component is free (charged for usage)
                     usageCost: 2, // 2 coins/sec
                     maxInputs: 999, // can have 2 incoming connections
-                    maxOutputs: 3, // can have 3 outgoing connections
+                    maxOutputs: 999, // can have 3 outgoing connections
                     latency: 1, // takes 1 seconds to process a single request
                     throughput: 6 // can process 6 requests per "latency interval"
                 },
@@ -264,7 +264,7 @@ export const componentDefs = {
                     cost: 70, // cost to upgrade
                     usageCost: 4, // 4 coins/sec
                     maxInputs: 999, // can have 4 incoming connections
-                    maxOutputs: 4, // can have 4 outgoing connections
+                    maxOutputs: 999, // can have 4 outgoing connections
                     latency: 1, // takes 0.5 seconds to process a single request
                     throughput: 10 // can process 10 requests per "latency interval"
                 },
@@ -289,7 +289,7 @@ export const componentDefs = {
                     cost: 90, // cost to upgrade
                     usageCost: 4, // 4 coins/sec
                     maxInputs: 999, // can have 2 incoming connections
-                    maxOutputs: 2, // can have 2 outgoing connections
+                    maxOutputs: 999, // can have 2 outgoing connections
                     latency: 1, // takes 0.5 seconds to process a single request
                     throughput: 15 // can process 15 requests per "latency interval"
                 },
@@ -306,7 +306,7 @@ export const componentDefs = {
                     cost: 0, // base level component is free (charged for usage)
                     usageCost: 1, // 1 coin/sec
                     maxInputs: 999, // can have 2 incoming connection
-                    maxOutputs: 2, // can have 2 outgoing connection
+                    maxOutputs: 999, // can have 2 outgoing connection
                     latency: 2, // takes 2 seconds to process a single request
                     throughput: 5 // can process 5 requests per "latency interval"
                 },
@@ -314,7 +314,7 @@ export const componentDefs = {
                     cost: 70, // cost to upgrade
                     usageCost: 3, // 3 coins/sec
                     maxInputs: 999, // can have 3 incoming connections
-                    maxOutputs: 3, // can have 3 outgoing connections
+                    maxOutputs: 999, // can have 3 outgoing connections
                     latency: 1, // takes 1.5 seconds to process a single request
                     throughput: 8 // can process 8 requests per "latency interval"
                 },
@@ -332,7 +332,7 @@ export const componentDefs = {
                     cost: 0, // base level component is free (charged for usage)
                     usageCost: 1, // 1 coin/sec
                     maxInputs: 999, // can have 2 incoming connection
-                    maxOutputs: 2, // can have 2 outgoing connection
+                    maxOutputs: 999, // can have 2 outgoing connection
                     latency: 2, // takes 2 seconds to process a single request
                     throughput: 5 // can process 5 requests per "latency interval"
                 },
@@ -340,7 +340,7 @@ export const componentDefs = {
                     cost: 80, // cost to upgrade
                     usageCost: 3, // 3 coins/sec
                     maxInputs: 999, // can have 3 incoming connections
-                    maxOutputs: 3, // can have 3 outgoing connections
+                    maxOutputs: 999, // can have 3 outgoing connections
                     latency: 1, // takes 1.5 seconds to process a single request
                     throughput: 8 // can process 8 requests per "latency interval"
                 },
@@ -358,7 +358,7 @@ export const componentDefs = {
             tags: ["ENDPOINT"],
             transmission: 'return',
             maxInputs: 999, // can have 1 incoming connection
-            maxOutputs: 1, // can have 1 outgoing connection
+            maxOutputs: 999, // can have 1 outgoing connection
             img: "assets/images/endpoints/html.png",
             description: "The standard markup language for documents designed to be displayed in a web browser."
         },
@@ -366,7 +366,7 @@ export const componentDefs = {
             tags: ["ENDPOINT"],
             transmission: 'return',
             maxInputs: 999, // can have 1 incoming connection
-            maxOutputs: 1, // can have 1 outgoing connection
+            maxOutputs: 999, // can have 1 outgoing connection
             img: "assets/images/endpoints/image.png",
             description: "Hosts on a network include clients and servers--that send or receive data, services or applications."
                             //Hosts typically do not include intermediary network devices like switches and routers, which are instead often categorized as nodes."
@@ -375,7 +375,7 @@ export const componentDefs = {
             tags: ["ENDPOINT"],
             transmission: 'return',
             maxInputs: 999, // can have 1 incoming connection
-            maxOutputs: 1, // can have 1 outgoing connection
+            maxOutputs: 999, // can have 1 outgoing connection
             img: "assets/images/endpoints/video.png",
             description: "sAn online video platform, provided by a video hosting service, enables users to upload, convert, store and play back video content on the Internet."
                             //Often via a structured, large-scale system that may generate revenue"
