@@ -1,30 +1,37 @@
 /*
  * Define different types of connections and give specs for different networks
  */
+// export var connectionTypes = {
+//     CLIENT: {
+//         EDGE: {}
+//     },
+//     EDGE: {
+//         CLIENT: {}, 
+//         PRE_PROCESSOR: {},
+//         PROCESSOR: {}, 
+//         ENDPOINT: {}
+//     },
+//     PRE_PROCESSOR: {
+//         PROCESSOR: {},
+//         EDGE: {}
+//     },
+//     PROCESSOR: {
+//         EDGE: {},
+//         PRE_PROCESSOR: {},
+//         ENDPOINT: {}, 
+//         PROCESSOR: {}
+//     },
+//     ENDPOINT: {
+//         PROCESSOR: {}, 
+//         EDGE: {}
+//     }
+// };
 export var connectionTypes = {
-    CLIENT: {
-        EDGE: {}
-    },
-    EDGE: {
-        CLIENT: {}, 
-        PRE_PROCESSOR: {},
-        PROCESSOR: {}, 
-        ENDPOINT: {}
-    },
-    PRE_PROCESSOR: {
-        PROCESSOR: {},
-        EDGE: {}
-    },
-    PROCESSOR: {
-        EDGE: {},
-        PRE_PROCESSOR: {},
-        ENDPOINT: {}, 
-        PROCESSOR: {}
-    },
-    ENDPOINT: {
-        PROCESSOR: {}, 
-        EDGE: {}
-    }
+  CLIENT: ["EDGE"],
+  EDGE: ["CLIENT","PRE_PROCESSOR", "PROCESSOR", "ENDPOINT"],
+  PRE_PROCESSOR: ["PROCESSOR", "EDGE"],
+  PROCESSOR: ["EDGE", "PRE_PROCESSOR", "ENDPOINT", "PROCESSOR"],
+  ENDPOINT: ["PROCESSOR", "EDGE"],
 };
 
 export var networkTypes = {

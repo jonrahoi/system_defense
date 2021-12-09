@@ -10,8 +10,6 @@
 
 import k from '../kaboom.js';
 
-import { BoundingRect, BoundRectTypes, BoundRectOrigins } from './boundingRect.js';
-import { BoundingConnection } from './boundingConnection.js';
 /**
  * Custom Kaboom component
  */
@@ -25,79 +23,60 @@ import { BoundingConnection } from './boundingConnection.js';
 
 var count = 0;
 
-export function InterfaceConnection(componentObjA, componentObjB, height) {
+export function InterfaceConnection(srcObj, destObj) {
     // stores reference to Kaboom component
-    var componentA = componentObjA; 
-    var componentB = componentObjB;
-    
-    var name = `Connection ${count}`;
-
-    // console.log(componentA.pos, componentB.pos);
-
-    // let center = componentA.pos.sub(componentB.pos);
-    // let centerX = Math.abs(center.x);
-    // let centerY = Math.abs(center.y);
-    // let initAngle = componentA.pos.angle(componentB.pos);
-    // console.log(centerX, centerY);
-    // var myBoundingBox = new BoundingRect(centerX, centerY, ConnectionDisplayParams.width, height, BoundRectTypes.CENTERED, BoundRectOrigins.CENTER);
-    var myBoundingConnect = new BoundingConnection(componentObjA, componentObjB);
-    // myBoundingBox.rotate(initAngle);
-
+    var src = srcObj; 
+    var dest = destObj;
+    var requests = [];
 
     return {
-        componentA() {
-            return componentA;
+        src() {
+            return src;
         },
-        componentB() {
-            return componentB;
+        dest() {
+            return dest;
         },
         equals(other) { 
             if (Array.isArray(other)) {
-                return other[0] === componentA && other[1] === componentB;
+                return other[0] === src && other[1] === dest;
             } else if (other instanceof InterfaceConnection) {
-                return other.componentA() === componentA && other.componentB() === componentB; 
+                return other.src() === src && other.dest() === dest; 
             } else {
                 return false; // may be a troublesome default 
             }
         },
-        // update() {
-        //     let ang = src.pos.angle(dest.pos);
-        //     this.pos = src.pos;
-        //     myBoundingBox.rotate(ang);
-        //     this.use(k.rotate(ang + 90));
-        // },
-        moved(pos, component) {
-            if (component.hasOwnProperty('uuid')) {
-            // if (component.hasOwnProperty('uuid') && component.uuid() === componentA.uuid()) {
-
-                myBoundingConnect.move(component);
-                
-                // console.log(`Getting angle between ${other.name()} & ${component.name()}`);
-
-                // let ang = other.getBoundingBox().getAngle(pos) * 180 / Math.PI;
-                // let height = pos.dist(component.pos);
-
-
-                this.pos = myBoundingConnect.center;
-                this.height = myBoundingConnect.height;
-                this.use(k.rotate(myBoundingConnect.angle + 90));
-                // this.pos = componentA.pos;
-                // this.height = height;
-            }
-            
-
-            // myBoundingBox.rotate(ang);
-            // this.use(k.rotate(ang + 90));
-
-            // console.log(ang, name, component.uuid());
-        },
-        clicked(pos) {
-            myBoundingConnect.clicked(pos);
-        },
-
-
         print() {
-            console.log(`Connection - Source: ${componentA}, Destination: ${componentB}`);
+            console.log(`Connection - Source: ${src}, Destination: ${dest}`);
+        },
+        update() {
+            let oldPos = this.pos;
+            let ang = src.pos.angle(dest.pos) + 90;
+            this.height = src.pos.dist(dest.pos);
+            this.pos = src.pos;
+            this.use(k.rotate(ang));
+
+            let diff = oldPos.sub(this.pos);
+
+            requests.forEach(req => req.pos = req.pos.add(diff))
+            // for (let r of requests) {
+            //     console.log(r);
+            // }
+        },
+        getPosByPercent(percent) {
+            let norm_diff = dest.pos.sub(src.pos).normal()
+            return src.pos.add(norm_diff.scale(percent * this.height));
+        },
+        addRequest(req) {
+            requests.push(req);
+        },
+        delRequest(req) {
+            const idx = requests.indexOf(5);
+            if (idx > -1) {
+                requests.splice(idx, 1);
+            }
+        },
+        updateRequest(req) {
+            req.pos = getPosByPercent(req.percent);
         }
     };
 };

@@ -19,8 +19,8 @@ import TestLevelChange from '../modules/testPanel.js';
 import State from '../../shared/state.js';
 import FieldControls from '../modules/fieldControls.js';
 import TimerControls from '../../utilities/timer.js';
-import InterfaceRequest from '../kaboom/components/interfaceRequest.js';
 
+import InterfaceRequest from '../kaboom/components/interfaceRequest.js';
 import { dragControls, drag } from '../kaboom/components/drag.js';
 import { selectControls, connectControls, select } from '../kaboom/components/select.js';
 import { Popup, PopupButtons } from '../modules/popup.js';
@@ -121,6 +121,7 @@ LevelView.prototype.buildScene = function(color) {
     this.registerEvents();
     this.buildStage();
 };
+
 
 // Meant to represent updating animations. However these could be dealt with through Kaboom
 // UPDATE ALL REQUESTS HERE? (@see State.requestStates)
@@ -266,105 +267,95 @@ LevelView.prototype.initStage = function(newStageSpecs, newLevel=false) {
 // Deal with mouse & keyboard events. Connect TimerControls and State callbacks
 LevelView.prototype.registerEvents = function() { 
 
-    // Register function to update status bar time
-    TimerControls.register(this.statusBar.updateTime, this.statusBar, TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
-    TimerControls.register(this.statusBar.updateTime, this.statusBar, TimerControls.RegistrationTypes.TIME_ADJUSTEMENT);
-
-    // Register function update status bar state values
-    State.register(this.statusBar.updateState, this.statusBar);
-
-    // When left button is HELD --> start of drag
-    k.onMouseDown('left', (pos) => {
-        if (k.isMouseMoved() && dragControls.current()) {
-            let currDrag = dragControls.current();
-            k.cursor("move");
-            // let offset = this.playField.confineComponentSpace(pos.x, pos.y, currDrag.width, currDrag.height);
-            // currDrag.updatePos(k.vec2(...offset));
-            currDrag.moveComponent(pos);
-            // currDrag.updatePos(pos);
-        }
-    });
-    
-    // When left button is released --> end a drag or display selection
-    k.onMouseRelease('left', (pos) => {
-        if (!dragControls.isDragging()) {
-            // Get all processors
-            let selectables = k.get('selectable');
-            for (const c of selectables) {
-                if (c.hasPoint(pos)) {
-                    selectControls.acquire(c);
-                    return;
-                }
-            }
-            selectControls.release();
-        }
-        if (dragControls.isDragging()) {
-            dragControls.release();
-        }
-    });
-
-    // When left button is clicked/pressed --> component selected
-    k.onMousePress('left', (pos) => {
-        // Default remove any in-progress connections
-        connectControls.release();
-
-        // Get all 'drag' components
-        let dragComponents = k.get('draggable');
-        for (const c of dragComponents) {
-            if (c.hasPoint(pos)) {
-                dragControls.acquire(c, pos);
-                return;
-            }
-        }
-        let connections = k.get('_connection');
-        // console.log('looking at connections...')
-        for (const c of connections) {
-            c.clicked(pos);
-            return;
-        }
-    });
-
-    // When right button is pressed --> indicates a connection being made
-    k.onMousePress('right', (pos) => {
-        // Default remove current selections
-        selectControls.release();
-
-        // Get all selectable components
-        let selectables = k.get('selectable');
-        for (const c of selectables) {
-            if (c.hasPoint(pos)) {
-                connectControls.acquire(c);
-                if (connectControls.isValid()) {
-                    FieldControls.connect(connectControls.current().src, connectControls.current().dest);
-                    connectControls.release();
-                }
-                return;
-            }
-        }
-        connectControls.release();
-    });
-
-    // When delete key is pressed --> destroy currently selected component (if deletable)
-    k.onKeyPress('backspace', () => {
-        // Check for currently selected processor
-        if (selectControls.current()) {
-            let selection = selectControls.current();
-            if (selection.is('deletable')) {
-                if (selection.is('connection')) {
-                    selectControls.release();
-                    return FieldControls.disconnect(selection.src(), selection.dest());
-                }
-                if (FieldControls.removeComponent(selection)) {
-                    let componentName = selection.name().toUpperCase();
-                    this.selectionBar.update(componentName, 1);
-                }
-            } else {
-                console.debug("Can't delete this item");
-            }
-        }
-        selectControls.release();
-        connectControls.release();
-    });
+     // Register function to update status bar time
+     TimerControls.register(this.statusBar.updateTime, this.statusBar, TimerControls.RegistrationTypes.SPEEDUP_INTERVAL);
+     TimerControls.register(this.statusBar.updateTime, this.statusBar, TimerControls.RegistrationTypes.TIME_ADJUSTEMENT);
+ 
+     // Register function update status bar state values
+     State.register(this.statusBar.updateState, this.statusBar);
+ 
+     // When left button is HELD --> start of drag
+     k.onMouseDown('left', (pos) => {
+         if (k.isMouseMoved() && dragControls.current()) {
+             let currDrag = dragControls.current();
+             k.cursor("move");
+             let offset = this.playField.confineComponentSpace(pos.x, pos.y, currDrag.width, currDrag.height);
+             currDrag.updatePos(k.vec2(...offset));
+         }
+     });
+     
+     // When left button is released --> end a drag or display selection
+     k.onMouseRelease('left', (pos) => {
+         if (!dragControls.isDragging()) {
+             // Get all processors
+             let selectables = k.get('selectable');
+             for (const c of selectables) {
+                 if (c.hasPoint(pos)) {
+                     selectControls.acquire(c);
+                     return;
+                 }
+             }
+             selectControls.release();
+         }
+         dragControls.release();
+     });
+ 
+     // When left button is clicked/pressed --> component selected
+     k.onMousePress('left', (pos) => {
+         // Default remove any in-progress connections
+         connectControls.release();
+ 
+         // Get all 'drag' components
+         let dragComponents = k.get('draggable');
+         for (const c of dragComponents) {
+             if (c.hasPoint(pos)) {
+                 dragControls.acquire(c, pos);
+                 return;
+             }
+         }
+     });
+ 
+     // When right button is pressed --> indicates a connection being made
+     k.onMousePress('right', (pos) => {
+         // Default remove current selections
+         selectControls.release();
+ 
+         // Get all selectable components
+         let selectables = k.get('selectable');
+         for (const c of selectables) {
+             if (c.hasPoint(pos)) {
+                 connectControls.acquire(c);
+                 if (connectControls.isValid()) {
+                     FieldControls.connect(connectControls.current().src, connectControls.current().dest);
+                     connectControls.release();
+                 }
+                 return;
+             }
+         }
+         connectControls.release();
+     });
+ 
+     // When delete key is pressed --> destroy currently selected component (if deletable)
+     k.onKeyPress('backspace', () => {
+         // Check for currently selected processor
+         if (selectControls.current()) {
+             let selection = selectControls.current();
+             if (selection.is('deletable')) {
+                 if (selection.is('connection')) {
+                     selectControls.release();
+                     return FieldControls.disconnect(selection.src(), selection.dest());
+                 }
+                 if (FieldControls.removeComponent(selection)) {
+                     let componentName = selection.name().toUpperCase();
+                     this.selectionBar.update(componentName, 1);
+                 }
+             } else {
+                 console.debug("Can't delete this item");
+             }
+         }
+         selectControls.release();
+         connectControls.release();
+     });
 };
 
 

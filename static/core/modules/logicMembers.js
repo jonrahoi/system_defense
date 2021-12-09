@@ -1,6 +1,6 @@
 
 import { StateMachine } from '../../shared/state.js';
-import LogicRequest from './logicRequest.js';
+import { LogicRequest } from './logicRequest.js';
 import LogicComponent from './logicComponent.js';
 
 /*
@@ -28,6 +28,7 @@ import LogicComponent from './logicComponent.js';
 export function LogicClient(id, name, specs, transmission, goal) {
     LogicComponent.call(this, id, name, specs, transmission);
     
+    this.outgoingRequestQueue = [];
     this.requestMissions = [];
     this.numMissions = 0;
     this.setGoal(goal);
@@ -65,18 +66,28 @@ extend(LogicComponent, LogicEndpoint);
 // BUILDS ACTUAL REQUESTS
 LogicClient.prototype.processTimestep = function() {
     var modifiedRequests = [];
-    let newReq, nextConnection;
+    let spawnedReq, transmittedReq, nextConnection;
+
     for (let i = 0; i < this.transmitRate; i++) {
-        newReq = LogicRequest(this, this.requestMissions[i % this.numMissions]);
-        nextConnection = this.transmitFunc(newReq);
-        // Check that a path exists
-        if (nextConnection) {
-            nextConnection.addRequest(newReq);
-            newReq.transmit(nextConnection);
-            this.numTransmitted++;
+        transmittedReq = this.outgoingRequestQueue.pop();
+        if (transmittedReq) { 
+            nextConnection = this.transmitFunc(transmittedReq);
+            // Check that a path exists
+            if (nextConnection) {
+                nextConnection.addRequest(transmittedReq);
+                transmittedReq.transmit(nextConnection);
+                this.numTransmitted++;
+            }
+            modifiedRequests.push(transmittedReq);
         }
-        modifiedRequests.push(newReq);
     }
+
+    for (let i = 0; i < this.transmitRate; i++) {
+        spawnedReq = LogicRequest(this, this.requestMissions[i % this.numMissions]);
+        this.outgoingRequestQueue.push(spawnedReq);
+        modifiedRequests.push(spawnedReq);
+    }
+
     
     let numToReceive = Math.min(this.receiveRate, this.incomingRequestQueue.length);
     let req;
@@ -103,6 +114,7 @@ LogicClient.prototype.setMissions = function(missionList) {
 
 LogicClient.prototype.softReset = function() {
     LogicComponent.prototype.softReset.call(this);
+    this.outgoingRequestQueue = [];
     this.requestMissions = [];
     this.numMissions = 0;
 };

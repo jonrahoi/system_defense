@@ -5,7 +5,7 @@
  */
 
 import k from '../kaboom/kaboom.js';
-import { BoundingRect, BoundRectTypes, BoundRectOrigins } from '../kaboom/components/boundingRect.js';
+import BoundingRect from '../kaboom/components/boundingRect.js';
 
 export default function PlayField(screenX, screenY, screenWidth, screenHeight) {
     this.init(screenX, screenY, screenWidth, screenHeight);
@@ -46,8 +46,8 @@ PlayField.prototype.init = function(screenX, screenY, screenWidth, screenHeight)
         itemParams['x'] = prevX;
         itemParams['p1'] = [prevX - (itemParams.width / 2), prevY - (itemParams.height / 2)];
         itemParams['p2'] = [prevX + (itemParams.width / 2), prevY + (itemParams.height / 2)];
-        itemParams['rect'] = new BoundingRect(prevX, prevY, itemParams.width, 
-            itemParams.height, BoundRectTypes.CENTERED, BoundRectOrigins.CENTER);
+        itemParams['rect'] = new BoundingRect(itemParams['p1'][0], itemParams['p1'][1], itemParams.width, 
+            itemParams.height);
         Object.assign(itemParams, item);
         this[itemName] = itemParams;
         prevX += (itemParams.width / 2);
@@ -87,17 +87,24 @@ PlayField.prototype.buildObject = function() {
 };
 
 PlayField.prototype.inClientSpace = function(x, y, w, h) {
-    return this.clientSpace.rect.containsRect(x, y, w, h);
+    return this.clientSpace.rect.contains(x, y, w, h);
 };
 PlayField.prototype.inComponentSpace = function(x, y, w, h) {
-    return this.componentSpace.rect.containsRect(x, y, w, h);
+    return this.componentSpace.rect.contains(x, y, w, h);
+};
+PlayField.prototype.inEndpointSpace = function(x, y, w, h) {
+    return this.endpointSpace.rect.confine(x, y, w, h) ;
 };
 
+
 PlayField.prototype.confineClientSpace = function(x, y, w, h) {
-    return this.clientSpace.rect.confineRect(x, y, w, h);
+    return this.clientSpace.rect.confine(x, y, w, h);
 };
 PlayField.prototype.confineComponentSpace = function(x, y, w, h) {
-    return this.componentSpace.rect.confineRect(x, y, w, h) ;
+    return this.componentSpace.rect.confine(x, y, w, h) ;
+};
+PlayField.prototype.confineEndpointSpace = function(x, y, w, h) {
+    return this.endpointSpace.rect.confine(x, y, w, h);
 };
 
 

@@ -7,6 +7,9 @@ import LogicConnection from './logicConnection.js';
 import { ConnectionConfig } from '../../shared/lookup.js';
 import findNetworkPath from '../../config/transmission.js';
 
+import { connectionTypes } from '../../config/connections.js';
+
+
 export default class Network{
     constructor(){
         this.components = {}; 
@@ -88,11 +91,27 @@ export default class Network{
             }
         }
 
-        let srcType = src.type
-        let desType = des.type
+        let srcType = src.tags[0]
+        let desType = des.tags[0]
 
-        // Use connectionTypes here
-        return { valid: true };
+        console.log(connectionTypes[srcType])
+        if (connectionTypes[srcType].indexOf(desType) !== -1){
+            return {valid:true}
+        }
+        // // Use connectionTypes here
+        // for(let srcType of srcTypes){
+        //     for (let desType of desTypes){
+
+        //         if (connectionTypes[srcType].indexOf(desType) !== -1){
+        //             return {valid:true}
+        //         }
+        //     }
+        // }
+
+        return { 
+            valid: false,
+            info: " these two types cann't be connected "
+        };
     }
 
     /**
